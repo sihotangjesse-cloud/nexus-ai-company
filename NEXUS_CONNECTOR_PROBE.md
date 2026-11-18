@@ -1,1 +1,0 @@
-Temporary GitHub App Contents API permission check for NEXUS AI COMPANY. This file is removed immediately after verification.
