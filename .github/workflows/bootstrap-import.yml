@@ -9,19 +9,20 @@ permissions:
 
 jobs:
   import-and-validate:
+    if: ${{ !hashFiles('package.json') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Restore source package and remove bootstrap files
+      - name: Restore source package and remove bootstrap payload
         run: |
           set -euo pipefail
           test ! -f package.json
           cat .github/bootstrap/nexus-source.part* | base64 --decode > /tmp/nexus-source.tar.xz
           tar -xJf /tmp/nexus-source.tar.xz -C .
-          rm -rf .github/bootstrap .github/workflows/bootstrap-import.yml
+          rm -rf .github/bootstrap
           rm -f README.Md
       - name: Generate package lock
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
@@ -35,6 +36,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add -A -- . ':!.github/workflows'
           git commit -m "chore: import NEXUS AI COMPANY v0.3.5 and lockfile"
           git push
