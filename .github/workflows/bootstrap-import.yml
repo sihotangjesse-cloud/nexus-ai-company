@@ -3,13 +3,14 @@ name: Bootstrap NEXUS AI COMPANY v0.3.5
 on:
   push:
     branches: [release/v0.3.5]
+    paths:
+      - ".github/workflows/bootstrap-import.yml"
 
 permissions:
   contents: write
 
 jobs:
   import-and-validate:
-    if: ${{ !hashFiles('package.json') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
