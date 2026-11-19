@@ -70,6 +70,8 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script>
 const $=s=>document.querySelector(s);
+const STATIC_DEMO_MODE=location.protocol==='file:'||new URLSearchParams(location.search).get('mode')==='demo';
+const STATIC_DEMO_NOTICE='Mode demo offline: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const ST=['Belum dikerjakan','Sedang dikerjakan','Dalam pemeriksaan','Selesai'],PR=['Rendah','Sedang','Tinggi'];
@@ -160,11 +162,12 @@ function updateTaskProgress(task,value){
  return task;
 }
 function addTask(t,emp,pri,due,st,note){const k={id:Date.now()+Math.random(),t:String(t||'Tugas tanpa judul').slice(0,160),emp,pri:PR.includes(pri)?pri:'Sedang',due,st:ST.includes(st)?st:ST[0],pg:st===ST[3]?100:st===ST[2]?90:st===ST[1]?40:0,result:'',brief:'',reviewed:false,h:[{at:Date.now(),t:note||'Tugas dibuat'}]};S.tasks.unshift(k);return k}
-let AI_STATUS={checked:false,keyConfigured:false,verified:false,model:null,message:''};
-let AUTH={required:true,authenticated:false,checked:false,error:''};
+let AI_STATUS={checked:STATIC_DEMO_MODE,keyConfigured:false,verified:false,model:null,message:STATIC_DEMO_MODE?STATIC_DEMO_NOTICE:''};
+let AUTH={required:!STATIC_DEMO_MODE,authenticated:STATIC_DEMO_MODE,checked:STATIC_DEMO_MODE,error:''};
 const BUSY=new Set();
 const REVISING=new Set();
 async function api(path,payload){
+if(STATIC_DEMO_MODE)throw new Error('Fitur ini memerlukan backend NEXUS. Mode demo offline tidak mengirim data ke server atau layanan AI.');
 let r;const timeout=path==='/api/company'?100000:(payload?55000:10000);
 const controller=typeof AbortController!=='undefined'?new AbortController():null;
 const timer=controller?setTimeout(()=>controller.abort(),timeout):null;
@@ -172,14 +175,15 @@ try{r=await fetch(path,{method:payload?'POST':'GET',credentials:'same-origin',he
 catch(e){if(e.name==='TimeoutError'||e.name==='AbortError')throw new Error('Waktu tunggu habis. Periksa koneksi dan coba lagi.');throw new Error('Tidak dapat menghubungi backend NEXUS. Periksa koneksi server.')}
 finally{if(timer)clearTimeout(timer)}
 let data={};try{data=await r.json()}catch(e){}if(!r.ok){if(r.status===401&&AUTH.required&&path!=='/api/login'){AUTH.authenticated=false;render()}throw new Error(data.error||'Permintaan gagal. Coba lagi.')}return data}
-async function refreshAIStatus(){try{const s=await api('/api/health');AUTH={required:!!s.authRequired,authenticated:!s.authRequired||!!s.authenticated,checked:true,error:''};AI_STATUS={checked:true,keyConfigured:!!s.aiConfigured,verified:false,model:null,message:s.statusMessage||''};}catch(e){AI_STATUS={checked:true,keyConfigured:false,verified:false,model:null,message:e.message};AUTH.checked=true;if(AUTH.required&&!AUTH.authenticated)AUTH.error='Server belum dapat memverifikasi akses: '+e.message;}render()}
+async function refreshAIStatus(){if(STATIC_DEMO_MODE){AUTH={required:false,authenticated:true,checked:true,error:''};AI_STATUS={checked:true,keyConfigured:false,verified:false,model:null,message:STATIC_DEMO_NOTICE};render();return;}try{const s=await api('/api/health');AUTH={required:!!s.authRequired,authenticated:!s.authRequired||!!s.authenticated,checked:true,error:''};AI_STATUS={checked:true,keyConfigured:!!s.aiConfigured,verified:false,model:null,message:s.statusMessage||''};}catch(e){AI_STATUS={checked:true,keyConfigured:false,verified:false,model:null,message:e.message};AUTH.checked=true;if(AUTH.required&&!AUTH.authenticated)AUTH.error='Server belum dapat memverifikasi akses: '+e.message;}render()}
 async function logout(){try{await api('/api/logout',{})}catch(e){}AUTH.authenticated=false;AUTH.error='';render();toast('Anda sudah keluar dari NEXUS.')}
 function loginView(){return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>AKSES TERBATAS</small></div></div></header><section class="c" style="max-width:440px;margin:8vh auto"><h1>Masuk ke NEXUS</h1><p class="sub">Masukkan kata sandi akses untuk menggunakan ruang kerja perusahaan.</p><form data-f="login"><label for="nexus-password">Kata sandi akses</label><input id="nexus-password" name="password" type="password" autocomplete="current-password" minlength="12" required><div class="err" role="alert">${esc(AUTH.error)}</div><button type="submit">Masuk</button></form><p class="mu" style="margin-top:12px">Akses dikelola melalui konfigurasi server. Jangan bagikan kata sandi.</p></section>`}
 function markAIVerified(model){AI_STATUS={...AI_STATUS,checked:true,keyConfigured:true,verified:true,model:model||AI_STATUS.model,message:'Permintaan AI berhasil dijalankan.'};}
 function markAIFailed(error){AI_STATUS={...AI_STATUS,checked:true,verified:false,message:error?.message||'Permintaan AI gagal.'};}
 function topHeader(){
 let state,title,detail;
-if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Model '+(AI_STATUS.model||'AI');}
+if(STATIC_DEMO_MODE){state='is-neutral';title='MODE DEMO OFFLINE';detail='AI nonaktif · data lokal di browser';}
+else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Model '+(AI_STATUS.model||'AI');}
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
@@ -236,7 +240,7 @@ async function talkToEmployee(key,b,history=[]){push(key,'ceo',b);save();render(
 let cal={m:'bulan',d:new Date()},rep='harian';
 const nav=[['dashboard','Dashboard','dashboard'],['karyawan','AI Employees','users'],['chat','Chat Perusahaan','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
-<form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)?'disabled':''}><button ${BUSY.has(key)?'disabled':''}>${BUSY.has(key)?'Memproses...':'Kirim'}</button></form><div class="err" id="err"></div></div>`}
+<form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${STATIC_DEMO_MODE?'Chat AI nonaktif pada mode demo':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)||STATIC_DEMO_MODE?'disabled':''}><button ${BUSY.has(key)||STATIC_DEMO_MODE?'disabled':''}>${STATIC_DEMO_MODE?'AI nonaktif':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${STATIC_DEMO_MODE?`<p class="demo" role="note">${esc(STATIC_DEMO_NOTICE)}</p>`:''}<div class="err" id="err"></div></div>`}
 const V={
 dashboard(){const r=S.reports[0];return `<h1>Selamat datang, ${esc(S.ceo)}</h1><p class="sub">NEXUS AI COMPANY · Virtual AI Company</p>
 <div class="g g4"><div class="c stat-card"><div><div class="n">8</div><div class="mu">AI employees</div></div><span class="stat-icon">${svgIcon('users')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[1],ST[2]])}</div><div class="mu">Tugas aktif</div></div><span class="stat-icon">${svgIcon('tasks')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[3]])}</div><div class="mu">Selesai</div></div><span class="stat-icon">${svgIcon('reports')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[0]])}</div><div class="mu">Tertunda</div></div><span class="stat-icon">${svgIcon('calendar')}</span></div></div>
@@ -263,7 +267,7 @@ laporan(){const r=makeRep(rep);return `<h1>Laporan Perusahaan</h1><div class="ro
 <div class="c"><h2>${esc(r.title)}</h2><pre>${esc(r.body)}</pre></div></div>
 <div class="c" style="margin-top:12px"><h2>Laporan tersimpan (${S.reports.length})</h2>${S.reports.map((x,i)=>`<div class="t"><b>${esc(x.title)}</b> <button class="sec" data-a="vrep" data-i="${i}">Salin</button></div>`).join('')||'<p class="mu">Belum ada laporan tersimpan.</p>'}</div>`},
 pengaturan(){return `<h1>Pengaturan</h1><div class="g g2"><form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
-<div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
+<div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${STATIC_DEMO_MODE?'Mode demo offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
 function makeRep(m){const w=m==='harian'?864e5:7*864e5,l=S.log.filter(x=>Date.now()-x.at<w),n=cnt([ST[3]]),q=S.tasks.filter(t=>t.st!==ST[3]).sort((a,b)=>PR.indexOf(b.pri)-PR.indexOf(a.pri)).slice(0,3);
 return {title:'Laporan '+m+' · '+new Date().toLocaleDateString('id-ID',{dateStyle:'long'}),body:`Total tugas: ${S.tasks.length}\nSelesai: ${n}\nAktif: ${cnt([ST[1],ST[2]])}\nTertunda: ${cnt([ST[0]])}\n\nAktivitas periode ini (${l.length}):\n${l.slice(0,8).map(x=>'• '+x.t).join('\n')||'• Belum ada aktivitas'}\n\nAnalisis bisnis: data keuangan dan pasar belum tersedia. Jejak dan Nara memerlukan input data sebelum menghasilkan angka.\n\nRekomendasi pekerjaan berikutnya:\n${q.map(t=>'• '+t.t+' ('+employeeName(t.emp)+', '+t.pri+')').join('\n')||'• Beri instruksi baru di Chat Perusahaan'}`}}
 function copy(t){const done=()=>toast('Laporan disalin');try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){toast('Gagal menyalin. Salin manual dari layar.')}a.remove()}}
@@ -281,7 +285,7 @@ if(AUTH.required&&!AUTH.authenticated&&!AUTH.checked){$('#nav').innerHTML='';$('
 if(AUTH.required&&!AUTH.authenticated){$('#nav').innerHTML='';$('#main').innerHTML=loginView();restoreFormState(drafts,saved);return;}
 const h=(location.hash||'#dashboard').slice(1);const v=h.startsWith('k-')&&em(h.slice(2))?'karyawan':(V[h]?h:'dashboard');
 $('#nav').innerHTML='<div class="nav-brand"><span class="brand-mark">'+svgIcon('sparkles')+'</span><div><strong>NEXUS AI</strong><small>COMPANY WORKSPACE</small></div></div>'+nav.map(n=>`<a href="#${n[0]}" class="${n[0]===v?'on':''}" ${n[0]===v?'aria-current="page"':''}><span class="nav-icon">${svgIcon(n[2])}</span><span>${n[1]}</span></a>`).join('');
-$('#main').innerHTML=topHeader()+(h.startsWith('k-')&&em(h.slice(2))?V.emp(h.slice(2)):V[v]());
+$('#main').innerHTML=topHeader()+(STATIC_DEMO_MODE?`<div class="demo" role="note">${esc(STATIC_DEMO_NOTICE)}</div>`:'')+(h.startsWith('k-')&&em(h.slice(2))?V.emp(h.slice(2)):V[v]());
 restoreFormState(drafts,saved);
 const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight}
 async function reviseTask(id,note){
