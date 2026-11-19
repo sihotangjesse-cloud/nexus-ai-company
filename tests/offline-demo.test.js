@@ -27,3 +27,19 @@ test('offline demo chat controls are disabled and carry an explicit notice', () 
   assert.match(html, /STATIC_DEMO_NOTICE/);
   assert.match(html, /Chat AI, delegasi, dan revisi AI dinonaktifkan/);
 });
+
+
+test('offline demo clearly labels AI chat and hides the AI revision form', () => {
+  assert.match(html, /Direktori karyawan contoh\. Percakapan AI tidak tersedia pada demo offline/);
+  assert.match(html, /Chat AI dan delegasi Sena tidak aktif pada mode demo offline/);
+  assert.match(html, /\$\{!STATIC_DEMO_MODE&&em\(k\.emp\)\?/);
+  assert.match(html, /Mode demo offline: revisi AI tidak tersedia/);
+});
+
+test('offline demo has a defensive guard against AI task revision requests', () => {
+  const reviseStart = html.indexOf('async function reviseTask(id,note){');
+  assert.notEqual(reviseStart, -1);
+  const reviseBody = html.slice(reviseStart, reviseStart + 700);
+  assert.match(reviseBody, /if\(STATIC_DEMO_MODE\)\{toast\('Revisi AI tidak tersedia/);
+  assert.ok(reviseBody.indexOf('if(STATIC_DEMO_MODE)') < reviseBody.indexOf("api('/api/revise'"));
+});
