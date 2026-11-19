@@ -15,7 +15,7 @@ You can also open `public/index.html` from a local file manager on a supported d
 ## What works
 
 - Dashboard navigation and an example employee directory
-- Manual task assignment, task status/progress management, editing, and deletion
+- Manual task assignment, task status/progress management, editing of title/owner/priority/due date, and deletion
 - Calendar and agenda entries
 - Local reports and export/copy
 - Browser-local persistence via `localStorage`
@@ -42,3 +42,13 @@ The demo blocks API calls before any network request is made. Do not add an API 
 ## Important limitation
 
 This demo is not NEXUS production hosting. Real AI features require a backend server and Gemini access. Those have intentionally not been activated because the owner prohibited use of payments, paid plans, and cloud credits.
+
+
+## Edit task details (v0.5.0)
+
+1. Open **Tugas**.
+2. Expand **Ubah detail tugas** under the task you want to change.
+3. Update the title, assigned employee, priority, or due date, then select **Simpan perubahan**.
+4. Existing AI output is kept. When the task title or owner changes, the result returns to **Dalam pemeriksaan** so it is reviewed again.
+
+These edits are stored only in the current browser profile.
