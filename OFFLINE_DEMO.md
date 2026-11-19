@@ -19,6 +19,7 @@ You can also open `public/index.html` from a local file manager on a supported d
 - Calendar and agenda entries
 - Local reports and export/copy
 - Browser-local persistence via `localStorage`
+- Manual JSON backup and restore in Pengaturan (no cloud upload)
 
 ## What is deliberately disabled
 
@@ -32,8 +33,10 @@ The demo blocks API calls before any network request is made. Do not add an API 
 ## Data and privacy
 
 - Data is stored only in the current browser profile on the current device.
-- It does not sync to another device and is not backed up.
-- Clearing browser data or using a different browser/profile may make the demo data unavailable.
+- It does not sync automatically to another device or cloud service.
+- Use Pengaturan → Unduh Backup JSON to save a local copy. Use Pulihkan dari file backup to restore it; this replaces current data after confirmation.
+- Backup JSON files are not encrypted. Keep them private and avoid including sensitive information.
+- Clearing browser data or using a different browser/profile may make the demo data unavailable unless you have saved a backup.
 - Do not enter sensitive personal, financial, or password information.
 
 ## Important limitation
