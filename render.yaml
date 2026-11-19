@@ -1,0 +1,30 @@
+# Render Blueprint for NEXUS AI COMPANY.
+# Only use this if no NEXUS service exists yet in your Render workspace
+# (a Blueprint creates a NEW service). Secrets marked sync:false are
+# entered in the Render Dashboard and are never stored in this file.
+services:
+  - type: web
+    name: nexus-ai-company
+    runtime: node
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Render terminates TLS in front of the app. Verify in the startup log
+      # ("Trusted proxy hops: 1") and by logging in over HTTPS.
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: NEXUS_ACCESS_PASSWORD
+        sync: false
+      - key: NEXUS_SESSION_SECRET
+        generateValue: true

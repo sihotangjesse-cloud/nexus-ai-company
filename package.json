@@ -1,0 +1,22 @@
+{
+  "name": "nexus-ai-company",
+  "version": "0.3.5",
+  "private": true,
+  "description": "NEXUS AI COMPANY — virtual company workspace with role-based AI employees.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check auth.js && node --check usage-budget.js && node --check csp.js && node --check history.js && node --check workflow.js && node scripts/check-frontend.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0"
+  }
+}
