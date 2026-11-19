@@ -13,7 +13,7 @@ Virtual company workspace with eight role-based AI employees:
 
 ## Project status
 
-This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.3.5. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
+This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.4.0. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
 
 - `GET /api/health` — checks server availability and session state. AI-key configuration is only shown after authentication. It does **not** prove that the key or model works; a successful chat is required to verify connectivity.
 - `POST /api/chat` — chats with one specialist using that employee's role prompt.
@@ -150,3 +150,12 @@ The static UI can be opened directly from `public/index.html` in a browser. Open
 - This is a local preview, not a public website or a production AI service.
 
 See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
+
+
+## v0.4.0 — Local JSON backup and restore
+
+- Export browser-local NEXUS data (tasks, chat history, calendar entries, reports, CEO profile, and activity log) to a JSON file.
+- Restore a previously exported file after an explicit confirmation; restoring replaces the current browser data.
+- Validate the backup envelope and version before importing, normalize all imported records, and reject files larger than 2 MB.
+- Backup and restore run in the browser only. No API, backend, cloud storage, account credit, or payment method is used.
+- Backup files are not encrypted. Store them privately and do not share them if they contain sensitive notes.
