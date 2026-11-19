@@ -74,6 +74,7 @@ const STATIC_DEMO_MODE=location.protocol==='file:';
 const STATIC_DEMO_NOTICE='Mode demo offline: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
+const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
 const ST=['Belum dikerjakan','Sedang dikerjakan','Dalam pemeriksaan','Selesai'],PR=['Rendah','Sedang','Tinggi'];
 const E=[
 {id:'sena',n:'Sena',r:'Team Leader',c:'#4cc3ff',d:'Mengatur pekerjaan tim, memilih spesialis yang relevan, mengumpulkan hasil, dan menyerahkannya kepada CEO untuk ditinjau.',k:['Koordinasi','Delegasi','Quality control','Pelaporan'],sys:'Kamu Sena, Team Leader. Pecah instruksi CEO menjadi tugas dan tunjuk spesialis yang relevan. Hasil spesialis harus ditinjau oleh CEO; jangan mengklaim pemeriksaan otomatis.'},
@@ -115,8 +116,37 @@ function normalizeState(raw){
   log:Array.isArray(raw.log)?raw.log.filter(isRecord).map(item=>({at:Number.isFinite(Number(item.at))?Number(item.at):Date.now(),t:String(item.t||'').slice(0,500)})).slice(0,40):[]
  };
 }
+function parseBackupText(text){
+ if(typeof text!=='string'||new TextEncoder().encode(text).byteLength>MAX_BACKUP_BYTES)throw new Error('File backup terlalu besar. Batas maksimal 2 MB.');
+ let payload;try{payload=JSON.parse(text)}catch(e){throw new Error('File backup bukan JSON yang valid.')}
+ if(!isRecord(payload)||payload.format!==BACKUP_FORMAT||payload.version!==BACKUP_VERSION||!isRecord(payload.data))throw new Error('Format backup NEXUS tidak dikenal atau versinya tidak didukung.');
+ return normalizeState(payload.data);
+}
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.4.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function downloadBackup(){
+ const payload=createBackupPayload();
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;
+ link.download='nexus-ai-company-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ toast('Backup JSON berhasil diunduh. Simpan file di tempat aman.');
+}
+async function importBackupFile(file){
+ if(!file)return false;
+ if(file.size>MAX_BACKUP_BYTES)throw new Error('File backup terlalu besar. Batas maksimal 2 MB.');
+ const restored=parseBackupText(await file.text());
+ if(!confirm('Pulihkan backup ini? Data NEXUS saat ini akan diganti dengan isi file backup.'))return false;
+ S=restored;
+ log('Data dipulihkan dari file backup lokal.');
+ save();render();
+ toast('Backup berhasil dipulihkan di perangkat ini.');
+ return true;
+}
 function employeeName(id){return em(id)?.n||'Karyawan tidak dikenal'}
 function log(t){S.log.unshift({at:Date.now(),t:String(t).slice(0,500)});S.log=S.log.slice(0,40)}
 function toast(t){const x=$('#toast');x.textContent=t;x.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>x.style.display='none',2800)}
@@ -266,7 +296,9 @@ laporan(){const r=makeRep(rep);return `<h1>Laporan Perusahaan</h1><div class="ro
 <div class="g g2"><div class="c"><h2>Produktivitas AI employees</h2>${E.map(e=>{const a=S.tasks.filter(t=>t.emp===e.id),d=a.filter(t=>t.st===ST[3]).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="t"><div class="row"><b>${e.n}</b><span class="mu">${d}/${a.length} selesai</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('')}</div>
 <div class="c"><h2>${esc(r.title)}</h2><pre>${esc(r.body)}</pre></div></div>
 <div class="c" style="margin-top:12px"><h2>Laporan tersimpan (${S.reports.length})</h2>${S.reports.map((x,i)=>`<div class="t"><b>${esc(x.title)}</b> <button class="sec" data-a="vrep" data-i="${i}">Salin</button></div>`).join('')||'<p class="mu">Belum ada laporan tersimpan.</p>'}</div>`},
-pengaturan(){return `<h1>Pengaturan</h1><div class="g g2"><form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
+pengaturan(){return `<h1>Pengaturan</h1><div class="g g2">
+<div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File tetap berada di perangkatmu dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON</button></div><label for="backup-file">Pulihkan dari file backup</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">Pemulihan akan mengganti data NEXUS saat ini setelah kamu menyetujuinya. Maksimal ukuran file 2 MB.</p><p class="mu">File backup tidak dienkripsi. Simpan secara pribadi dan jangan bagikan karena dapat berisi catatan kerja.</p></div>
+<form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
 <div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${STATIC_DEMO_MODE?'Mode demo offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
 function makeRep(m){const w=m==='harian'?864e5:7*864e5,l=S.log.filter(x=>Date.now()-x.at<w),n=cnt([ST[3]]),q=S.tasks.filter(t=>t.st!==ST[3]).sort((a,b)=>PR.indexOf(b.pri)-PR.indexOf(a.pri)).slice(0,3);
 return {title:'Laporan '+m+' · '+new Date().toLocaleDateString('id-ID',{dateStyle:'long'}),body:`Total tugas: ${S.tasks.length}\nSelesai: ${n}\nAktif: ${cnt([ST[1],ST[2]])}\nTertunda: ${cnt([ST[0]])}\n\nAktivitas periode ini (${l.length}):\n${l.slice(0,8).map(x=>'• '+x.t).join('\n')||'• Belum ada aktivitas'}\n\nAnalisis bisnis: data keuangan dan pasar belum tersedia. Jejak dan Nara memerlukan input data sebelum menghasilkan angka.\n\nRekomendasi pekerjaan berikutnya:\n${q.map(t=>'• '+t.t+' ('+employeeName(t.emp)+', '+t.pri+')').join('\n')||'• Beri instruksi baru di Chat Perusahaan'}`}}
@@ -334,9 +366,10 @@ else if(a==='rm'){rep=b.dataset.m}
 else if(a==='srep'){const r=makeRep(rep);S.reports.unshift({title:r.title,body:r.body});log('Laporan disimpan: '+r.title);toast('Laporan disimpan')}
 else if(a==='crep'){copy(makeRep(rep).body);return}
 else if(a==='vrep'){const r=S.reports[+b.dataset.i];copy(r.title+'\n\n'+r.body);return}
+else if(a==='backup-export'){downloadBackup();return}
 else if(a==='reset'){if(!confirm('Hapus semua data NEXUS AI COMPANY di peramban ini?'))return;try{localStorage.removeItem(KEY)}catch(e){}load()}
 save();render()});
-document.addEventListener('change',ev=>{const b=ev.target;if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
+document.addEventListener('change',async ev=>{const b=ev.target;if(b.id==='backup-file'){const file=b.files?.[0];if(!file)return;try{await importBackupFile(file)}catch(error){toast(error.message||'Gagal memulihkan backup.')}finally{b.value=''}return;}if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
 if(b.dataset.a==='st'){updateTaskStatus(k,b.value);k.h.push({at:Date.now(),t:'Status menjadi '+k.st});log('Status “'+k.t.slice(0,40)+'”: '+k.st)}
 else{updateTaskProgress(k,b.value);k.h.push({at:Date.now(),t:'Progres '+k.pg+'% · Status '+k.st});log('Progres tugas “'+k.t.slice(0,40)+'” menjadi '+k.pg+'%')}save();render()});
 addEventListener('hashchange',render);load();render();refreshAIStatus();
