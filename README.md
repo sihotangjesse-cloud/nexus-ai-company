@@ -139,7 +139,7 @@ Exact results and their scope, including which tests were skipped in the packagi
 - `POST /api/revise` — body: `employeeId`, `taskTitle`, `taskBrief`, `previousResult`, `note`; returns `{ employeeId, reply, model }`.
 
 
-## Offline local demo (zero-credit mode)
+## v0.3.6 — Offline local demo (zero-credit mode)
 
 The static UI can be opened directly from `public/index.html` in a browser. Opening the file with the `file:` protocol automatically enables the offline demo mode.
 
