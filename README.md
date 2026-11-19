@@ -137,3 +137,16 @@ Exact results and their scope, including which tests were skipped in the packagi
 ## v0.3.5 API additions
 - `POST /api/company` now also returns `synthesis` (Sena's final summary for the CEO) or `synthesisError`.
 - `POST /api/revise` — body: `employeeId`, `taskTitle`, `taskBrief`, `previousResult`, `note`; returns `{ employeeId, reply, model }`.
+
+
+## Offline local demo (zero-credit mode)
+
+The static UI can be opened directly from `public/index.html` in a browser. Opening the file with the `file:` protocol automatically enables the offline demo mode.
+
+- Dashboard, employee directory, task management, calendar, reports, and browser-local storage can be explored.
+- AI chat, company delegation, and AI revisions are disabled in this mode.
+- The demo makes no backend, Gemini, or other API requests.
+- Data stays in that browser profile's local storage on that device. It is not synced, backed up, or shared.
+- This is a local preview, not a public website or a production AI service.
+
+See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
