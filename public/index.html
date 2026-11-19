@@ -70,7 +70,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script>
 const $=s=>document.querySelector(s);
-const STATIC_DEMO_MODE=location.protocol==='file:'||new URLSearchParams(location.search).get('mode')==='demo';
+const STATIC_DEMO_MODE=location.protocol==='file:';
 const STATIC_DEMO_NOTICE='Mode demo offline: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
