@@ -26,9 +26,9 @@ function makeHarness(apiImpl) {
   const em = (id) => E.find((employee) => employee.id === id);
   const push = (key, from, text) => { (S.chats[key] ||= []).push({ f: from, t: text }); };
   const api = async (path, body) => { calls.push({ path, body }); return apiImpl(path, body); };
-  const factory = new Function('S', 'REVISING', 'em', 'ST', 'save', 'render', 'api', 'markAIVerified', 'markAIFailed', 'push', 'log', 'toast',
+  const factory = new Function('STATIC_DEMO_MODE', 'S', 'REVISING', 'em', 'ST', 'save', 'render', 'api', 'markAIVerified', 'markAIFailed', 'push', 'log', 'toast',
     `${statusSource}\n${reviseSource}\nreturn { reviseTask, updateTaskStatus };`);
-  const api2 = factory(S, REVISING, em, ST, () => {}, () => states.push(S.tasks[0]?.st), api, () => {}, () => {}, push, (entry) => S.log.push(entry), (text) => toasts.push(text));
+  const api2 = factory(false, S, REVISING, em, ST, () => {}, () => states.push(S.tasks[0]?.st), api, () => {}, () => {}, push, (entry) => S.log.push(entry), (text) => toasts.push(text));
   const task = { id: 1, t: 'Naskah iklan', emp: 'kata', st: ST[2], pg: 90, h: [], result: 'Versi satu', brief: 'Tulis naskah', reviewed: false };
   S.tasks.push(task);
   return { S, task, calls, toasts, states, REVISING, ...api2 };
