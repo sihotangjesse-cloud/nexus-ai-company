@@ -191,6 +191,33 @@ function updateTaskProgress(task,value){
  else{task.pg=progress;task.st=ST[1];task.reviewed=false;}
  return task;
 }
+function applyTaskDetails(task,fields){
+ if(!isRecord(task)||!isRecord(fields))return {ok:false,error:'Data tugas tidak valid.'};
+ const title=String(fields.t??'').trim(),employeeId=String(fields.e??''),priority=String(fields.p??''),due=String(fields.d??'');
+ if(title.length<3||title.length>160)return {ok:false,error:'Judul tugas harus berisi 3–160 karakter.'};
+ if(!em(employeeId))return {ok:false,error:'Pilih karyawan yang tersedia.'};
+ if(!PR.includes(priority))return {ok:false,error:'Prioritas tugas tidak valid.'};
+ if(due){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(due))return {ok:false,error:'Format tenggat waktu tidak valid.'};
+  const parsed=new Date(due+'T00:00:00Z');
+  if(Number.isNaN(parsed.getTime())||parsed.toISOString().slice(0,10)!==due)return {ok:false,error:'Tanggal tenggat tidak valid.'};
+ }
+ const changes=[];
+ if(task.t!==title)changes.push('judul');
+ if(task.emp!==employeeId)changes.push('penanggung jawab');
+ if(task.pri!==priority)changes.push('prioritas');
+ if(task.due!==due)changes.push('tenggat');
+ if(!changes.length)return {ok:true,changed:false,reviewRequired:false,changes};
+ task.t=title;task.emp=employeeId;task.pri=priority;task.due=due;
+ const reviewRequired=Boolean(task.result)&&(changes.includes('judul')||changes.includes('penanggung jawab'));
+ if(reviewRequired){updateTaskStatus(task,ST[2]);task.reviewed=false;}
+ if(!Array.isArray(task.h))task.h=[];
+ task.h.push({at:Date.now(),t:'Detail tugas diperbarui: '+changes.join(', ')+(reviewRequired?'. Hasil AI lama dipertahankan dan perlu diperiksa ulang.':'')});
+ task.h=task.h.slice(-50);
+ return {ok:true,changed:true,reviewRequired,changes};
+}
+function taskEditEmployeeOptions(selectedId){return E.map(e=>'<option value="'+esc(e.id)+'" '+(e.id===selectedId?'selected':'')+'>'+esc(e.n)+' · '+esc(e.r)+'</option>').join('')}
+function taskEditPriorityOptions(selected){return PR.map(p=>'<option '+(p===selected?'selected':'')+'>'+esc(p)+'</option>').join('')}
 function addTask(t,emp,pri,due,st,note){const k={id:Date.now()+Math.random(),t:String(t||'Tugas tanpa judul').slice(0,160),emp,pri:PR.includes(pri)?pri:'Sedang',due,st:ST.includes(st)?st:ST[0],pg:st===ST[3]?100:st===ST[2]?90:st===ST[1]?40:0,result:'',brief:'',reviewed:false,h:[{at:Date.now(),t:note||'Tugas dibuat'}]};S.tasks.unshift(k);return k}
 let AI_STATUS={checked:STATIC_DEMO_MODE,keyConfigured:false,verified:false,model:null,message:STATIC_DEMO_MODE?STATIC_DEMO_NOTICE:''};
 let AUTH={required:!STATIC_DEMO_MODE,authenticated:STATIC_DEMO_MODE,checked:STATIC_DEMO_MODE,error:''};
@@ -217,7 +244,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.3.5</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.5.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -283,7 +310,7 @@ emp(id){const e=em(id),s=status(id),t=S.tasks.filter(x=>x.emp===id);return `<p><
 chat(){return `<h1>Chat Perusahaan</h1><p class="sub">${STATIC_DEMO_MODE?'Chat AI dan delegasi Sena tidak aktif pada mode demo offline.':'Contoh: “Buatkan strategi bisnis produk digital.” Sena akan membagi pekerjaan ke karyawan yang tepat.'}</p>${chatBox('company','Tulis instruksi untuk perusahaan')}`},
 kantor(){const working=E.filter(e=>BUSY.has(e.id)||(e.id==='sena'&&BUSY.has('company'))||S.tasks.some(t=>t.emp===e.id&&t.st===ST[1])).length;return `<h1>Kantor Virtual</h1><p class="sub">Status di bawah berasal dari chat yang sedang diproses dan tugas yang benar-benar berstatus dikerjakan. ${working} dari ${E.length} karyawan sedang bekerja.</p><div class="g g4">${E.map(e=>{const s=status(e.id),t=S.tasks.find(x=>x.emp===e.id&&x.st===ST[1]),review=S.tasks.find(x=>x.emp===e.id&&x.st===ST[2]),queued=S.tasks.find(x=>x.emp===e.id&&x.st===ST[0]);const task=t||review||queued;return `<a class="c card desk" href="#k-${e.id}">${av(e)}<b>${e.n}</b><div class="mu">${e.r}</div><div class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</div><div class="mu">${t?'Dikerjakan: ':review?'Menunggu review: ':queued?'Belum dimulai: ':'Tidak ada tugas aktif'}${task?esc(task.t.slice(0,40)):''}</div></a>`}).join('')}</div>`},
 tugas(){return `<h1>Manajemen Tugas</h1><div class="g g2"><form data-f="task" class="c"><h2>Tugas baru</h2><label>Judul</label><input name="t" maxlength="120"><label>Karyawan</label><select name="e">${E.map(e=>`<option value="${e.id}">${e.n} · ${e.r}</option>`).join('')}</select><label>Prioritas</label><select name="p">${PR.map((p,i)=>`<option ${i==1?'selected':''}>${p}</option>`).join('')}</select><label>Tenggat</label><input type="date" name="d"><div class="err" id="err"></div><button>Buat tugas</button></form>
-<div class="c"><h2>Daftar tugas (${S.tasks.length})</h2>${S.tasks.length?S.tasks.map(k=>`<div class="t"><b>${esc(k.t)}</b><div class="mu">${esc(employeeName(k.emp))} · Prioritas ${esc(k.pri)} · Tenggat ${esc(k.due||'Belum ditetapkan')}</div><div class="row"><select data-a="st" data-id="${k.id}" style="width:auto">${ST.map(s=>`<option ${s==k.st?'selected':''}>${s}</option>`).join('')}</select><input type="range" min="0" max="100" step="10" value="${k.pg}" data-a="pg" data-id="${k.id}" style="width:120px" aria-label="Progres"><span>${k.pg}%</span><button class="sec" data-a="del" data-id="${k.id}">Hapus</button></div><div class="bar"><i style="width:${k.pg}%"></i></div>${k.result?`<details class="task-result"><summary>Hasil kerja AI · Buka untuk diperiksa</summary>${k.brief?`<p class="mu"><b>Brief:</b> ${esc(k.brief)}</p>`:''}<pre>${esc(k.result)}</pre></details>${k.st===ST[2]?`<div class="row" style="margin-top:8px"><button type="button" class="sm" data-a="approve" data-id="${k.id}">Setujui hasil</button><button type="button" class="sm sec" data-a="revise" data-id="${k.id}">Tandai perlu revisi</button></div><p class="mu" style="font-size:11px">${STATIC_DEMO_MODE?'Mode demo offline: revisi AI tidak tersedia; ubah status tugas secara manual.':'Tandai perlu revisi hanya mengubah status tugas. Untuk mengirim ulang ke AI, isi catatan revisi di bawah.'}</p>${!STATIC_DEMO_MODE&&em(k.emp)?`<form data-f="revise" data-key="${k.id}"><label>Catatan revisi untuk ${esc(employeeName(k.emp))}</label><textarea name="note" rows="3" maxlength="2000" placeholder="Apa yang perlu diperbaiki?"></textarea><button class="sm">Kirim revisi ke AI</button></form>`:''}`:k.st===ST[1]&&REVISING.has(String(k.id))?`<p class="mu">Revisi sedang diproses oleh ${esc(employeeName(k.emp))}…</p>`:k.reviewed?'<span class="chip">Disetujui CEO</span>':''}`:''}<details><summary class="mu">Riwayat (${k.h.length})</summary>${k.h.map(h=>`<div class="mu">${fd(h.at)}: ${esc(h.t)}</div>`).join('')}</details></div>`).join(''):'<p class="mu">Belum ada tugas. Buat tugas di samping atau beri instruksi lewat Chat Perusahaan.</p>'}</div></div>`},
+<div class="c"><h2>Daftar tugas (${S.tasks.length})</h2>${S.tasks.length?S.tasks.map(k=>`<div class="t"><b>${esc(k.t)}</b><div class="mu">${esc(employeeName(k.emp))} · Prioritas ${esc(k.pri)} · Tenggat ${esc(k.due||'Belum ditetapkan')}</div><div class="row"><select data-a="st" data-id="${k.id}" style="width:auto">${ST.map(s=>`<option ${s==k.st?'selected':''}>${s}</option>`).join('')}</select><input type="range" min="0" max="100" step="10" value="${k.pg}" data-a="pg" data-id="${k.id}" style="width:120px" aria-label="Progres"><span>${k.pg}%</span><button class="sec" data-a="del" data-id="${k.id}">Hapus</button></div><div class="bar"><i style="width:${k.pg}%"></i></div><details class="task-edit"><summary>Ubah detail tugas</summary><form data-f="edit-task" data-key="${k.id}"><label>Judul tugas</label><input name="t" maxlength="160" value="${esc(k.t)}" required><label>Penanggung jawab</label><select name="e">${taskEditEmployeeOptions(k.emp)}</select><label>Prioritas</label><select name="p">${taskEditPriorityOptions(k.pri)}</select><label>Tenggat waktu</label><input type="date" name="d" value="${esc(k.due||"")}"><p class="mu">Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI. Hasil lama akan tetap tersimpan dan kembali menunggu pemeriksaan CEO.</p><button type="submit" class="sec">Simpan perubahan</button></form></details>${k.result?`<details class="task-result"><summary>Hasil kerja AI · Buka untuk diperiksa</summary>${k.brief?`<p class="mu"><b>Brief:</b> ${esc(k.brief)}</p>`:''}<pre>${esc(k.result)}</pre></details>${k.st===ST[2]?`<div class="row" style="margin-top:8px"><button type="button" class="sm" data-a="approve" data-id="${k.id}">Setujui hasil</button><button type="button" class="sm sec" data-a="revise" data-id="${k.id}">Tandai perlu revisi</button></div><p class="mu" style="font-size:11px">${STATIC_DEMO_MODE?'Mode demo offline: revisi AI tidak tersedia; ubah status tugas secara manual.':'Tandai perlu revisi hanya mengubah status tugas. Untuk mengirim ulang ke AI, isi catatan revisi di bawah.'}</p>${!STATIC_DEMO_MODE&&em(k.emp)?`<form data-f="revise" data-key="${k.id}"><label>Catatan revisi untuk ${esc(employeeName(k.emp))}</label><textarea name="note" rows="3" maxlength="2000" placeholder="Apa yang perlu diperbaiki?"></textarea><button class="sm">Kirim revisi ke AI</button></form>`:''}`:k.st===ST[1]&&REVISING.has(String(k.id))?`<p class="mu">Revisi sedang diproses oleh ${esc(employeeName(k.emp))}…</p>`:k.reviewed?'<span class="chip">Disetujui CEO</span>':''}`:''}<details><summary class="mu">Riwayat (${k.h.length})</summary>${k.h.map(h=>`<div class="mu">${fd(h.at)}: ${esc(h.t)}</div>`).join('')}</details></div>`).join(''):'<p class="mu">Belum ada tugas. Buat tugas di samping atau beri instruksi lewat Chat Perusahaan.</p>'}</div></div>`},
 kalender(){const d=cal.d,its=x=>[...S.tasks.filter(t=>t.due===x).map(t=>({n:'Deadline: '+t.t,e:0})),...S.events.filter(v=>v.date===x).map(v=>({n:v.type+': '+v.title,e:v.id}))];
 let body='';const ds=dk(d);
 if(cal.m==='hari'){const l=its(ds);body=`<h2>${d.toLocaleDateString('id-ID',{dateStyle:'full'})}</h2>`+(l.length?l.map(i=>`<div class="t">${esc(i.n)} ${i.e?`<button class="sec" data-a="delev" data-id="${i.e}">Hapus</button>`:''}</div>`).join(''):'<p class="mu">Tidak ada jadwal di hari ini.</p>')}
@@ -348,6 +375,17 @@ async function reviseTask(id,note){
 function err(t){const e=$('#err');if(e)e.textContent=t}
 document.addEventListener('submit',async ev=>{const f=ev.target;const k=f.dataset.f;if(!k)return;ev.preventDefault();const d=new FormData(f);
 if(k==='login'){const password=String(d.get('password')||'');const passwordField=f.elements?.namedItem?.('password');if(passwordField)passwordField.value='';try{await api('/api/login',{password});AUTH.authenticated=true;AUTH.error='';f.reset();await refreshAIStatus();toast('Berhasil masuk.')}catch(e){AUTH.error=e.message;render()}return}
+if(k==='edit-task'){
+ const task=S.tasks.find(x=>String(x.id)===(f.dataset.key||''));
+ if(!task){toast('Tugas tidak ditemukan.');return}
+ const result=applyTaskDetails(task,{t:d.get('t'),e:d.get('e'),p:d.get('p'),d:d.get('d')});
+ if(!result.ok){toast(result.error);return}
+ if(!result.changed){toast('Tidak ada perubahan pada detail tugas.');return}
+ log('Detail tugas diperbarui: '+task.t.slice(0,60)+' ('+result.changes.join(', ')+').');
+ f.reset();save();render();
+ toast(result.reviewRequired?'Detail diperbarui. Hasil AI kembali menunggu pemeriksaan CEO.':'Detail tugas berhasil diperbarui.');
+ return;
+}
 if(k==='revise'){const note=(d.get('note')||'').trim();if(note.length<2){toast('Tulis catatan revisi minimal 2 karakter.');return}const field=f.elements?.namedItem?.('note');if(field)field.value='';await reviseTask(f.dataset.key,note);return}
 if(k==='chat'){const b=(d.get('m')||'').trim();if(b.length<2)return err('Tulis pesan minimal 2 karakter.');const key=f.dataset.key;if(BUSY.has(key))return;const history=buildHistory(key,b);const field=f.elements?.namedItem?.('m');if(field)field.value='';BUSY.add(key);render();try{if(key==='company')await delegate(b,history);else await talkToEmployee(key,b,history)}finally{BUSY.delete(key);save();render()}}
 else if(k==='task'){const t=(d.get('t')||'').trim(),due=d.get('d');if(t.length<3)return err('Judul tugas minimal 3 karakter.');if(!due)return err('Pilih tenggat waktu.');addTask(t,d.get('e'),d.get('p'),due,ST[0]);log('Tugas baru: '+t);f.reset();save();render();toast('Tugas dibuat')}
