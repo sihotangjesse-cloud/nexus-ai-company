@@ -17,7 +17,7 @@ test('offline demo mode disables authentication and skips backend health checks'
 test('offline demo mode blocks API calls before fetch can run', () => {
   const apiStart = html.indexOf('async function api(path,payload){');
   assert.notEqual(apiStart, -1);
-  const apiBody = html.slice(apiStart, apiStart + 400);
+  const apiBody = html.slice(apiStart, apiStart + 1500);
   assert.match(apiBody, /if\(STATIC_DEMO_MODE\)throw new Error/);
   assert.ok(apiBody.indexOf('if(STATIC_DEMO_MODE)throw new Error') < apiBody.indexOf('fetch('));
 });
@@ -25,5 +25,5 @@ test('offline demo mode blocks API calls before fetch can run', () => {
 test('offline demo chat controls are disabled and carry an explicit notice', () => {
   assert.match(html, /STATIC_DEMO_MODE\?'AI nonaktif'/);
   assert.match(html, /STATIC_DEMO_NOTICE/);
-  assert.match(html, /AI chat, delegasi, dan revisi AI dinonaktifkan/);
+  assert.match(html, /Chat AI, delegasi, dan revisi AI dinonaktifkan/);
 });
