@@ -14,8 +14,8 @@ You can also open `public/index.html` from a local file manager on a supported d
 
 ## What works
 
-- Dashboard navigation and employee profiles
-- Creating, editing, and deleting tasks
+- Dashboard navigation and an example employee directory
+- Manual task assignment, task status/progress management, editing, and deletion
 - Calendar and agenda entries
 - Local reports and export/copy
 - Browser-local persistence via `localStorage`
