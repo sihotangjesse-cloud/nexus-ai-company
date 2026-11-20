@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 — NEXUS PERSONAL
+
+- Rebrand aplikasi menjadi NEXUS PERSONAL untuk satu pemilik/pengguna.
+- Tambahkan launcher Windows satu klik untuk membuka HTML lokal tanpa Node.js atau instalasi software tambahan.
+- Tambahkan panduan penggunaan pribadi untuk Windows dan Android.
+- Pertahankan mode offline: tidak ada API key, layanan AI eksternal, hosting, atau kredit cloud.
+- Perjelas batas privasi: tanpa login/PIN dan data aktif localStorage belum dienkripsi.
+
+
 ## 1.0.0 — Fondasi rilis offline-first
 
 - Menyelaraskan versi sumber pada `package.json`, `package-lock.json`, label UI, dan metadata backup.
