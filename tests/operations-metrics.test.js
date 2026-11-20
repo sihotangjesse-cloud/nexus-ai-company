@@ -83,5 +83,5 @@ test('dashboard and reports expose operational summaries and explicit metric lim
  assert.match(html,/Tugas terlambat/);
  assert.match(html,/data-a="srep"/);
  assert.match(html,/data-a="crep"/);
- assert.ok(html.includes('PERSONAL WORKSPACE · v1.2.0'));
+ assert.ok(html.includes('PERSONAL WORKSPACE · v1.3.0'));
 });
