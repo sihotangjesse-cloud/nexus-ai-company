@@ -1,210 +1,107 @@
 # NEXUS AI COMPANY
 
-Virtual company workspace with eight role-based AI employees:
+**Versi sumber: 1.0.0 — fondasi rilis offline-first**
 
-- **Sena** — Team Leader and task coordinator
-- **Nara** — Market Researcher
-- **Juno** — Creative Director
-- **Kata** — Copywriter
-- **Arka** — Marketing Manager
-- **Jejak** — Business Analyst
-- **Garis** — Storyboard Artist
-- **Rupa** — Art Director
+NEXUS AI COMPANY adalah ruang kerja perusahaan virtual dengan delapan peran AI: Sena (koordinator), Nara (riset pasar), Juno (direktur kreatif), Kata (copywriter), Arka (manajer pemasaran), Jejak (analis bisnis), Garis (storyboard artist), dan Rupa (art director).
 
-## Project status
+## Status rilis
 
-This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.9.0. The local task manager supports searching, filtering by status/owner/priority, sorting, and editing task title, owner, priority, and due date; material edits return existing AI output to CEO review. The dashboard and operational reports summarize task status, progress, employee assignments, overdue tasks, upcoming deadlines, and recent local activity. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
+Versi 1.0.0 merapikan fondasi aplikasi dan dokumentasi. **Demo offline dapat dijalankan secara lokal. Fitur AI online belum dikonfigurasi atau diaktifkan pada demo offline.** Rilis ini bukan layanan website yang sudah di-hosting dan bukan klaim bahwa aplikasi siap dipakai sebagai layanan multi-pengguna di internet.
 
-- `GET /api/health` — checks server availability and session state. AI-key configuration is only shown after authentication. It does **not** prove that the key or model works; a successful chat is required to verify connectivity.
-- `POST /api/chat` — chats with one specialist using that employee's role prompt.
-- `POST /api/company` — asks Sena to select up to three specialists, creates their tasks, and collects their separate AI responses.
+## Mulai tanpa layanan berbayar
 
-**Important:** this is an early MVP, not a finished production service. Current tasks, chat history, calendar events, and reports are stored in the user's browser through `localStorage`; they are not yet shared across devices or backed by a database. Version 0.3.2 adds optional single-owner password access using an HttpOnly signed session cookie. Production mode refuses to start unless access credentials are configured. Local development remains open by default; never expose that mode publicly.
+Mode demo offline tidak memerlukan Node.js, instalasi dependensi, API key, server, hosting, akun pembayaran, kartu, atau kredit cloud.
 
-## Requirements
+1. Buka [ZIP branch main](https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip).
+2. Ekstrak ZIP di komputer.
+3. Buka folder `public`.
+4. Buka `index.html` memakai browser modern seperti Chrome atau Edge.
+5. Pastikan indikator aplikasi menampilkan **MODE DEMO OFFLINE**.
 
-- Node.js 20 or newer
-- A Gemini Developer API key for live AI responses
+Dalam mode ini, aplikasi memblokir permintaan API sebelum jaringan dipanggil. Chat AI, delegasi Sena, revisi AI, login backend, dan pemeriksaan kesehatan backend dinonaktifkan. Fitur dashboard, tugas, kalender, laporan, ekspor, dan backup berjalan di browser.
 
-The original laptop does not need to run a local AI model. The server can be deployed to a cloud Node.js host.
+Panduan lengkap tersedia di [OFFLINE_DEMO.md](OFFLINE_DEMO.md).
 
-## Run locally
+## Fitur yang tersedia secara lokal
+
+- Dashboard metrik tugas, kemajuan, status, tenggat, dan ringkasan penanggung jawab.
+- Direktori delapan peran karyawan virtual.
+- Membuat, mengubah, mencari, menyaring, mengurutkan, dan mengelola tugas.
+- Kalender dan agenda.
+- Laporan harian dan mingguan.
+- Ekspor laporan dan detail tugas ke CSV dengan perlindungan terhadap formula CSV berbahaya.
+- Backup JSON biasa dan backup terenkripsi dengan kata sandi.
+- Pemulihan backup setelah konfirmasi.
+
+Data demo disimpan pada `localStorage` profil browser yang sedang digunakan. Data tidak tersinkron otomatis antarperangkat.
+
+## Backup dan privasi data
+
+- Backup JSON biasa **tidak dienkripsi**.
+- Backup terenkripsi memakai AES-256-GCM dan derivasi kunci PBKDF2-SHA-256. Kata sandi tidak disimpan oleh aplikasi. Kata sandi yang terlupa tidak dapat dipulihkan oleh aplikasi.
+- Enkripsi backup hanya melindungi file backup. Data aktif di `localStorage` **tetap tidak dienkripsi**.
+- Menghapus data browser atau memakai profil browser lain dapat menghilangkan data lokal. Simpan backup di tempat privat.
+- Jangan masukkan kata sandi akun lain, data keuangan, atau informasi pribadi sensitif ke dalam demo.
+
+## Backend AI opsional — bukan bagian dari demo nol-kredit
+
+Repositori juga menyimpan server Node.js dan endpoint Gemini untuk eksperimen backend. Fitur ini **tidak diperlukan** untuk demo offline. Tidak ada API key yang disediakan atau dipasang oleh proyek ini.
+
+Mengisi `GEMINI_API_KEY` dan mengirim permintaan ke Gemini dapat menggunakan kuota provider dan berpotensi menimbulkan biaya sesuai pengaturan akun provider. Agar tetap dalam mode tanpa biaya, biarkan API key kosong dan jangan mengaktifkan endpoint AI. Jangan menambahkan API key ke file frontend atau commit ke GitHub.
+
+Persyaratan backend bila suatu saat diuji secara mandiri:
+
+- Node.js 20 atau lebih baru.
+- Salin `.env.example` menjadi `.env` hanya untuk konfigurasi lokal.
+- `npm ci --no-audit --no-fund` untuk memasang dependensi dari lockfile.
+- `npm run check` dan `npm test` untuk pemeriksaan.
+- `npm start` untuk menjalankan server secara lokal.
+
+Tes integrasi backend mengganti Gemini dengan mock lokal; tes tidak memerlukan panggilan ke layanan Gemini yang sebenarnya. Jangan mengartikan tes yang lulus sebagai verifikasi API key, kuota provider, atau layanan AI langsung.
+
+## Batas keamanan dan operasional
+
+- Autentikasi backend yang tersedia adalah satu kata sandi bersama untuk satu pemilik, bukan akun multi-pengguna.
+- Cookie sesi memakai atribut HttpOnly dan SameSite=Strict; sesi berakhir setelah 12 jam.
+- Batas login, permintaan AI, dan panggilan Gemini berlaku per proses. Batas ini bukan kuota biaya global, tidak dibagi lintas beberapa instance, dan kembali dari awal setelah server dimulai ulang.
+- Data tugas dan riwayat aplikasi masih berada di browser; belum ada database bersama atau sinkronisasi.
+- Jangan membuka mode pengembangan tanpa autentikasi ke internet.
+- Jangan menganggap aplikasi siap produksi publik. Penggunaan publik memerlukan audit tambahan, pengelolaan secret, penyimpanan persisten, kontrol akses per pengguna, pembatasan global, pemantauan, backup operasional, HTTPS, dan pengendalian biaya provider.
+
+## Pemeriksaan proyek
+
+Workflow GitHub Actions menjalankan Node.js 22, instalasi dari `package-lock.json`, pemeriksaan sintaks/frontend, dan seluruh tes otomatis ketika ada pull request atau push ke branch utama. Pengujian tidak melakukan panggilan Gemini langsung.
+
+Perintah lokal:
 
 ```bash
-npm install
-cp .env.example .env
-```
-
-Add the AI key to `.env` on your own machine or configure it as a secret environment variable on your hosting provider. Never paste a real API key into chat or commit it to GitHub.
-
-For production, set `NODE_ENV=production`, `NEXUS_ACCESS_PASSWORD` (12+ characters), and `NEXUS_SESSION_SECRET` (32+ random characters) in the hosting provider's secret settings. Generate a session secret locally with `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"`; never commit it. Configure `TRUST_PROXY_HOPS` to the exact proxy count provided by the host.
-
-Then run:
-
-```bash
+npm ci --no-audit --no-fund
 npm run check
 npm test
-npm start
 ```
 
-Open `http://localhost:3000`. Development mode binds only to `127.0.0.1`; production mode binds to `0.0.0.0` and requires access credentials.
+## Endpoint backend (referensi)
 
-## Environment variables
-
-| Variable | Purpose | Default |
+| Metode | Endpoint | Fungsi |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | Server-side AI credential; keep secret | Not set |
-| `GEMINI_MODEL` | Gemini model ID | `gemini-3.8-flash` |
-| `PORT` | HTTP port | `3000` |
-| `TRUST_PROXY_HOPS` | Exact number of reverse proxies before the Node server | `0` |
-| `NODE_ENV` | Runtime mode | `development` |
-| `NEXUS_ACCESS_PASSWORD` | Single-owner password gate; minimum 12 characters | Not set locally; required in production |
-| `NEXUS_SESSION_SECRET` | HMAC session signing secret; minimum 32 characters | Not set locally; required in production |
-| `NEXUS_MAX_GEMINI_CALLS_PER_MINUTE` | Per-process Gemini call cap | `12` |
-| `NEXUS_MAX_GEMINI_CALLS_PER_DAY` | Per-process daily Gemini call cap | `120` |
+| GET | `/api/health` | Status server dan sesi; tidak membuktikan koneksi model AI |
+| POST | `/api/login` | Login single-owner bila autentikasi aktif |
+| POST | `/api/logout` | Menghapus cookie sesi |
+| POST | `/api/chat` | Meminta jawaban dari satu peran AI |
+| POST | `/api/company` | Meminta Sena membagi tugas ke spesialis |
+| POST | `/api/revise` | Meminta spesialis merevisi hasil kerja |
 
-The AI key is read only by `server.js`. It is not sent to the browser, and the browser has no code to read it.
+Endpoint AI hanya relevan ketika backend dan kredensial provider dikonfigurasi secara terpisah. Demo offline tidak menggunakannya.
 
-## API examples
+## Berkas penting
 
-Health check:
+- `public/index.html` — aplikasi browser satu berkas.
+- `server.js` — server Express dan endpoint backend opsional.
+- `auth.js` — token sesi dan pemeriksaan kata sandi.
+- `usage-budget.js` — batas panggilan AI per proses.
+- `history.js` — pembentukan dan pembatasan konteks percakapan.
+- `workflow.js` — validasi dan perencanaan tugas.
+- `tests/` — tes unit, UI, dan integrasi dengan mock.
+- `OFFLINE_DEMO.md` — panduan menjalankan demo tanpa backend.
+- `CHANGELOG.md` — riwayat perubahan.
 
-```http
-GET /api/health
-```
-
-Specialist chat:
-
-```json
-{
-  "employeeId": "nara",
-  "message": "Bantu susun kerangka riset pasar untuk produk digital pemula.",
-  "history": []
-}
-```
-
-Company orchestration:
-
-```json
-{
-  "message": "Buat konsep kampanye edukasi untuk produk digital.",
-  "history": []
-}
-```
-
-## Safety and operational notes
-
-- The AI endpoints require an authenticated signed HttpOnly cookie when access control is enabled, and production mode requires access control configuration. Login attempts are rate-limited. Chat requests are limited to 8 per minute per IP; company orchestration is additionally limited to 2 requests per minute per IP. Gemini calls are also capped at 12 per minute and 120 per UTC day per server process by default. These in-memory caps reset after a process restart and are not a billing-grade or multi-instance global quota. For the default Gemini 3 model family, requests use `thinkingLevel: LOW` and a higher output ceiling; the output limit still applies to thinking plus response tokens, so very long output may be marked as partial.
-- The AI endpoints apply bounded request-body checks. The JSON parser permits up to 32 KB so route validation can return a JSON error; normalized request payloads are then limited to 24 KB and each prompt is limited by both character count and UTF-8 byte size. Health checks are not counted against the AI request quota.
-- Chat context is bounded in both the browser and server to reduce oversized requests. The server measures history limits in UTF-8 bytes, prioritizes the newest retained turns, removes orphan assistant turns, and merges adjacent same-role turns. Employee chat context includes assignment notes from Sena. Company chat history can include specialist outputs but remains bounded.
-- Failed specialist calls are marked as failed and do not create review tasks.
-- The UI disables the chat form while a request is running and reports a timeout if the request takes too long.
-- The health endpoint only confirms that a key is present; it does not call Gemini or prove the key/model works. The UI marks connectivity as verified only after an actual AI request succeeds.
-- `TRUST_PROXY_HOPS` must match the exact reverse-proxy hop count of the hosting platform. Leave it at `0` for direct connections; do not set Express `trust proxy` to `true` blindly.
-- The API key is stored as a server environment variable, never in frontend source.
-- The app intentionally does not enable cross-origin API access. The frontend inline script is covered by a SHA-256 Content Security Policy hash; inline styles remain allowed for the existing embedded design system.
-- AI output must be reviewed. Market and financial claims are not verified automatically.
-- Authentication is a single shared owner password, not multi-user accounts. Sessions expire after 12 hours; changing either access password or signing secret invalidates old sessions. Use a long unique password, a random signing secret, HTTPS, and the correct proxy-hop setting. Add durable database storage, backups, distributed rate limiting, and provider-side spending alerts before production use. The application is not intended as a public multi-user service.
-
-## Version 0.3.3 audit follow-up
-
-- Every edited form field now survives a background re-render; successful submits clear their form. See `tests/form-drafts.test.js`.
-- Added backend integration tests (`tests/server-integration.test.js`, helpers in `tests/helpers/`) that run the real server against a mocked Gemini API. They need `npm install` first; without dependencies they are skipped and `npm test` reports one visibly skipped test.
-- `package-lock.json` is not included in this package because it could not be generated without registry access. Run `npm install`, commit the generated `package-lock.json`, and use `npm ci` for reproducible installs.
-
-## Version 0.3.2 audit fixes
-
-- Added single-owner password access with an HttpOnly, SameSite=Strict signed cookie; production mode fails closed when access secrets are missing.
-- Added a separate company-orchestration rate limit and per-process Gemini call caps. These caps are explicitly not durable/global billing limits.
-- Removed model/provider details from the unauthenticated health response.
-- Added CEO approve/revision status actions for saved specialist results; revision marking does not automatically call the AI again.
-- Removed invented three-day deadlines from delegated tasks; CEO can set a real due date.
-- Preserved the focused form value across background re-renders, sanitized saved task/event IDs for attribute use, and fixed the 90–99% progress mapping.
-- The employee profile now shows a role summary rather than suggesting that a frontend copy is the active server prompt.
-
-## Version 0.3.1 reliability updates
-
-- The localStorage root key and existing fields are retained; loading now normalizes incomplete or malformed nested fields.
-- Delegated specialist output is also stored on its task entry so the CEO can review it on the Tasks page.
-- Task status and progress remain consistent when updated.
-- Virtual-office indicators distinguish actively running tasks from queued tasks and tasks awaiting CEO review.
-
-## Validation for v0.3.3
-
-Exact results and their scope, including which tests were skipped in the packaging environment, are in [TEST_REPORT.md](TEST_REPORT.md). Backend integration tests run only after `npm install`. Live Gemini requests still require a valid server-side `GEMINI_API_KEY`.
-
-
-## v0.3.5 API additions
-- `POST /api/company` now also returns `synthesis` (Sena's final summary for the CEO) or `synthesisError`.
-- `POST /api/revise` — body: `employeeId`, `taskTitle`, `taskBrief`, `previousResult`, `note`; returns `{ employeeId, reply, model }`.
-
-
-## v0.3.6 — Offline local demo (zero-credit mode)
-
-The static UI can be opened directly from `public/index.html` in a browser. Opening the file with the `file:` protocol automatically enables the offline demo mode.
-
-- Dashboard, employee directory, task management, calendar, reports, and browser-local storage can be explored.
-- AI chat, company delegation, and AI revisions are disabled in this mode.
-- The demo makes no backend, Gemini, or other API requests.
-- Data stays in that browser profile's local storage on that device. It is not synced, backed up, or shared.
-- This is a local preview, not a public website or a production AI service.
-
-See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
-
-
-## v0.4.0 — Local JSON backup and restore
-
-- Export browser-local NEXUS data (tasks, chat history, calendar entries, reports, CEO profile, and activity log) to a JSON file.
-- Restore a previously exported file after an explicit confirmation; restoring replaces the current browser data.
-- Validate the backup envelope and version before importing, normalize all imported records, and reject files larger than 2 MB.
-- Backup and restore run in the browser only. No API, backend, cloud storage, account credit, or payment method is used.
-- Backup files are not encrypted. Store them privately and do not share them if they contain sensitive notes.
-
-
-## v0.5.0 — Task detail editing
-
-- Edit a saved task's title, assigned employee, priority, and due date from the Tasks page.
-- Validate title length, employee ID, priority, and real calendar date before changing data.
-- Preserve task results and history. When the title or assignee changes on a task with an AI result, return it to CEO review rather than silently treating the old result as approved.
-- Every successful edit is recorded in the task history and the local activity log.
-- All task editing remains in browser-local storage; no backend or AI API calls are required.
-
-
-## v0.6.0 — Local task search and filters
-
-- Search tasks by title, employee name, status, priority, or due date using multiple case-insensitive keywords.
-- Filter the task list by status, assigned employee, and priority; filters can be combined and reset.
-- Sort tasks by newest first, nearest due date, or highest priority.
-- Search, filtering, and sorting run entirely in the browser against the existing local task data. They do not call the backend, Gemini, or any external API.
-- No new dependency, hosting service, API key, cloud credit, or payment method is required.
-
-
-## v0.7.0 — Local productivity dashboard and operational reports
-
-- Dashboard cards summarize total tasks, completed tasks and completion rate, overdue tasks, and deadlines within the next seven days.
-- Status distribution shows queued, in-progress, awaiting-review, and completed tasks.
-- Employee assignment summaries show assigned/completed counts, status breakdowns, and average task progress.
-- Operational reports include a current task snapshot, recent activity for the selected 24-hour or seven-day window, employee assignment summaries, and tasks requiring attention.
-- Reports can still be saved locally or copied as text. No network request is needed to calculate or export them.
-- Metrics describe recorded task status and progress only. They do not infer work quality, sales, revenue, expenses, or profit when those data have not been entered.
-
-
-## v0.8.0 — Local CSV exports
-
-- Download the operational report as a UTF-8 CSV with summary metrics, status distribution, employee task counts, upcoming/overdue deadlines, and activity from the selected daily or weekly window.
-- Download task details as a separate CSV with title, assignee, priority, status, due date, due attention, progress, and CEO-review flag.
-- CSV files are generated and downloaded in the current browser. No server, backend, Gemini, or external API is called.
-- The task-detail CSV intentionally excludes AI results, chat messages, and private work briefs.
-- CSV fields are quoted, embedded quotes are escaped, a UTF-8 BOM is included for spreadsheet compatibility, and formula-like text is neutralized before export.
-- No new package, hosting service, API key, payment method, or cloud credit is required.
-
-
-## v0.9.0 — Encrypted local backups
-
-- Add password-protected backup export and restore using Web Crypto: AES-256-GCM with PBKDF2-SHA-256 and a fresh random salt and IV for each export.
-- Require a password of at least 12 characters and confirmation when exporting. Passwords are not saved by the app.
-- Keep the existing plain JSON backup option for compatibility.
-- Encrypted backups are generated and decrypted entirely in the browser. No server, Gemini, external API, or network upload is used.
-- The encrypted-backup file is limited to 3 MB; its decrypted NEXUS JSON payload is limited to 2 MB.
-- The encryption protects exported backup files only. Active browser data in localStorage is still unencrypted in this version.
-- A forgotten password cannot be recovered. Keep the password separately from the backup file.
