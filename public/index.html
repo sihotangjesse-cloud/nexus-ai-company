@@ -156,7 +156,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.9.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.0.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -474,7 +474,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.9.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v1.0.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
