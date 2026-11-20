@@ -15,12 +15,12 @@ test('personal project workspace release metadata stays synchronized', async () 
   ]);
   const pkg = JSON.parse(packageText);
   const lock = JSON.parse(lockText);
-  assert.equal(pkg.version, '1.2.0');
+  assert.equal(pkg.version, '1.3.0');
   assert.equal(lock.version, pkg.version);
   assert.equal(lock.packages[''].version, pkg.version);
-  assert.ok(html.includes('PERSONAL WORKSPACE · v1.2.0'));
-  assert.ok(html.includes("appVersion:'1.2.0'"));
-  assert.ok(changelog.startsWith('# Changelog\n\n## 1.2.0 — Personal website project workspace'));
-  assert.ok(readme.includes('Versi 1.2.0'));
-  assert.ok(guide.includes('Buat proyek website'));
+  assert.ok(html.includes('PERSONAL WORKSPACE · v1.3.0'));
+  assert.ok(html.includes("appVersion:'1.3.0'"));
+  assert.ok(changelog.startsWith('# Changelog\n\n## 1.3.0 — Forced-offline personal workspace'));
+  assert.ok(readme.includes('Versi 1.3.0'));
+  assert.ok(guide.includes('Panduan NEXUS PERSONAL 1.3.0'));
 });
