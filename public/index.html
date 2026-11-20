@@ -454,10 +454,11 @@ function filterTasks(tasks,filters={}){
 
 function applyTaskDetails(task,fields){
  if(!isRecord(task)||!isRecord(fields))return {ok:false,error:'Data tugas tidak valid.'};
- const title=String(fields.t??'').trim(),employeeId=String(fields.e??''),priority=String(fields.p??''),due=String(fields.d??'');
+ const title=String(fields.t??'').trim(),employeeId=String(fields.e??''),priority=String(fields.p??''),due=String(fields.d??''),projectId=fields.projectId===undefined?String(task.projectId||''):String(fields.projectId||'');
  if(title.length<3||title.length>160)return {ok:false,error:'Judul tugas harus berisi 3–160 karakter.'};
  if(!em(employeeId))return {ok:false,error:'Pilih karyawan yang tersedia.'};
  if(!PR.includes(priority))return {ok:false,error:'Prioritas tugas tidak valid.'};
+ if(projectId&&!S.projects.some(project=>String(project.id)===projectId))return {ok:false,error:'Pilih proyek yang tersedia.'};
  if(due){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(due))return {ok:false,error:'Format tenggat waktu tidak valid.'};
   const parsed=new Date(due+'T00:00:00Z');
@@ -468,8 +469,9 @@ function applyTaskDetails(task,fields){
  if(task.emp!==employeeId)changes.push('penanggung jawab');
  if(task.pri!==priority)changes.push('prioritas');
  if(task.due!==due)changes.push('tenggat');
+ if(String(task.projectId||'')!==projectId)changes.push('proyek');
  if(!changes.length)return {ok:true,changed:false,reviewRequired:false,changes};
- task.t=title;task.emp=employeeId;task.pri=priority;task.due=due;
+ task.t=title;task.emp=employeeId;task.pri=priority;task.due=due;task.projectId=projectId;
  const reviewRequired=Boolean(task.result)&&(changes.includes('judul')||changes.includes('penanggung jawab'));
  if(reviewRequired){updateTaskStatus(task,ST[2]);task.reviewed=false;}
  if(!Array.isArray(task.h))task.h=[];
@@ -512,12 +514,13 @@ function taskCardView(k){
  }
  const history=Array.isArray(k.h)?k.h:[];
  const linkedProject=projectTitle(k.projectId);
+ const briefSection=k.brief&&!k.result?'<details><summary class="mu">Brief pekerjaan</summary><p>'+esc(k.brief)+'</p></details>':'';
  return '<div class="t"><b>'+esc(k.t)+'</b>'+(linkedProject?'<div class="mu"><a href="#p-'+esc(k.projectId)+'">Proyek: '+esc(linkedProject)+'</a></div>':'')+'<div class="mu">'+esc(employeeName(k.emp))+' · Prioritas '+esc(k.pri)+' · Tenggat '+esc(k.due||'Belum ditetapkan')+'</div>'+
   '<div class="row"><select data-a="st" data-id="'+esc(k.id)+'" style="width:auto">'+statusOptions+'</select>'+
   '<input type="range" min="0" max="100" step="10" value="'+esc(k.pg)+'" data-a="pg" data-id="'+esc(k.id)+'" style="width:120px" aria-label="Progres"><span>'+esc(k.pg)+'%</span>'+
   '<button class="sec" data-a="del" data-id="'+esc(k.id)+'">Hapus</button></div><div class="bar"><i style="width:'+esc(k.pg)+'%"></i></div>'+
-  '<details class="task-edit"><summary>Ubah detail tugas</summary><form data-f="edit-task" data-key="'+esc(k.id)+'"><label>Judul tugas</label><input name="t" maxlength="160" value="'+esc(k.t)+'" required><label>Penanggung jawab</label><select name="e">'+taskEditEmployeeOptions(k.emp)+'</select><label>Prioritas</label><select name="p">'+taskEditPriorityOptions(k.pri)+'</select><label>Tenggat waktu</label><input type="date" name="d" value="'+esc(k.due||'')+'"><p class="mu">Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI. Hasil lama akan tetap tersimpan dan kembali menunggu pemeriksaan CEO.</p><button type="submit" class="sec">Simpan perubahan</button></form></details>'+
-  resultSection+'<details><summary class="mu">Riwayat ('+history.length+')</summary>'+history.map(h=>'<div class="mu">'+fd(h.at)+': '+esc(h.t)+'</div>').join('')+'</details></div>';
+  '<details class="task-edit"><summary>Ubah detail tugas</summary><form data-f="edit-task" data-key="'+esc(k.id)+'"><label>Judul tugas</label><input name="t" maxlength="160" value="'+esc(k.t)+'" required><label>Penanggung jawab</label><select name="e">'+taskEditEmployeeOptions(k.emp)+'</select><label>Proyek</label><select name="projectId">'+projectOptions(k.projectId)+'</select><label>Prioritas</label><select name="p">'+taskEditPriorityOptions(k.pri)+'</select><label>Tenggat waktu</label><input type="date" name="d" value="'+esc(k.due||'')+'"><p class="mu">Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI. Hasil lama akan tetap tersimpan dan kembali menunggu pemeriksaan CEO.</p><button type="submit" class="sec">Simpan perubahan</button></form></details>'+
+  briefSection+resultSection+'<details><summary class="mu">Riwayat ('+history.length+')</summary>'+history.map(h=>'<div class="mu">'+fd(h.at)+': '+esc(h.t)+'</div>').join('')+'</details></div>';
 }
 function taskResultsView(){
  const matches=filterTasks(S.tasks,taskFilters);
