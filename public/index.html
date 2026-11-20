@@ -98,6 +98,17 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 .ops-chip-late{color:var(--er);border-color:rgba(255,119,136,.32)}
 @media(max-width:560px){.ops-bar-row{grid-template-columns:94px minmax(45px,1fr) 20px;gap:7px}.ops-quick-stats{display:grid;gap:5px}.ops-attention-row{align-items:flex-start;flex-direction:column}}
 
+
+.website-studio{margin-top:16px}
+.website-studio-grid{display:grid;grid-template-columns:minmax(280px,.95fr) minmax(0,1.05fr);gap:14px;align-items:start}
+.website-studio-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.studio-field{min-width:0}.studio-field.wide{grid-column:1/-1}.studio-field label{margin-top:4px}
+.studio-field input,.studio-field textarea{width:100%;min-width:0}.studio-field input[type=color]{height:44px;padding:5px}
+.site-preview-frame{display:block;width:100%;height:690px;border:1px solid var(--ln-strong);border-radius:13px;background:#fff}
+.website-studio-note{font-size:12px;color:var(--mu);margin:8px 0 0}
+@media(max-width:900px){.website-studio-grid{grid-template-columns:1fr}.site-preview-frame{height:620px}}
+@media(max-width:560px){.website-studio-fields{grid-template-columns:1fr}.studio-field.wide{grid-column:auto}.site-preview-frame{height:580px}}
+
 </style></head><body>
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script>
@@ -128,13 +139,32 @@ const em=id=>E.find(e=>e.id===id);
 let S;
 const isRecord=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const defaultState=()=>({ceo:'Founder',projects:[],tasks:[],chats:{},events:[],reports:[],log:[]});
+const SITE_CONTENT_FIELDS=['brandName','eyebrow','headline','subheadline','ctaLabel','accentColor','feature1Title','feature1Text','feature2Title','feature2Text','feature3Title','feature3Text','aboutTitle','aboutText','contactTitle','contactText'];
+function defaultWebsiteContent(project={}){
+ const brandName=String(project.name||'Website Baru').trim().slice(0,80)||'Website Baru';
+ const type=WEBSITE_TYPES.find(item=>item.id===project.type)?.label||'Website';
+ const objective=String(project.objective||'Jelaskan manfaat utama website ini kepada pengunjung.').trim().slice(0,1200);
+ return {brandName,eyebrow:type,headline:'Selamat datang di '+brandName,subheadline:objective,ctaLabel:'Hubungi kami',accentColor:'#2563eb',feature1Title:'Manfaat utama',feature1Text:'Jelaskan manfaat utama yang diterima pengunjung.',feature2Title:'Mudah digunakan',feature2Text:'Bantu pengunjung menemukan informasi dengan cepat.',feature3Title:'Dibuat untuk pengguna',feature3Text:'Tampilkan keunggulan yang benar-benar dimiliki website.',aboutTitle:'Tentang '+brandName,aboutText:objective,contactTitle:'Mari terhubung',contactText:'Tambahkan cara terbaik agar pengunjung dapat menghubungi kamu.'};
+}
+function normalizeWebsiteContent(raw,project={}){
+ const defaults=defaultWebsiteContent(project);
+ if(!isRecord(raw))return defaults;
+ const limits={brandName:80,eyebrow:80,headline:180,subheadline:700,ctaLabel:50,feature1Title:80,feature1Text:260,feature2Title:80,feature2Text:260,feature3Title:80,feature3Text:260,aboutTitle:120,aboutText:900,contactTitle:120,contactText:500};
+ const result={};
+ for(const [key,limit] of Object.entries(limits)){const value=String(raw[key]??'').trim();result[key]=(value||defaults[key]).slice(0,limit);}
+ const color=String(raw.accentColor??'');
+ result.accentColor=/^#[0-9a-f]{6}$/i.test(color)?color.toLowerCase():defaults.accentColor;
+ return result;
+}
 function normalizeProject(raw){
  if(!isRecord(raw))return null;
  const id=Number(raw.id),createdAt=Number(raw.createdAt);
  const type=WEBSITE_TYPES.some(item=>item.id===raw.type)?raw.type:'company';
  const status=PROJECT_STATUSES.includes(raw.status)?raw.status:'Perencanaan';
+ const name=String(raw.name||'Proyek tanpa nama').trim().slice(0,100);
+ const objective=String(raw.objective||'').trim().slice(0,1200);
  const targetDate=typeof raw.targetDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(raw.targetDate)?raw.targetDate:'';
- return {id:Number.isFinite(id)&&id>0?id:Date.now()+Math.random(),name:String(raw.name||'Proyek tanpa nama').trim().slice(0,100),type,objective:String(raw.objective||'').trim().slice(0,1200),stack:String(raw.stack||'HTML, CSS, JavaScript').trim().slice(0,160),targetDate,status,createdAt:Number.isFinite(createdAt)&&createdAt>0?createdAt:Date.now()};
+ return {id:Number.isFinite(id)&&id>0?id:Date.now()+Math.random(),name,type,objective,stack:String(raw.stack||'HTML, CSS, JavaScript').trim().slice(0,160),targetDate,status,createdAt:Number.isFinite(createdAt)&&createdAt>0?createdAt:Date.now(),site:normalizeWebsiteContent(raw.site,{name,objective,type})};
 }
 function normalizeTask(raw){
  if(!isRecord(raw))return null;
@@ -172,7 +202,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.3.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.4.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -309,29 +339,45 @@ function buildWebsitePlan(project){
  return steps;
 }
 function buildWebsiteStarter(project){
- const name=esc(project.name||'Website Baru'),objective=esc(project.objective||'Jelaskan manfaat utama website ini kepada pengunjung.'),type=esc(WEBSITE_TYPES.find(item=>item.id===project.type)?.label||'Website');
+ const site=normalizeWebsiteContent(project.site,project);
+ const brand=esc(site.brandName),eyebrow=esc(site.eyebrow),headline=esc(site.headline);
+ const subheadline=esc(site.subheadline),cta=esc(site.ctaLabel),accent=site.accentColor;
+ const featureCards=[[site.feature1Title,site.feature1Text],[site.feature2Title,site.feature2Text],[site.feature3Title,site.feature3Text]]
+  .map(([title,text])=>'<article class="card"><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p></article>').join('');
  return [
  '<!doctype html>','<html lang="id">','<head>','<meta charset="utf-8">','<meta name="viewport" content="width=device-width, initial-scale=1">',
- '<meta name="description" content="'+objective+'">','<title>'+name+'</title>','<style>',
- ':root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#142033;background:#f6f8fc;line-height:1.6}',
+ '<meta name="description" content="'+esc(site.subheadline)+'">','<title>'+brand+'</title>','<style>',
+ ':root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#142033;background:#f6f8fc;line-height:1.6;--accent:'+accent+'}',
  '*{box-sizing:border-box}body{margin:0}a{color:inherit;text-decoration:none}.wrap{width:min(1100px,calc(100% - 40px));margin:auto}',
  'header{position:sticky;top:0;background:#ffffffeb;border-bottom:1px solid #e5eaf2;backdrop-filter:blur(12px);z-index:2}',
  'nav{height:70px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-weight:800;font-size:20px;color:#15294a}nav .links{display:flex;gap:22px;color:#60708a;font-size:14px}',
  '.hero{padding:90px 0 80px;background:radial-gradient(circle at 90% 10%,#dceaff,transparent 40%),linear-gradient(130deg,#fff,#f3f7ff)}.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}',
- '.eyebrow{color:#2563eb;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}h1{font-size:clamp(38px,6vw,66px);line-height:1.04;letter-spacing:-.05em;margin:12px 0 20px}.lead{font-size:18px;color:#64748b;max-width:650px}',
- '.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;padding:12px 20px;border-radius:12px;background:#2563eb;color:white;font-weight:700}.btn.alt{background:white;color:#1e3a8a;border:1px solid #dbe5f4}',
+ '.eyebrow{color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}h1{font-size:clamp(38px,6vw,66px);line-height:1.04;letter-spacing:-.05em;margin:12px 0 20px}.lead{font-size:18px;color:#64748b;max-width:650px}',
+ '.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;padding:12px 20px;border-radius:12px;background:var(--accent);color:white;font-weight:700}.btn.alt{background:white;color:#1e3a8a;border:1px solid #dbe5f4}',
  '.preview{background:#132746;border-radius:24px;padding:28px;color:white;box-shadow:0 24px 60px #1b3c682b}.preview small{color:#9dc2ff}.preview h2{font-size:28px;margin:20px 0 8px}',
- 'section{padding:70px 0}.section-title{text-align:center;max-width:650px;margin:0 auto 32px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid #e6ebf3;border-radius:18px;padding:24px}.card h3{margin:0 0 8px}.muted{color:#64748b}.about{background:white}.contact{background:#132746;color:white;border-radius:24px;padding:40px;text-align:center}footer{padding:30px 0;color:#64748b;font-size:13px}',
+ 'section{padding:70px 0}.section-title{text-align:center;max-width:650px;margin:0 auto 32px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid #e6ebf3;border-radius:18px;padding:24px}.card h3{margin:0 0 8px}.card p,.muted{color:#64748b}.about{background:white}.contact{background:#132746;color:white;border-radius:24px;padding:40px;text-align:center}footer{padding:30px 0;color:#64748b;font-size:13px}',
  '@media(max-width:760px){.hero{padding:58px 0}.hero-grid,.cards{grid-template-columns:1fr}nav .links{gap:10px;font-size:12px}.preview{display:none}section{padding:48px 0}}',
- '</style>','</head>','<body>','<header><nav class="wrap"><a class="brand" href="#">'+name+'</a><div class="links"><a href="#fitur">Fitur</a><a href="#tentang">Tentang</a><a href="#kontak">Kontak</a></div></nav></header>',
- '<main><section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">'+type+'</div><h1>'+name+'</h1><p class="lead">'+objective+'</p><div class="actions"><a class="btn" href="#kontak">Hubungi kami</a><a class="btn alt" href="#fitur">Pelajari lebih lanjut</a></div></div><aside class="preview"><small>WEBSITE STARTER · NEXUS PERSONAL</small><h2>Mulai dari ide, lanjutkan dengan aksi.</h2><p>Ubah teks, warna, gambar, dan bagian halaman sesuai kebutuhan proyekmu.</p></aside></div></section>',
- '<section id="fitur"><div class="wrap"><div class="section-title"><div class="eyebrow">Yang ditawarkan</div><h2>Fitur utama</h2><p class="muted">Ganti tiga kartu ini dengan fitur atau layanan utama website.</p></div><div class="cards"><article class="card"><h3>Jelas</h3><p class="muted">Jelaskan manfaat utama yang diterima pengunjung.</p></article><article class="card"><h3>Mudah digunakan</h3><p class="muted">Buat pengunjung menemukan informasi dengan cepat.</p></article><article class="card"><h3>Responsif</h3><p class="muted">Tampilan menyesuaikan desktop, tablet, dan ponsel.</p></article></div></div></section>',
- '<section class="about" id="tentang"><div class="wrap"><div class="section-title"><div class="eyebrow">Tentang proyek</div><h2>Kenapa website ini dibuat?</h2><p class="muted">'+objective+'</p></div></div></section>',
- '<section id="kontak"><div class="wrap"><div class="contact"><div class="eyebrow">Langkah berikutnya</div><h2>Siap berdiskusi?</h2><p>Tambahkan alamat email, formulir, atau kanal kontak milikmu di bagian ini.</p><a class="btn" href="mailto:email-anda@example.com">Ganti alamat kontak</a></div></div></section></main>',
- '<footer><div class="wrap">© '+new Date().getFullYear()+' '+name+'. Ganti teks dan aset sebelum dipublikasikan.</div></footer>','</body>','</html>'
- ].join('\n');
+ '</style>','</head>','<body>','<header><nav class="wrap"><a class="brand" href="#">'+brand+'</a><div class="links"><a href="#fitur">Fitur</a><a href="#tentang">Tentang</a><a href="#kontak">Kontak</a></div></nav></header>',
+ '<main><section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">'+eyebrow+'</div><h1>'+headline+'</h1><p class="lead">'+subheadline+'</p><div class="actions"><a class="btn" href="#kontak">'+cta+'</a><a class="btn alt" href="#fitur">Lihat fitur</a></div></div><aside class="preview"><small>NEXUS PERSONAL · WEBSITE STARTER</small><h2>'+brand+'</h2><p>'+subheadline+'</p></aside></div></section>',
+ '<section id="fitur"><div class="wrap"><div class="section-title"><div class="eyebrow">Yang ditawarkan</div><h2>Fitur utama</h2><p class="muted">Tiga hal penting yang ingin kamu tonjolkan.</p></div><div class="cards">'+featureCards+'</div></div></section>',
+ '<section class="about" id="tentang"><div class="wrap"><div class="section-title"><div class="eyebrow">Tentang</div><h2>'+esc(site.aboutTitle)+'</h2><p class="muted">'+esc(site.aboutText)+'</p></div></div></section>',
+ '<section id="kontak"><div class="wrap"><div class="contact"><div class="eyebrow">Langkah berikutnya</div><h2>'+esc(site.contactTitle)+'</h2><p>'+esc(site.contactText)+'</p><a class="btn" href="#top">Kembali ke atas</a></div></div></section></main>',
+ '<footer><div class="wrap">© '+new Date().getFullYear()+' '+brand+'. Website starter lokal dari NEXUS PERSONAL.</div></footer>','</body>','</html>'
+ ].join('\\n');
 }
-function downloadWebsiteStarter(project){
+function websiteContentFromForm(form,project){
+ const data=new FormData(form),raw={};
+ SITE_CONTENT_FIELDS.forEach(key=>{raw[key]=data.get(key)});
+ return normalizeWebsiteContent(raw,project);
+}
+function refreshWebsitePreview(form){
+ const project=projectById(form?.dataset?.key);
+ const preview=form?.closest('.website-studio')?.querySelector('[data-site-preview]');
+ if(!project||!preview)return;
+ preview.srcdoc=buildWebsiteStarter({...project,site:websiteContentFromForm(form,project)});
+}
+function downloadWebsiteStarter(project,siteOverride){
+ const source=buildWebsiteStarter({...project,site:siteOverride||project.site}),blob=new Blob([source],{type:'text/html;charset=utf-8'});
  const source=buildWebsiteStarter(project),blob=new Blob([source],{type:'text/html;charset=utf-8'});
  const url=URL.createObjectURL(blob),link=document.createElement('a');
  const slug=String(project.name||'website').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'website';
@@ -562,7 +608,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.3.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.4.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -637,7 +683,28 @@ function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div cl
 <form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${PERSONAL_OFFLINE_MODE?'Tulis brief atau permintaan kerja...':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)?'disabled':''}><button ${BUSY.has(key)?'disabled':''}>${PERSONAL_OFFLINE_MODE?'Buat kerangka offline':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${PERSONAL_OFFLINE_MODE?`<p class="demo" role="note">Template kerja dibuat secara lokal. Tidak ada AI eksternal, API, atau kredit yang digunakan.</p>`:''}<div class="err" id="err"></div></div>`}
 const V={
   proyek(){const cards=S.projects.map(project=>{const stats=projectStats(project.id);return '<a class="c card project-card" href="#p-'+esc(project.id)+'"><div class="row" style="justify-content:space-between"><span class="chip">'+esc(WEBSITE_TYPES.find(x=>x.id===project.type)?.label||'Website')+'</span><span class="chip">'+esc(project.status)+'</span></div><h2>'+esc(project.name)+'</h2><p class="mu">'+esc(project.objective)+'</p><div class="project-progress"><div class="ops-track"><i style="width:'+stats.progress+'%"></i></div><div class="row" style="justify-content:space-between"><span class="mu">'+stats.completed+'/'+stats.total+' tugas selesai</span><b>'+stats.progress+'%</b></div></div><div class="mu">Stack: '+esc(project.stack)+' · Target: '+esc(project.targetDate||'Belum ditentukan')+'</div><span class="mu">Buka ruang proyek →</span></a>'}).join('');return '<h1>Ruang Proyek</h1><p class="sub">Buat dan kelola proyek website. NEXUS membuat checklist awal secara lokal, membaginya ke tim virtual, dan bisa mengunduh starter HTML tanpa API.</p><div class="g g2"><form class="c" data-f="project"><h2>Proyek website baru</h2><label>Nama proyek</label><input name="name" maxlength="100" placeholder="Contoh: Website portofolio saya" required><label>Jenis website</label><select name="type">'+WEBSITE_TYPES.map(x=>'<option value="'+x.id+'">'+x.label+'</option>').join('')+'</select><label>Tujuan website</label><textarea name="objective" rows="3" maxlength="1200" placeholder="Untuk siapa website ini dibuat dan masalah apa yang diselesaikan?" required></textarea><label>Teknologi yang ingin digunakan</label><input name="stack" maxlength="160" value="HTML, CSS, JavaScript" placeholder="HTML, CSS, JavaScript / React / Next.js"><label>Target tanggal (opsional)</label><input type="date" name="targetDate"><p class="mu">Saat proyek dibuat, NEXUS menyiapkan checklist tugas untuk riset, desain, konten, developer, dan QA. Semua data disimpan di browser ini.</p><div class="err" id="err"></div><button type="submit">Buat proyek + checklist kerja</button></form><section class="c"><h2>Daftar proyek ('+S.projects.length+')</h2>'+(cards||'<p class="mu">Belum ada proyek. Buat proyek pertamamu di formulir sebelah kiri.</p>')+'</section></div>'},
-  projectDetail(id){const project=projectById(id);if(!project)return '<h1>Proyek tidak ditemukan</h1><p><a href="#proyek">Kembali ke ruang proyek</a></p>';const stats=projectStats(id);const taskRows=stats.tasks.length?stats.tasks.map(taskCardView).join(''):'<p class="mu">Checklist proyek belum memiliki tugas.</p>';return '<p><a href="#proyek" class="mu">← Semua proyek</a></p><div class="row" style="justify-content:space-between"><div><span class="chip">'+esc(WEBSITE_TYPES.find(x=>x.id===project.type)?.label||'Website')+'</span><h1>'+esc(project.name)+'</h1></div><button type="button" data-a="download-starter" data-id="'+esc(project.id)+'">Unduh starter website HTML</button></div><p class="sub">'+esc(project.objective)+'</p><div class="g g4"><div class="c"><div class="n">'+stats.total+'</div><div class="mu">Total tugas</div></div><div class="c"><div class="n">'+stats.completed+'</div><div class="mu">Selesai</div></div><div class="c"><div class="n">'+stats.progress+'%</div><div class="mu">Progres rata-rata</div></div><div class="c"><div class="n">'+stats.open+'</div><div class="mu">Belum selesai</div></div></div><div class="g g2" style="margin-top:14px"><form data-f="edit-project" data-key="'+esc(project.id)+'" class="c"><h2>Detail proyek</h2><label>Nama proyek</label><input name="name" maxlength="100" value="'+esc(project.name)+'" required><label>Jenis website</label><select name="type">'+WEBSITE_TYPES.map(x=>'<option value="'+x.id+'" '+(project.type===x.id?'selected':'')+'>'+x.label+'</option>').join('')+'</select><label>Tujuan</label><textarea name="objective" rows="3" maxlength="1200">'+esc(project.objective)+'</textarea><label>Teknologi</label><input name="stack" maxlength="160" value="'+esc(project.stack)+'"><label>Target tanggal</label><input type="date" name="targetDate" value="'+esc(project.targetDate)+'"><label>Status proyek</label><select name="status">'+PROJECT_STATUSES.map(x=>'<option '+(project.status===x?'selected':'')+'>'+x+'</option>').join('')+'</select><button type="submit">Simpan detail</button></form><section class="c"><h2>Checklist proyek</h2><p class="mu">Tugas dibuat dari template offline. Penanggung jawab dapat diubah dari detail masing-masing tugas.</p><a href="#tugas"><button class="sec">Buka semua tugas dan filter proyek</button></a><button class="sec" data-a="delete-project" data-id="'+esc(project.id)+'">Hapus proyek (tugas tetap disimpan)</button></section></div><section class="c" style="margin-top:14px"><h2>Daftar pekerjaan ('+stats.total+')</h2>'+taskRows+'</section>'},
+  projectDetail(id){
+  const project=projectById(id);
+  if(!project)return '<h1>Proyek tidak ditemukan</h1><p><a href="#proyek">Kembali ke ruang proyek</a></p>';
+  const stats=projectStats(id),site=normalizeWebsiteContent(project.site,project);
+  const field=(key,label,kind='text',max=180)=>{
+   const fieldId='studio-'+key,value=esc(site[key]||'');
+   if(kind==='textarea')return '<div class="studio-field wide"><label for="'+fieldId+'">'+label+'</label><textarea id="'+fieldId+'" name="'+key+'" rows="3" maxlength="'+max+'">'+value+'</textarea></div>';
+   return '<div class="studio-field"><label for="'+fieldId+'">'+label+'</label><input id="'+fieldId+'" type="'+kind+'" name="'+key+'" maxlength="'+max+'" value="'+value+'" '+(kind==='color'?'':'required')+'></div>';
+  };
+  const taskRows=stats.tasks.length?stats.tasks.map(taskCardView).join(''):'<p class="mu">Checklist proyek belum memiliki tugas.</p>';
+  const preview=esc(buildWebsiteStarter({...project,site}));
+  return '<p><a href="#proyek" class="mu">← Semua proyek</a></p><div class="row" style="justify-content:space-between"><div><span class="chip">'+esc(WEBSITE_TYPES.find(x=>x.id===project.type)?.label||'Website')+'</span><h1>'+esc(project.name)+'</h1></div><button type="button" data-a="download-starter" data-id="'+esc(project.id)+'">Unduh website HTML</button></div><p class="sub">'+esc(project.objective)+'</p>'+
+  '<div class="g g4"><div class="c"><div class="n">'+stats.total+'</div><div class="mu">Total tugas</div></div><div class="c"><div class="n">'+stats.completed+'</div><div class="mu">Selesai</div></div><div class="c"><div class="n">'+stats.progress+'%</div><div class="mu">Progres rata-rata</div></div><div class="c"><div class="n">'+stats.open+'</div><div class="mu">Belum selesai</div></div></div>'+
+  '<div class="g g2" style="margin-top:14px"><form data-f="edit-project" data-key="'+esc(project.id)+'" class="c"><h2>Detail proyek</h2><label>Nama proyek</label><input name="name" maxlength="100" value="'+esc(project.name)+'" required><label>Jenis website</label><select name="type">'+WEBSITE_TYPES.map(x=>'<option value="'+x.id+'" '+(project.type===x.id?'selected':'')+'>'+x.label+'</option>').join('')+'</select><label>Tujuan</label><textarea name="objective" rows="3" maxlength="1200">'+esc(project.objective)+'</textarea><label>Teknologi</label><input name="stack" maxlength="160" value="'+esc(project.stack)+'"><label>Target tanggal</label><input type="date" name="targetDate" value="'+esc(project.targetDate)+'"><label>Status proyek</label><select name="status">'+PROJECT_STATUSES.map(x=>'<option '+(project.status===x?'selected':'')+'>'+x+'</option>').join('')+'</select><button type="submit">Simpan detail</button></form><section class="c"><h2>Checklist proyek</h2><p class="mu">Tugas dibuat dari template offline. Penanggung jawab dapat diubah dari detail masing-masing tugas.</p><a href="#tugas"><button class="sec">Buka semua tugas dan filter proyek</button></a><button class="sec" data-a="delete-project" data-id="'+esc(project.id)+'">Hapus proyek (tugas tetap disimpan)</button></section></div>'+
+  '<section class="c website-studio"><div class="row" style="justify-content:space-between"><div><h2>Website Studio</h2><p class="mu">Edit konten dan warna. Pratinjau diperbarui saat kamu mengetik.</p></div><span class="chip">LOKAL · TANPA API</span></div><div class="website-studio-grid">'+
+  '<form data-f="site-editor" data-key="'+esc(project.id)+'"><div class="website-studio-fields">'+
+  field('brandName','Nama brand','text',80)+field('eyebrow','Label kecil','text',80)+field('headline','Judul utama','text',180)+field('subheadline','Deskripsi utama','textarea',700)+field('ctaLabel','Teks tombol','text',50)+field('accentColor','Warna utama','color')+
+  field('feature1Title','Judul fitur 1','text',80)+field('feature1Text','Deskripsi fitur 1','textarea',260)+field('feature2Title','Judul fitur 2','text',80)+field('feature2Text','Deskripsi fitur 2','textarea',260)+field('feature3Title','Judul fitur 3','text',80)+field('feature3Text','Deskripsi fitur 3','textarea',260)+field('aboutTitle','Judul tentang','text',120)+field('aboutText','Tentang website','textarea',900)+field('contactTitle','Judul kontak','text',120)+field('contactText','Deskripsi kontak','textarea',500)+
+  '</div><div class="row" style="margin-top:12px"><button type="submit">Simpan konten website</button><button type="button" class="sec" data-a="download-starter" data-id="'+esc(project.id)+'">Unduh HTML</button></div></form>'+
+  '<section class="c"><h2>Pratinjau langsung</h2><iframe class="site-preview-frame" title="Pratinjau website lokal" sandbox="" data-site-preview srcdoc="'+preview+'"></iframe><p class="website-studio-note">Pratinjau tidak menjalankan JavaScript dan tidak memuat gambar, font, atau layanan dari internet. Unduhan menghasilkan HTML statis yang bisa diedit lagi.</p></section></div></section>'+
+  '<section class="c" style="margin-top:14px"><h2>Daftar pekerjaan ('+stats.total+')</h2>'+taskRows+'</section>';
+ },
  dashboard(){
  const metrics=getOperationalMetrics(S.tasks,E,new Date());
  const statusBars=ST.map(status=>{
@@ -872,12 +939,19 @@ if(k==='project'){
  if(!WEBSITE_TYPES.some(item=>item.id===type)){toast('Jenis website tidak valid.');return}
  if(targetDate){const date=new Date(targetDate+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(targetDate)||Number.isNaN(date.getTime())||date.toISOString().slice(0,10)!==targetDate){toast('Target tanggal tidak valid.');return}}
  if(S.projects.length>=50||S.tasks.length>=480){toast('Batas data proyek atau tugas tercapai. Hapus data lama sebelum menambah proyek.');return}
- const project={id:Date.now()+Math.random(),name,type,objective,stack:stack.slice(0,160),targetDate,status:'Perencanaan',createdAt:Date.now()};
+ const project={id:Date.now()+Math.random(),name,type,objective,stack:stack.slice(0,160),targetDate,status:'Perencanaan',createdAt:Date.now(),site:defaultWebsiteContent({name,objective,type})};
  S.projects.unshift(project);
  const plan=buildWebsitePlan(project);
  plan.forEach(step=>addTask(step.title,step.emp,step.priority,'',ST[0],'Checklist awal proyek: '+name,String(project.id),step.brief));
  log('Proyek dibuat: '+name+' dengan '+plan.length+' tugas awal.');
  f.reset();save();location.hash='#p-'+project.id;render();toast('Proyek dibuat dengan '+plan.length+' tugas checklist.');return;
+}
+if(k==='site-editor'){
+ const project=projectById(f.dataset.key);
+ if(!project){toast('Proyek tidak ditemukan.');return}
+ project.site=websiteContentFromForm(f,project);
+ log('Konten Website Studio disimpan: '+project.name);
+ save();render();toast('Konten website berhasil disimpan.');return;
 }
 if(k==='edit-project'){
  const project=projectById(f.dataset.key),name=String(d.get('name')||'').trim(),objective=String(d.get('objective')||'').trim(),type=String(d.get('type')||''),stack=String(d.get('stack')||'').trim(),targetDate=String(d.get('targetDate')||''),status=String(d.get('status')||'');
@@ -939,7 +1013,7 @@ else if(k==='ev'){const t=(d.get('t')||'').trim();if(t.length<2)return err('Judu
 else if(k==='ceo'){const n=(d.get('n')||'').trim();if(!n)return err('Nama tidak boleh kosong.');S.ceo=n;f.reset();save();render();toast('Profil disimpan')}});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
 if(a==='logout'){void logout();return}
-if(a==='download-starter'){const project=projectById(id);if(project)downloadWebsiteStarter(project);return}
+if(a==='download-starter'){const project=projectById(id);if(project){const form=document.querySelector('form[data-f="site-editor"]');const site=form&&String(form.dataset.key)===String(id)?websiteContentFromForm(form,project):project.site;downloadWebsiteStarter(project,site);}return}
 if(a==='delete-project'){const project=projectById(id);if(!project)return;if(!confirm('Hapus proyek ini? Tugasnya tetap disimpan tanpa tautan proyek.'))return;S.projects=S.projects.filter(item=>String(item.id)!==String(id));S.tasks.forEach(task=>{if(String(task.projectId||'')===String(id))task.projectId=''});log('Proyek dihapus, tugas terkait tetap dipertahankan: '+project.name);location.hash='#proyek';save();render();return}
 if(a==='approve'){const task=S.tasks.find(x=>String(x.id)===id);if(!task||!task.result)return;updateTaskStatus(task,ST[3]);task.reviewed=true;task.h.push({at:Date.now(),t:'CEO menyetujui hasil kerja.'});log('CEO menyetujui hasil: '+task.t.slice(0,60));toast('Hasil disetujui.')}
 else if(a==='revise'){const task=S.tasks.find(x=>String(x.id)===id);if(!task||!task.result)return;updateTaskStatus(task,ST[1]);task.reviewed=false;task.h.push({at:Date.now(),t:'CEO menandai hasil perlu revisi. Pengiriman ulang ke AI belum dilakukan.'});log('Hasil ditandai perlu revisi: '+task.t.slice(0,60));toast('Status diubah. Tugas belum dikirim ulang ke AI.')}
@@ -960,6 +1034,7 @@ else if(a==='reset'){if(!confirm('Hapus semua data NEXUS PERSONAL di peramban in
 save();render()});
 document.addEventListener('input',ev=>{
  const field=ev.target;
+ const studioForm=field?.closest?.('form[data-f="site-editor"]');if(studioForm)refreshWebsitePreview(studioForm);
  if(field&&field.dataset&&field.dataset.taskFilter==='query'){
   taskFilters.query=field.value;
   refreshTaskResults();
