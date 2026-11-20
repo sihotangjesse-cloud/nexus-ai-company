@@ -13,7 +13,7 @@ Virtual company workspace with eight role-based AI employees:
 
 ## Project status
 
-This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.5.0. The local task manager supports editing task title, owner, priority, and due date; material edits return existing AI output to CEO review. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
+This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.6.0. The local task manager supports searching, filtering by status/owner/priority, sorting, and editing task title, owner, priority, and due date; material edits return existing AI output to CEO review. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
 
 - `GET /api/health` — checks server availability and session state. AI-key configuration is only shown after authentication. It does **not** prove that the key or model works; a successful chat is required to verify connectivity.
 - `POST /api/chat` — chats with one specialist using that employee's role prompt.
@@ -168,3 +168,12 @@ See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
 - Preserve task results and history. When the title or assignee changes on a task with an AI result, return it to CEO review rather than silently treating the old result as approved.
 - Every successful edit is recorded in the task history and the local activity log.
 - All task editing remains in browser-local storage; no backend or AI API calls are required.
+
+
+## v0.6.0 — Local task search and filters
+
+- Search tasks by title, employee name, status, priority, or due date using multiple case-insensitive keywords.
+- Filter the task list by status, assigned employee, and priority; filters can be combined and reset.
+- Sort tasks by newest first, nearest due date, or highest priority.
+- Search, filtering, and sorting run entirely in the browser against the existing local task data. They do not call the backend, Gemini, or any external API.
+- No new dependency, hosting service, API key, cloud credit, or payment method is required.
