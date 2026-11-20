@@ -7,7 +7,7 @@ const html = await readFile(new URL('../public/index.html', import.meta.url), 'u
 const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(script, 'frontend inline script must exist');
 
-function createBrowser({ saved = null, companyResponse = null } = {}) {
+function createBrowser({ saved = null, protocol = 'http:' } = {}) {
   const handlers = { document: {}, window: {} };
   const elements = {
     '#nav': { innerHTML: '' },
@@ -33,16 +33,13 @@ function createBrowser({ saved = null, companyResponse = null } = {}) {
   }
   const fetch = async (url, options = {}) => {
     calls.push({ url, options });
-    if (url === '/api/health') return { ok: true, json: async () => ({ ok: true, aiConfigured: false, model: 'test-model' }) };
-    if (url === '/api/company') return { ok: true, json: async () => companyResponse || ({ summary: 'Tidak ada delegasi', assignments: [], model: 'test-model' }) };
-    if (url === '/api/chat') return { ok: true, json: async () => ({ reply: 'Balasan uji', model: 'test-model' }) };
-    return { ok: false, json: async () => ({ error: 'Not found' }) };
+    throw new Error('Unexpected network request from offline NEXUS: ' + url);
   };
   const sandbox = {
     document,
     window: { localStorage: storage },
     localStorage: storage,
-    location: { hash: '#dashboard' },
+    location: { protocol, hash: '#dashboard' },
     addEventListener(type, callback) { (handlers.window[type] ||= []).push(callback); },
     fetch,
     FormData: FormDataStub,
@@ -69,12 +66,20 @@ function createBrowser({ saved = null, companyResponse = null } = {}) {
   return { handlers, elements, storage, calls, sandbox };
 }
 
-test('frontend boots and renders main dashboard using browser storage', async () => {
-  const browser = createBrowser();
+test('frontend boots on localhost and does not contact backend health endpoints', async () => {
+  const browser = createBrowser({ protocol: 'http:' });
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.match(browser.elements['#nav'].innerHTML, /Dashboard/);
   assert.match(browser.elements['#main'].innerHTML, /Selamat datang/);
-  assert.ok(browser.calls.some((call) => call.url === '/api/health'));
+  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
+  assert.deepEqual(browser.calls, []);
+});
+
+test('frontend also stays offline when served over another web origin', async () => {
+  const browser = createBrowser({ protocol: 'https:' });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
+  assert.deepEqual(browser.calls, []);
 });
 
 test('frontend tolerates incomplete legacy data and safely renders unknown employee tasks', async () => {
@@ -85,28 +90,20 @@ test('frontend tolerates incomplete legacy data and safely renders unknown emplo
   browser.handlers.window.hashchange?.forEach((callback) => callback());
   assert.match(browser.elements['#main'].innerHTML, /Tugas lama/);
   assert.match(browser.elements['#main'].innerHTML, /Karyawan tidak dikenal/);
+  assert.deepEqual(browser.calls, []);
 });
 
-test('company chat saves delegated AI output as a reviewable task and displays it on Tasks page', async () => {
-  const companyResponse = {
-    summary: 'Sena membagi riset ke Nara.',
-    model: 'test-model',
-    assignments: [{
-      employeeId: 'nara', taskTitle: 'Riset pelanggan', taskBrief: 'Cari segmen pengguna.',
-      success: true, response: 'Hasil riset untuk ditinjau CEO.'
-    }]
-  };
-  const browser = createBrowser({ companyResponse });
+test('company chat uses a local role template and never calls an AI endpoint', async () => {
+  const browser = createBrowser();
   const submit = browser.handlers.document.submit[0];
   assert.equal(typeof submit, 'function');
   const form = { dataset: { f: 'chat', key: 'company' }, values: { m: 'Lakukan riset pelanggan.' } };
   await submit({ target: form, preventDefault() {} });
+
   const state = JSON.parse(browser.storage.value);
-  assert.equal(state.tasks.length, 1);
-  assert.equal(state.tasks[0].result, 'Hasil riset untuk ditinjau CEO.');
-  assert.equal(state.tasks[0].brief, 'Cari segmen pengguna.');
-  browser.sandbox.location.hash = '#tugas';
-  browser.handlers.window.hashchange?.forEach((callback) => callback());
-  assert.match(browser.elements['#main'].innerHTML, /Hasil riset untuk ditinjau CEO/);
-  assert.ok(browser.calls.some((call) => call.url === '/api/company'));
+  assert.equal(state.tasks.length, 0);
+  assert.equal(state.chats.company.length, 2);
+  assert.match(state.chats.company[1].t, /Template kerja offline/);
+  assert.match(browser.elements['#main'].innerHTML, /Buat kerangka offline/);
+  assert.deepEqual(browser.calls, []);
 });
