@@ -187,3 +187,13 @@ See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
 - Operational reports include a current task snapshot, recent activity for the selected 24-hour or seven-day window, employee assignment summaries, and tasks requiring attention.
 - Reports can still be saved locally or copied as text. No network request is needed to calculate or export them.
 - Metrics describe recorded task status and progress only. They do not infer work quality, sales, revenue, expenses, or profit when those data have not been entered.
+
+
+## v0.8.0 — Local CSV exports
+
+- Download the operational report as a UTF-8 CSV with summary metrics, status distribution, employee task counts, upcoming/overdue deadlines, and activity from the selected daily or weekly window.
+- Download task details as a separate CSV with title, assignee, priority, status, due date, due attention, progress, and CEO-review flag.
+- CSV files are generated and downloaded in the current browser. No server, backend, Gemini, or external API is called.
+- The task-detail CSV intentionally excludes AI results, chat messages, and private work briefs.
+- CSV fields are quoted, embedded quotes are escaped, a UTF-8 BOM is included for spreadsheet compatibility, and formula-like text is neutralized before export.
+- No new package, hosting service, API key, payment method, or cloud credit is required.
