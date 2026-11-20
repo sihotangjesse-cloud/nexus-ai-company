@@ -1,43 +1,23 @@
-# Panduan NEXUS PERSONAL
+# NEXUS PERSONAL — Demo Lokal Offline
 
-NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Kamu menjadi CEO dan menggunakan dashboard/tugas/laporan untuk mengatur pekerjaan. Mode ini tidak membutuhkan akun atau layanan cloud.
+Demo ini berjalan langsung dari file HTML lokal. Tidak memerlukan server, API key, Gemini, hosting, kartu, pembayaran, atau kredit cloud.
 
-## 1. Buka di laptop Windows
-
+## Cara membuka
 1. Unduh ZIP branch `main`: https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip
 2. Ekstrak ZIP.
-3. Klik dua kali `Buka-NEXUS-Personal.bat`.
-4. Browser membuka aplikasi dalam mode offline.
+3. Di Windows, klik dua kali `Buka-NEXUS-Personal.bat`. Alternatifnya buka `public/index.html`.
+4. Di Android, buka `public/index.html` dari aplikasi File/Pengelola File menggunakan browser.
 
-Launcher hanya membuka file HTML lokal. Launcher tidak memasang program, tidak membuat koneksi API, tidak menjalankan server, dan tidak membutuhkan administrator.
+## Fitur lokal
+- Ruang proyek website: company profile, landing page, portfolio, toko online, blog, dan web app/dashboard.
+- Checklist pekerjaan otomatis yang terhubung ke proyek.
+- Progres proyek dan tugas, penanggung jawab, prioritas, status, dan tenggat.
+- Starter website HTML mandiri dengan CSS responsif.
+- Template kerja offline untuk riset, koordinasi, desain, copywriting, analisis, developer, dan QA.
+- Kalender, agenda, laporan, ekspor CSV, backup, dan pemulihan.
 
-## 2. Buka di Android
+## Batas AI
+Chat tim menggunakan template checklist offline. Itu bukan model AI generatif. Tidak ada permintaan API atau Gemini yang dikirim dari mode file lokal. Mengaktifkan layanan AI eksternal dapat menggunakan kuota dan berpotensi menimbulkan biaya; jangan mengisi API key.
 
-1. Unduh ZIP.
-2. Ekstrak menggunakan aplikasi File/Pengelola File.
-3. Masuk ke `public/index.html`.
-4. Pilih browser untuk membukanya.
-
-Browser Android memiliki aturan berbeda untuk file lokal. Apabila data tidak tersimpan setelah halaman ditutup, gunakan versi laptop atau browser lain yang mendukung penyimpanan lokal untuk file tersebut.
-
-## 3. Mulai menggunakan
-
-- Buka **Pengaturan → Profil Pemilik** untuk mengubah nama pemilik/CEO.
-- Buat tugas pada menu **Tugas**.
-- Atur prioritas, penanggung jawab virtual, tenggat, status, dan progres.
-- Gunakan **Kalender** untuk agenda.
-- Buka **Laporan** untuk ringkasan harian atau mingguan.
-- Gunakan tombol ekspor untuk menyimpan CSV.
-- Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup.
-
-## 4. Simpan data
-
-Data aplikasi disimpan oleh browser pada perangkat ini. Tutup tab tidak sama dengan menghapus data, tetapi menghapus data situs/browser, memakai profil browser lain, atau berpindah perangkat dapat membuat data tidak terlihat. Buat backup secara berkala.
-
-Backup JSON biasa tidak dienkripsi. Backup terenkripsi memerlukan kata sandi minimal 12 karakter. Simpan kata sandi backup secara terpisah; aplikasi tidak dapat memulihkannya bila lupa.
-
-**Perhatian:** backup terenkripsi tidak mengenkripsi data aktif di `localStorage`. Mode personal ini juga tidak memiliki login atau PIN aplikasi. Jaga perangkat dan profil browser tetap terkunci.
-
-## 5. Fitur AI
-
-Chat AI dan delegasi otomatis belum aktif dalam mode offline. Aplikasi tidak memakai API key, tidak mengirim data ke Gemini, dan tidak menggunakan kredit. Mengaktifkan AI eksternal di masa depan bisa memakai kuota dan berpotensi menimbulkan biaya, sehingga saat ini fitur tersebut dibiarkan nonaktif.
+## Penyimpanan dan privasi
+Data disimpan pada localStorage browser. Data tidak tersinkron ke perangkat lain. Tidak ada layar login/PIN aplikasi dan data aktif belum dienkripsi. Backup JSON biasa tidak terenkripsi; backup terenkripsi melindungi file ekspor, bukan data aktif. Buat backup secara berkala dan simpan secara privat.
