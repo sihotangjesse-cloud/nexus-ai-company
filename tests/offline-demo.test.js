@@ -43,3 +43,11 @@ test('offline demo has a defensive guard against AI task revision requests', () 
   assert.match(reviseBody, /if\(STATIC_DEMO_MODE\)\{toast\('Revisi AI tidak tersedia/);
   assert.ok(reviseBody.indexOf('if(STATIC_DEMO_MODE)') < reviseBody.indexOf("api('/api/revise'"));
 });
+
+
+test('offline application is branded as a single-owner personal workspace', () => {
+  assert.ok(html.includes('<title>NEXUS PERSONAL</title>'));
+  assert.ok(html.includes('PERSONAL WORKSPACE · v1.1.0'));
+  assert.ok(html.includes('RUANG KERJA PRIBADI'));
+  assert.ok(html.includes('mode lokal untuk satu pemilik'));
+});
