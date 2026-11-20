@@ -1,4 +1,4 @@
-# Panduan NEXUS PERSONAL 1.3.0
+# Panduan NEXUS PERSONAL 1.4.0
 
 NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Aplikasi selalu offline, termasuk ketika file HTML dibuka melalui server lokal/localhost. Semua proyek dan data kerja disimpan di browser perangkat ini.
 
@@ -35,19 +35,29 @@ Di halaman detail proyek, tekan **Unduh starter website HTML**. NEXUS membuat sa
 
 Starter HTML adalah fondasi awal. Untuk website dengan database, login, API, pembayaran, atau hosting, komponen tersebut perlu dibangun dan diuji secara terpisah. NEXUS PERSONAL tidak menjalankan transaksi atau pembayaran.
 
-## 5. Gunakan tim virtual offline
+## 5. Edit dan pratinjau website
+
+1. Buka detail proyek dan cari bagian **Website Studio**.
+2. Ubah nama brand, label kecil, judul, deskripsi, tombol, warna utama, tiga kartu fitur, bagian tentang, serta teks kontak.
+3. Lihat pratinjau di samping atau bawah editor. Pratinjau berubah saat kamu mengetik.
+4. Tekan **Simpan konten website** agar perubahan tersimpan di proyek pada browser ini.
+5. Tekan **Unduh HTML** untuk membuat file website statis yang bisa dibuka dan diedit lagi.
+
+Pratinjau tidak menjalankan JavaScript atau memuat aset internet. Website yang diunduh adalah frontend statis, bukan sistem database, login, atau transaksi.
+
+## 6. Gunakan tim virtual offline
 
 Menu **Koordinasi** dan profil peran memberikan template kerja lokal. Kamu dapat menulis brief dan mendapatkan kerangka riset, desain, copywriting, analisis, coding, dan QA. Template ini bukan model AI generatif dan tidak mengakses internet.
 
 Antarmuka sengaja menolak semua permintaan backend/API. Mode offline tetap aktif walaupun halaman dibuka melalui localhost, sehingga aplikasi tidak mencoba memeriksa server atau layanan AI.
 
-## 6. Kalender, laporan, dan backup
+## 7. Kalender, laporan, dan backup
 
 Gunakan **Kalender** untuk agenda dan **Laporan** untuk ringkasan pekerjaan. Laporan dapat disalin atau diunduh sebagai CSV.
 
 Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup. Backup terenkripsi membutuhkan kata sandi minimal 12 karakter. Enkripsi hanya melindungi file backup; data aktif localStorage belum terenkripsi.
 
-## 7. Data pribadi dan biaya
+## 8. Data pribadi dan biaya
 
 Data tersimpan di browser/perangkat ini. Tidak ada akun online, login aplikasi, atau sinkronisasi otomatis. Jaga profil browser dan perangkat tetap privat, serta buat backup berkala.
 
