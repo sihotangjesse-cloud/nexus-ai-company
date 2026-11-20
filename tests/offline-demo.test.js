@@ -46,6 +46,6 @@ test('single-owner personal branding and project workspace are available', () =>
   assert.ok(html.includes('RUANG KERJA PRIBADI'));
   assert.ok(html.includes('Ruang Proyek'));
   assert.ok(html.includes('Buat proyek + checklist kerja'));
-  assert.ok(html.includes('Unduh starter website HTML'));
+  assert.ok(html.includes('Unduh website HTML'));
   assert.ok(html.includes('projectDetail(id)'));
 });
