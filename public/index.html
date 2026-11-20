@@ -76,6 +76,27 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 .task-empty{padding:14px;border:1px dashed var(--ln-strong);border-radius:12px;color:var(--mu)}
 @media(max-width:560px){.task-filter-grid{grid-template-columns:1fr}.task-filter-search{grid-column:auto}.task-filter-actions{align-items:stretch}}
 
+
+.ops-overview{margin:12px 0;padding:17px}
+.ops-section-heading,.ops-employee-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ops-section-heading h2{margin:0 0 3px}
+.ops-big-number{font-size:28px;color:var(--ac);font-variant-numeric:tabular-nums}
+.ops-main-track{height:12px;margin:12px 0 10px}
+.ops-track{display:block;overflow:hidden;height:8px;border-radius:99px;background:rgba(255,255,255,.08);min-width:0}
+.ops-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--ac),#7f9dff)}
+.ops-quick-stats{display:flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:12px}
+.ops-bar-row{display:grid;grid-template-columns:minmax(105px,1fr) minmax(70px,1.5fr) 24px;gap:10px;align-items:center;margin:13px 0;font-size:12px}
+.ops-bar-row>span{color:var(--mu)}
+.ops-bar-row>b{text-align:right;font-variant-numeric:tabular-nums}
+.ops-employee{padding:11px 0;border-bottom:1px solid var(--ln)}
+.ops-employee:last-child{border-bottom:0}
+.ops-employee-head{font-size:13px;margin-bottom:7px}
+.ops-employee-meta,.ops-note{font-size:11px;margin-top:6px}
+.ops-attention-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ops-inline-rate{font-size:12px;color:var(--ok);font-weight:600}
+.ops-chip-late{color:var(--er);border-color:rgba(255,119,136,.32)}
+@media(max-width:560px){.ops-bar-row{grid-template-columns:94px minmax(45px,1fr) 20px;gap:7px}.ops-quick-stats{display:grid;gap:5px}.ops-attention-row{align-items:flex-start;flex-direction:column}}
+
 </style></head><body>
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script>
@@ -134,7 +155,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.4.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.7.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -184,6 +205,39 @@ function status(id){
  return ['Siaga · Tanpa tugas aktif','var(--mu)'];
 }
 const cnt=s=>S.tasks.filter(t=>s.includes(t.st)).length;
+function getOperationalMetrics(tasks,employees,now=new Date()){
+ const rows=(Array.isArray(tasks)?tasks:[]).filter(task=>task&&typeof task==='object');
+ const year=now.getFullYear(),month=String(now.getMonth()+1).padStart(2,'0'),day=String(now.getDate()).padStart(2,'0');
+ const today=year+'-'+month+'-'+day;
+ const weekEnd=new Date(Date.UTC(year,now.getMonth(),now.getDate()+7)).toISOString().slice(0,10);
+ const statusCounts={};
+ ST.forEach(status=>{statusCounts[status]=rows.filter(task=>task.st===status).length});
+ const progressOf=task=>Math.max(0,Math.min(100,Number.isFinite(Number(task.pg))?Number(task.pg):(task.st===ST[3]?100:0)));
+ const isOpen=task=>task.st!==ST[3];
+ const overdueTasks=rows.filter(task=>isOpen(task)&&/^\d{4}-\d{2}-\d{2}$/.test(String(task.due||''))&&task.due<today)
+  .slice().sort((a,b)=>String(a.due).localeCompare(String(b.due)));
+ const dueSoonTasks=rows.filter(task=>isOpen(task)&&/^\d{4}-\d{2}-\d{2}$/.test(String(task.due||''))&&task.due>=today&&task.due<=weekEnd)
+  .slice().sort((a,b)=>String(a.due).localeCompare(String(b.due)));
+ const completed=statusCounts[ST[3]]||0;
+ const total=rows.length;
+ const averageProgress=total?Math.round(rows.reduce((sum,task)=>sum+progressOf(task),0)/total):0;
+ const employeeStats=(Array.isArray(employees)?employees:[]).map(employee=>{
+  const assigned=rows.filter(task=>task.emp===employee.id);
+  const completedTasks=assigned.filter(task=>task.st===ST[3]).length;
+  const inProgress=assigned.filter(task=>task.st===ST[1]).length;
+  const inReview=assigned.filter(task=>task.st===ST[2]).length;
+  const queued=assigned.filter(task=>task.st===ST[0]).length;
+  return {id:employee.id,name:employee.n,total:assigned.length,completed:completedTasks,inProgress,inReview,queued,
+   completionRate:assigned.length?Math.round(completedTasks/assigned.length*100):0,
+   averageProgress:assigned.length?Math.round(assigned.reduce((sum,task)=>sum+progressOf(task),0)/assigned.length):0};
+ });
+ return {total,completed,active:(statusCounts[ST[1]]||0)+(statusCounts[ST[2]]||0),
+  inProgress:statusCounts[ST[1]]||0,inReview:statusCounts[ST[2]]||0,queued:statusCounts[ST[0]]||0,
+  completionRate:total?Math.round(completed/total*100):0,averageProgress,
+  overdue:overdueTasks.length,dueSoon:dueSoonTasks.length,today,weekEnd,
+  statusCounts,employeeStats,overdueTasks,dueSoonTasks};
+}
+
 function updateTaskStatus(task,value){
  if(!ST.includes(value))return task;
  task.st=value;
@@ -341,7 +395,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.6.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.7.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -397,11 +451,35 @@ const nav=[['dashboard','Dashboard','dashboard'],['karyawan','AI Employees','use
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
 <form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${STATIC_DEMO_MODE?'Chat AI nonaktif pada mode demo':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)||STATIC_DEMO_MODE?'disabled':''}><button ${BUSY.has(key)||STATIC_DEMO_MODE?'disabled':''}>${STATIC_DEMO_MODE?'AI nonaktif':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${STATIC_DEMO_MODE?`<p class="demo" role="note">${esc(STATIC_DEMO_NOTICE)}</p>`:''}<div class="err" id="err"></div></div>`}
 const V={
-dashboard(){const r=S.reports[0];return `<h1>Selamat datang, ${esc(S.ceo)}</h1><p class="sub">NEXUS AI COMPANY · Virtual AI Company</p>
-<div class="g g4"><div class="c stat-card"><div><div class="n">8</div><div class="mu">AI employees</div></div><span class="stat-icon">${svgIcon('users')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[1],ST[2]])}</div><div class="mu">Tugas aktif</div></div><span class="stat-icon">${svgIcon('tasks')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[3]])}</div><div class="mu">Selesai</div></div><span class="stat-icon">${svgIcon('reports')}</span></div><div class="c stat-card"><div><div class="n">${cnt([ST[0]])}</div><div class="mu">Tertunda</div></div><span class="stat-icon">${svgIcon('calendar')}</span></div></div>
-<p><a href="${STATIC_DEMO_MODE?'#tugas':'#chat'}"><button>${STATIC_DEMO_MODE?'Kelola tugas demo':'Beri instruksi kepada perusahaan'}</button></a></p>
-<div class="g g2"><div class="c"><h2>Aktivitas perusahaan</h2>${S.log.length?S.log.slice(0,8).map(l=>`<div class="t"><span class="mu">${fd(l.at)}</span><br>${esc(l.t)}</div>`).join(''):'<p class="mu">Belum ada aktivitas. Beri instruksi pertama Anda di Chat Perusahaan.</p>'}</div>
-<div class="c"><h2>Laporan terbaru</h2>${r?`<b>${esc(r.title)}</b><pre>${esc(r.body.slice(0,500))}</pre>`:'<p class="mu">Belum ada laporan tersimpan. Buat di halaman Laporan.</p>'}</div></div>`},
+dashboard(){
+ const metrics=getOperationalMetrics(S.tasks,E,new Date());
+ const statusBars=ST.map(status=>{
+  const count=metrics.statusCounts[status]||0,pct=metrics.total?Math.round(count/metrics.total*100):0;
+  return '<div class="ops-bar-row"><span>'+esc(status)+'</span><div class="ops-track"><i style="width:'+pct+'%"></i></div><b>'+count+'</b></div>';
+ }).join('');
+ const employeeRows=metrics.employeeStats.slice().sort((a,b)=>b.total-a.total||b.completionRate-a.completionRate).map(item=>{
+  const pct=item.total?item.completionRate:0;
+  return '<div class="ops-employee"><div class="ops-employee-head"><b>'+esc(item.name)+'</b><span class="mu">'+item.completed+'/'+item.total+' selesai</span></div><div class="ops-track"><i style="width:'+pct+'%"></i></div><div class="mu ops-employee-meta">'+item.inProgress+' dikerjakan · '+item.inReview+' diperiksa · '+item.queued+' tertunda · progres '+item.averageProgress+'%</div></div>';
+ }).join('');
+ const attention=metrics.overdueTasks.concat(metrics.dueSoonTasks).slice(0,6);
+ const attentionRows=attention.map(task=>{
+  const late=task.due<metrics.today;
+  return '<div class="t ops-attention-row"><div><b>'+esc(task.t)+'</b><div class="mu">'+esc(employeeName(task.emp))+' · '+esc(task.due)+'</div></div><span class="chip '+(late?'ops-chip-late':'')+'">'+(late?'Terlambat':'Mendekati tenggat')+'</span></div>';
+ }).join('');
+ return '<h1>Selamat datang, '+esc(S.ceo)+'</h1><p class="sub">NEXUS AI COMPANY · Ringkasan operasional dari data browser ini</p>'+
+ '<div class="g g4"><div class="c stat-card"><div><div class="n">'+metrics.total+'</div><div class="mu">Total tugas</div></div><span class="stat-icon">'+svgIcon('tasks')+'</span></div>'+
+ '<div class="c stat-card"><div><div class="n">'+metrics.completed+' <small class="ops-inline-rate">'+metrics.completionRate+'%</small></div><div class="mu">Tugas selesai</div></div><span class="stat-icon">'+svgIcon('reports')+'</span></div>'+
+ '<div class="c stat-card"><div><div class="n">'+metrics.overdue+'</div><div class="mu">Tugas terlambat</div></div><span class="stat-icon">'+svgIcon('calendar')+'</span></div>'+
+ '<div class="c stat-card"><div><div class="n">'+metrics.dueSoon+'</div><div class="mu">Tenggat 7 hari</div></div><span class="stat-icon">'+svgIcon('calendar')+'</span></div></div>'+
+ '<div class="c ops-overview"><div class="ops-section-heading"><div><h2>Produktivitas operasional</h2><p class="mu">Rata-rata progres seluruh tugas</p></div><b class="ops-big-number">'+metrics.averageProgress+'%</b></div><div class="ops-track ops-main-track"><i style="width:'+metrics.averageProgress+'%"></i></div>'+
+ '<div class="ops-quick-stats"><span>'+metrics.inProgress+' sedang dikerjakan</span><span>'+metrics.inReview+' menunggu pemeriksaan</span><span>'+metrics.queued+' belum dimulai</span></div></div>'+
+ '<div class="g g2 ops-dashboard-grid"><section class="c"><h2>Distribusi status tugas</h2>'+statusBars+'<p class="mu ops-note">Persentase dihitung dari total tugas yang tersimpan.</p></section>'+
+ '<section class="c"><h2>Perhatian tenggat</h2>'+(attentionRows||'<p class="mu">Tidak ada tugas yang terlambat atau memiliki tenggat dalam tujuh hari ke depan.</p>')+'<p><a href="#tugas">Buka manajemen tugas →</a></p></section>'+
+ '<section class="c"><h2>Kinerja penugasan karyawan</h2>'+employeeRows+'<p class="mu ops-note">Perhitungan berdasarkan jumlah tugas selesai dari tugas yang ditugaskan, bukan penilaian mutu hasil kerja.</p></section>'+
+ '<section class="c"><h2>Aktivitas perusahaan</h2>'+(S.log.length?S.log.slice(0,8).map(item=>'<div class="t"><span class="mu">'+fd(item.at)+'</span><br>'+esc(item.t)+'</div>').join(''):'<p class="mu">Belum ada aktivitas tercatat.</p>')+
+ '<h2 style="margin-top:16px">Laporan terbaru</h2>'+(S.reports[0]?'<b>'+esc(S.reports[0].title)+'</b><pre>'+esc(S.reports[0].body.slice(0,420))+'</pre>':'<p class="mu">Belum ada laporan tersimpan. Buat di halaman Laporan.</p>')+'</section></div>'+
+ '<p><a href="#tugas"><button>Kelola tugas</button></a> <a href="#laporan"><button class="sec">Buka laporan operasional</button></a></p>';
+},
 karyawan(){return `<h1>AI Employees</h1><p class="sub">${STATIC_DEMO_MODE?'Direktori karyawan contoh. Percakapan AI tidak tersedia pada demo offline.':'Pilih karyawan untuk berbicara langsung.'}</p><div class="g g3">${E.map(e=>{const s=status(e.id);return `<a class="c card" href="#k-${e.id}"><div class="row">${av(e)}<div><b>${e.n}</b><br><span class="mu">${e.r}</span></div></div><p class="mu">${e.d}</p><div class="row">${e.k.map(k=>`<span class="chip">${k}</span>`).join('')}</div><p class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</p></a>`}).join('')}</div>`},
 emp(id){const e=em(id),s=status(id),t=S.tasks.filter(x=>x.emp===id);return `<p><a href="#karyawan" class="mu">← Semua karyawan</a></p><div class="row">${av(e)}<div><h1>${e.n} · ${e.r}</h1><span class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</span></div></div><p>${e.d}</p>
 <div class="g g2"><div>${chatBox(id,'Tulis pesan untuk '+e.n)}</div><div class="c"><h2>Ringkasan peran</h2><p class="mu">${esc(e.d)}</p><h2>Riwayat pekerjaan</h2>${t.length?t.slice(0,8).map(x=>`<div class="t">${esc(x.t)}<br><span class="mu">${x.st} · ${x.pg}%</span></div>`).join(''):'<p class="mu">Belum ada tugas untuk '+e.n+'.</p>'}</div></div>`},
@@ -416,16 +494,65 @@ else{const f=new Date(d.getFullYear(),d.getMonth(),1),n=new Date(d.getFullYear()
 body=`<h2>${d.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}</h2><div class="cal">${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(x=>`<div class="mu">${x}</div>`).join('')}${days.map(x=>x?`<div class="cd ${dk(x)===dk(new Date())?'td':''}" data-a="day" data-d="${dk(x)}"><b>${x.getDate()}</b>${its(dk(x)).map(i=>`<span>${esc(i.n)}</span>`).join('')}</div>`:'<div></div>').join('')}</div>`}
 return `<h1>Kalender Aktivitas</h1><div class="row" style="margin-bottom:10px">${['hari','minggu','bulan'].map(m=>`<button class="${cal.m===m?'on':'sec'}" data-a="cm" data-m="${m}">${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}<button class="sec" data-a="cn" data-n="-1">‹ Sebelumnya</button><button class="sec" data-a="cn" data-n="1">Berikutnya ›</button></div>
 <div class="g g2"><div class="c">${body}</div><form data-f="ev" class="c"><h2>Tambah agenda</h2><label>Judul</label><input name="t" maxlength="100"><label>Tanggal</label><input type="date" name="d" value="${ds}"><label>Jenis</label><select name="y"><option>Agenda</option><option>Aktivitas</option><option>Jadwal kerja</option></select><div class="err" id="err"></div><button>Simpan agenda</button></form></div>`},
-laporan(){const r=makeRep(rep);return `<h1>Laporan Perusahaan</h1><div class="row" style="margin-bottom:10px">${['harian','mingguan'].map(m=>`<button class="${rep===m?'on':'sec'}" data-a="rm" data-m="${m}">${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}<button data-a="srep">Simpan laporan</button><button class="sec" data-a="crep">Salin teks (ekspor)</button></div>
-<div class="g g2"><div class="c"><h2>Produktivitas AI employees</h2>${E.map(e=>{const a=S.tasks.filter(t=>t.emp===e.id),d=a.filter(t=>t.st===ST[3]).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="t"><div class="row"><b>${e.n}</b><span class="mu">${d}/${a.length} selesai</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('')}</div>
-<div class="c"><h2>${esc(r.title)}</h2><pre>${esc(r.body)}</pre></div></div>
-<div class="c" style="margin-top:12px"><h2>Laporan tersimpan (${S.reports.length})</h2>${S.reports.map((x,i)=>`<div class="t"><b>${esc(x.title)}</b> <button class="sec" data-a="vrep" data-i="${i}">Salin</button></div>`).join('')||'<p class="mu">Belum ada laporan tersimpan.</p>'}</div>`},
+laporan(){
+ const r=makeRep(rep),metrics=getOperationalMetrics(S.tasks,E,new Date());
+ const employees=metrics.employeeStats.map(item=>'<div class="ops-employee"><div class="ops-employee-head"><b>'+esc(item.name)+'</b><span class="mu">'+item.completed+'/'+item.total+' selesai · '+item.completionRate+'%</span></div><div class="ops-track"><i style="width:'+item.completionRate+'%"></i></div><div class="mu ops-employee-meta">'+item.inProgress+' dikerjakan · '+item.inReview+' diperiksa · '+item.queued+' tertunda</div></div>').join('');
+ const status=ST.map(label=>'<div class="ops-bar-row"><span>'+esc(label)+'</span><div class="ops-track"><i style="width:'+(metrics.total?Math.round(metrics.statusCounts[label]/metrics.total*100):0)+'%"></i></div><b>'+metrics.statusCounts[label]+'</b></div>').join('');
+ return '<h1>Laporan Perusahaan</h1><p class="sub">Ringkasan dari tugas dan aktivitas lokal. Tidak ada angka keuangan atau penjualan yang dibuat-buat.</p>'+
+ '<div class="row" style="margin-bottom:10px">'+['harian','mingguan'].map(m=>'<button class="'+(rep===m?'on':'sec')+'" data-a="rm" data-m="'+m+'">'+m[0].toUpperCase()+m.slice(1)+'</button>').join('')+
+ '<button data-a="srep">Simpan laporan</button><button class="sec" data-a="crep">Salin teks (ekspor)</button></div>'+
+ '<div class="g g2"><section class="c"><h2>Status tugas saat ini</h2>'+status+'</section>'+
+ '<section class="c"><h2>Kinerja penugasan per karyawan</h2>'+employees+'<p class="mu ops-note">Persentase adalah bagian tugas berstatus selesai dari seluruh tugas yang ditugaskan kepada karyawan tersebut. Ini bukan penilaian mutu hasil.</p></section>'+
+ '<section class="c"><h2>Ringkasan laporan '+(rep==='harian'?'harian':'mingguan')+'</h2><pre>'+esc(r.body)+'</pre></section>'+
+ '<section class="c"><h2>Tenggat yang perlu diperhatikan</h2>'+(metrics.overdueTasks.concat(metrics.dueSoonTasks).slice(0,8).map(task=>'<div class="t"><b>'+esc(task.t)+'</b><div class="mu">'+(task.due<metrics.today?'Terlambat':'Tenggat')+' · '+esc(task.due)+' · '+esc(employeeName(task.emp))+'</div></div>').join('')||'<p class="mu">Tidak ada tenggat yang perlu diperhatikan dalam rentang ini.</p>')+'</section></div>'+
+ '<div class="c" style="margin-top:12px"><h2>Laporan tersimpan ('+S.reports.length+')</h2>'+S.reports.map((item,i)=>'<div class="t"><b>'+esc(item.title)+'</b> <button class="sec" data-a="vrep" data-i="'+i+'">Salin</button></div>').join('')||'<p class="mu">Belum ada laporan tersimpan.</p>'+'</div>';
+},
 pengaturan(){return `<h1>Pengaturan</h1><div class="g g2">
 <div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File tetap berada di perangkatmu dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON</button></div><label for="backup-file">Pulihkan dari file backup</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">Pemulihan akan mengganti data NEXUS saat ini setelah kamu menyetujuinya. Maksimal ukuran file 2 MB.</p><p class="mu">File backup tidak dienkripsi. Simpan secara pribadi dan jangan bagikan karena dapat berisi catatan kerja.</p></div>
 <form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
 <div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${STATIC_DEMO_MODE?'Mode demo offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
-function makeRep(m){const w=m==='harian'?864e5:7*864e5,l=S.log.filter(x=>Date.now()-x.at<w),n=cnt([ST[3]]),q=S.tasks.filter(t=>t.st!==ST[3]).sort((a,b)=>PR.indexOf(b.pri)-PR.indexOf(a.pri)).slice(0,3);
-return {title:'Laporan '+m+' · '+new Date().toLocaleDateString('id-ID',{dateStyle:'long'}),body:`Total tugas: ${S.tasks.length}\nSelesai: ${n}\nAktif: ${cnt([ST[1],ST[2]])}\nTertunda: ${cnt([ST[0]])}\n\nAktivitas periode ini (${l.length}):\n${l.slice(0,8).map(x=>'• '+x.t).join('\n')||'• Belum ada aktivitas'}\n\nAnalisis bisnis: data keuangan dan pasar belum tersedia. Jejak dan Nara memerlukan input data sebelum menghasilkan angka.\n\nRekomendasi pekerjaan berikutnya:\n${q.map(t=>'• '+t.t+' ('+employeeName(t.emp)+', '+t.pri+')').join('\n')||'• Beri instruksi baru di Chat Perusahaan'}`}}
+function makeRep(period){
+ const now=new Date(),metrics=getOperationalMetrics(S.tasks,E,now),windowMs=period==='harian'?864e5:7*864e5;
+ const logs=S.log.filter(item=>Number.isFinite(Number(item.at))&&now.getTime()-Number(item.at)>=0&&now.getTime()-Number(item.at)<windowMs).slice(0,12);
+ const outstanding=S.tasks.filter(task=>task.st!==ST[3]).slice().sort((a,b)=>{
+  const lateA=a.due&&a.due<metrics.today?0:1,lateB=b.due&&b.due<metrics.today?0:1;
+  return lateA-lateB||PR.indexOf(b.pri)-PR.indexOf(a.pri)||String(a.due||'9999-99-99').localeCompare(String(b.due||'9999-99-99'));
+ }).slice(0,5);
+ const employeeLines=metrics.employeeStats.filter(item=>item.total).map(item=>
+  '- '+item.name+': '+item.completed+'/'+item.total+' selesai ('+item.completionRate+'%), '+item.inProgress+' dikerjakan, '+item.inReview+' diperiksa, '+item.queued+' tertunda'
+ );
+ const activityLines=logs.map(item=>'- '+String(item.t||'Aktivitas').slice(0,180));
+ const workLines=outstanding.map(task=>'- '+task.t+' ('+employeeName(task.emp)+', '+task.pri+', tenggat '+(task.due||'belum ditetapkan')+')');
+ const periodLabel=period==='harian'?'24 jam terakhir':'7 hari terakhir';
+ const body=[
+  'NEXUS AI COMPANY — LAPORAN OPERASIONAL',
+  'Dibuat: '+now.toLocaleString('id-ID',{dateStyle:'long',timeStyle:'short'}),
+  'Periode aktivitas: '+periodLabel,
+  '',
+  'SNAPSHOT STATUS TUGAS SAAT INI',
+  'Total tugas: '+metrics.total,
+  'Selesai: '+metrics.completed+' ('+metrics.completionRate+'%)',
+  'Sedang dikerjakan: '+metrics.inProgress,
+  'Menunggu pemeriksaan: '+metrics.inReview,
+  'Belum dimulai: '+metrics.queued,
+  'Tugas terlambat: '+metrics.overdue,
+  'Tenggat dalam 7 hari: '+metrics.dueSoon,
+  'Rata-rata progres: '+metrics.averageProgress+'%',
+  '',
+  'KINERJA PENUGASAN',
+  ...(employeeLines.length?employeeLines:['- Belum ada tugas yang ditugaskan.']),
+  '',
+  'TUGAS YANG PERLU DIPERHATIKAN',
+  ...(workLines.length?workLines:['- Tidak ada tugas yang belum selesai.']),
+  '',
+  'AKTIVITAS '+periodLabel.toUpperCase()+' ('+logs.length+')',
+  ...(activityLines.length?activityLines:['- Tidak ada aktivitas tercatat pada periode ini.']),
+  '',
+  'BATASAN DATA',
+  'Laporan ini hanya menghitung status dan progres tugas lokal. Data mutu hasil, penjualan, pendapatan, biaya, dan laba tidak tersedia kecuali dicatat secara terpisah. Persentase selesai bukan penilaian kualitas karyawan.'
+ ].join('\n');
+ return {title:'Laporan Operasional '+period+' · '+now.toLocaleDateString('id-ID',{dateStyle:'long'}),body};
+}
 function copy(t){const done=()=>toast('Laporan disalin');try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){toast('Gagal menyalin. Salin manual dari layar.')}a.remove()}}
 function captureFocusedField(){const active=document.activeElement;if(!active||!$('#main').contains(active)||!active.name)return null;const form=active.closest('form[data-f]');if(!form)return null;return {formType:form.dataset.f,key:form.dataset.key||'',name:active.name,start:typeof active.selectionStart==='number'?active.selectionStart:null,end:typeof active.selectionEnd==='number'?active.selectionEnd:null};}
 // Every named control that differs from its HTML default is kept across a re-render.
