@@ -66,6 +66,16 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 @media(max-width:800px){.app{display:block}nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;z-index:8;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(37px,auto));gap:3px;overflow:visible;padding:6px 7px calc(7px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--ln-strong);background:rgba(6,13,29,.96);box-shadow:0 -10px 30px rgba(0,0,0,.24);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}nav .nav-brand{display:none}nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;white-space:normal;text-align:center;min-height:37px;padding:3px 2px;margin:0;border-radius:9px;font-size:10px;line-height:1.2;font-weight:600}nav a .nav-icon,nav a .nav-icon svg{width:17px;height:17px}main{padding:14px 14px calc(116px + env(safe-area-inset-bottom,0px))}.topbar{gap:8px;padding-bottom:14px;margin-bottom:18px}.topbar-brand{gap:8px}.topbar-brand .brand-mark{width:33px;height:33px}.topbar-brand strong{font-size:11px}.topbar-brand small{font-size:9px}.status-pill{max-width:55%;padding:7px 9px;font-size:9px;gap:7px}.status-pill small{display:none}.status-indicator{width:7px;height:7px}.cd{min-height:54px;padding:4px;font-size:10px}}
 @media(max-width:380px){nav a{font-size:9px}.topbar-brand strong{font-size:10px}.status-pill{font-size:8px;padding:6px 7px}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{min-height:100px;padding:12px}.stat-card .stat-icon{width:34px;height:34px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+.task-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.task-filter-grid label{display:block;color:var(--mu);font-size:12px;margin-bottom:4px}
+.task-filter-grid input,.task-filter-grid select{width:100%;min-width:0}
+.task-filter-search{grid-column:1/-1}
+.task-filter-actions{display:flex;align-items:end}
+.task-results-meta{font-size:12px;color:var(--mu);margin:4px 0 10px}
+.task-empty{padding:14px;border:1px dashed var(--ln-strong);border-radius:12px;color:var(--mu)}
+@media(max-width:560px){.task-filter-grid{grid-template-columns:1fr}.task-filter-search{grid-column:auto}.task-filter-actions{align-items:stretch}}
+
 </style></head><body>
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script>
@@ -191,6 +201,42 @@ function updateTaskProgress(task,value){
  else{task.pg=progress;task.st=ST[1];task.reviewed=false;}
  return task;
 }
+function filterTasks(tasks,filters={}){
+ const rows=Array.isArray(tasks)?tasks:[];
+ const query=String(filters.query??'').trim().toLocaleLowerCase('id-ID');
+ const terms=query?query.split(/\s+/).filter(Boolean):[];
+ const filtered=rows.filter(task=>{
+  if(!task||typeof task!=='object')return false;
+  if(filters.status&&task.st!==filters.status)return false;
+  if(filters.employee&&task.emp!==filters.employee)return false;
+  if(filters.priority&&task.pri!==filters.priority)return false;
+  if(terms.length){
+   const searchable=[task.t,employeeName(task.emp),task.pri,task.st,task.due].map(value=>String(value??'')).join(' ').toLocaleLowerCase('id-ID');
+   if(!terms.every(term=>searchable.includes(term)))return false;
+  }
+  return true;
+ });
+ const indexed=filtered.map((task,index)=>({task,index}));
+ const sort=filters.sort||'newest';
+ indexed.sort((left,right)=>{
+  let order=0;
+  if(sort==='due-asc'){
+   const a=String(left.task.due||''),b=String(right.task.due||'');
+   if(!a&&!b)order=0;
+   else if(!a)order=1;
+   else if(!b)order=-1;
+   else order=a.localeCompare(b);
+  }else if(sort==='priority-desc'){
+   order=PR.indexOf(right.task.pri)-PR.indexOf(left.task.pri);
+  }else if(sort==='newest'){
+   const a=Number(left.task.id),b=Number(right.task.id);
+   if(Number.isFinite(a)&&Number.isFinite(b))order=b-a;
+  }
+  return order||left.index-right.index;
+ });
+ return indexed.map(item=>item.task);
+}
+
 function applyTaskDetails(task,fields){
  if(!isRecord(task)||!isRecord(fields))return {ok:false,error:'Data tugas tidak valid.'};
  const title=String(fields.t??'').trim(),employeeId=String(fields.e??''),priority=String(fields.p??''),due=String(fields.d??'');
@@ -218,6 +264,57 @@ function applyTaskDetails(task,fields){
 }
 function taskEditEmployeeOptions(selectedId){return E.map(e=>'<option value="'+esc(e.id)+'" '+(e.id===selectedId?'selected':'')+'>'+esc(e.n)+' · '+esc(e.r)+'</option>').join('')}
 function taskEditPriorityOptions(selected){return PR.map(p=>'<option '+(p===selected?'selected':'')+'>'+esc(p)+'</option>').join('')}
+function taskFilterControls(){
+ const selected=(field,value)=>taskFilters[field]===value?'selected':'';
+ return '<div class="task-filter-grid">'+
+  '<div class="task-filter-search"><label for="task-query">Cari tugas</label><input id="task-query" type="search" data-task-filter="query" value="'+esc(taskFilters.query)+'" placeholder="Judul, karyawan, status, tenggat..."></div>'+
+  '<div><label for="task-status">Status</label><select id="task-status" data-task-filter="status"><option value="">Semua status</option>'+ST.map(s=>'<option value="'+esc(s)+'" '+selected('status',s)+'>'+esc(s)+'</option>').join('')+'</select></div>'+
+  '<div><label for="task-employee">Penanggung jawab</label><select id="task-employee" data-task-filter="employee"><option value="">Semua karyawan</option>'+E.map(e=>'<option value="'+esc(e.id)+'" '+selected('employee',e.id)+'>'+esc(e.n)+' · '+esc(e.r)+'</option>').join('')+'</select></div>'+
+  '<div><label for="task-priority">Prioritas</label><select id="task-priority" data-task-filter="priority"><option value="">Semua prioritas</option>'+PR.map(p=>'<option value="'+esc(p)+'" '+selected('priority',p)+'>'+esc(p)+'</option>').join('')+'</select></div>'+
+  '<div><label for="task-sort">Urutkan</label><select id="task-sort" data-task-filter="sort"><option value="newest" '+selected('sort','newest')+'>Terbaru</option><option value="due-asc" '+selected('sort','due-asc')+'>Tenggat terdekat</option><option value="priority-desc" '+selected('sort','priority-desc')+'>Prioritas tertinggi</option></select></div>'+
+  '<div class="task-filter-actions"><button type="button" class="sec" data-a="reset-task-filters">Reset filter</button></div>'+
+ '</div>';
+}
+function taskCardView(k){
+ const statusOptions=ST.map(s=>'<option '+(s===k.st?'selected':'')+'>'+esc(s)+'</option>').join('');
+ let resultSection='';
+ if(k.result){
+  let reviewActions='';
+  if(k.st===ST[2]){
+   reviewActions='<div class="row" style="margin-top:8px"><button type="button" class="sm" data-a="approve" data-id="'+esc(k.id)+'">Setujui hasil</button><button type="button" class="sm sec" data-a="revise" data-id="'+esc(k.id)+'">Tandai perlu revisi</button></div>'+
+    '<p class="mu" style="font-size:11px">'+(STATIC_DEMO_MODE?'Mode demo offline: revisi AI tidak tersedia; ubah status tugas secara manual.':'Tandai perlu revisi hanya mengubah status tugas. Untuk mengirim ulang ke AI, isi catatan revisi di bawah.')+'</p>';
+   if(!STATIC_DEMO_MODE&&em(k.emp)){
+    reviewActions+='<form data-f="revise" data-key="'+esc(k.id)+'"><label>Catatan revisi untuk '+esc(employeeName(k.emp))+'</label><textarea name="note" rows="3" maxlength="2000" placeholder="Apa yang perlu diperbaiki?"></textarea><button class="sm">Kirim revisi ke AI</button></form>';
+   }
+  }else if(k.st===ST[1]&&REVISING.has(String(k.id))){
+   reviewActions='<p class="mu">Revisi sedang diproses oleh '+esc(employeeName(k.emp))+'…</p>';
+  }else if(k.reviewed){
+   reviewActions='<span class="chip">Disetujui CEO</span>';
+  }
+  resultSection='<details class="task-result"><summary>Hasil kerja AI · Buka untuk diperiksa</summary>'+
+   (k.brief?'<p class="mu"><b>Brief:</b> '+esc(k.brief)+'</p>':'')+
+   '<pre>'+esc(k.result)+'</pre>'+reviewActions+'</details>';
+ }
+ const history=Array.isArray(k.h)?k.h:[];
+ return '<div class="t"><b>'+esc(k.t)+'</b><div class="mu">'+esc(employeeName(k.emp))+' · Prioritas '+esc(k.pri)+' · Tenggat '+esc(k.due||'Belum ditetapkan')+'</div>'+
+  '<div class="row"><select data-a="st" data-id="'+esc(k.id)+'" style="width:auto">'+statusOptions+'</select>'+
+  '<input type="range" min="0" max="100" step="10" value="'+esc(k.pg)+'" data-a="pg" data-id="'+esc(k.id)+'" style="width:120px" aria-label="Progres"><span>'+esc(k.pg)+'%</span>'+
+  '<button class="sec" data-a="del" data-id="'+esc(k.id)+'">Hapus</button></div><div class="bar"><i style="width:'+esc(k.pg)+'%"></i></div>'+
+  '<details class="task-edit"><summary>Ubah detail tugas</summary><form data-f="edit-task" data-key="'+esc(k.id)+'"><label>Judul tugas</label><input name="t" maxlength="160" value="'+esc(k.t)+'" required><label>Penanggung jawab</label><select name="e">'+taskEditEmployeeOptions(k.emp)+'</select><label>Prioritas</label><select name="p">'+taskEditPriorityOptions(k.pri)+'</select><label>Tenggat waktu</label><input type="date" name="d" value="'+esc(k.due||'')+'"><p class="mu">Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI. Hasil lama akan tetap tersimpan dan kembali menunggu pemeriksaan CEO.</p><button type="submit" class="sec">Simpan perubahan</button></form></details>'+
+  resultSection+'<details><summary class="mu">Riwayat ('+history.length+')</summary>'+history.map(h=>'<div class="mu">'+fd(h.at)+': '+esc(h.t)+'</div>').join('')+'</details></div>';
+}
+function taskResultsView(){
+ const matches=filterTasks(S.tasks,taskFilters);
+ const summary='<div class="task-results-meta">Menampilkan <b>'+matches.length+'</b> dari <b>'+S.tasks.length+'</b> tugas</div>';
+ if(!S.tasks.length)return summary+'<p class="mu">Belum ada tugas. Buat tugas di samping atau beri instruksi lewat Chat Perusahaan.</p>';
+ if(!matches.length)return summary+'<div class="task-empty" role="status">Tidak ada tugas yang cocok dengan pencarian atau filter ini. Coba ubah kata kunci atau reset filter.</div>';
+ return summary+matches.map(taskCardView).join('');
+}
+function refreshTaskResults(){
+ const container=$('#task-results');
+ if(container)container.innerHTML=taskResultsView();
+}
+
 function addTask(t,emp,pri,due,st,note){const k={id:Date.now()+Math.random(),t:String(t||'Tugas tanpa judul').slice(0,160),emp,pri:PR.includes(pri)?pri:'Sedang',due,st:ST.includes(st)?st:ST[0],pg:st===ST[3]?100:st===ST[2]?90:st===ST[1]?40:0,result:'',brief:'',reviewed:false,h:[{at:Date.now(),t:note||'Tugas dibuat'}]};S.tasks.unshift(k);return k}
 let AI_STATUS={checked:STATIC_DEMO_MODE,keyConfigured:false,verified:false,model:null,message:STATIC_DEMO_MODE?STATIC_DEMO_NOTICE:''};
 let AUTH={required:!STATIC_DEMO_MODE,authenticated:STATIC_DEMO_MODE,checked:STATIC_DEMO_MODE,error:''};
@@ -244,7 +341,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.5.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.6.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -294,6 +391,7 @@ try{
 }catch(e){markAIFailed(e);push('company','system','Belum dapat memproses instruksi: '+e.message+' Pastikan backend dan konfigurasi API sudah aktif.');}
 save();render()}
 async function talkToEmployee(key,b,history=[]){push(key,'ceo',b);save();render();try{const result=await api('/api/chat',{employeeId:key,message:b,history});markAIVerified(result.model);push(key,key,result.reply||'AI tidak mengembalikan jawaban.');log(S.ceo+' berbicara dengan '+em(key).n+'.');}catch(e){markAIFailed(e);push(key,'system','Belum dapat menerima jawaban AI: '+e.message+' Pastikan backend dan konfigurasi API sudah aktif.');}save();render()}
+let taskFilters={query:'',status:'',employee:'',priority:'',sort:'newest'};
 let cal={m:'bulan',d:new Date()},rep='harian';
 const nav=[['dashboard','Dashboard','dashboard'],['karyawan','AI Employees','users'],['chat','Chat Perusahaan','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
@@ -309,8 +407,7 @@ emp(id){const e=em(id),s=status(id),t=S.tasks.filter(x=>x.emp===id);return `<p><
 <div class="g g2"><div>${chatBox(id,'Tulis pesan untuk '+e.n)}</div><div class="c"><h2>Ringkasan peran</h2><p class="mu">${esc(e.d)}</p><h2>Riwayat pekerjaan</h2>${t.length?t.slice(0,8).map(x=>`<div class="t">${esc(x.t)}<br><span class="mu">${x.st} · ${x.pg}%</span></div>`).join(''):'<p class="mu">Belum ada tugas untuk '+e.n+'.</p>'}</div></div>`},
 chat(){return `<h1>Chat Perusahaan</h1><p class="sub">${STATIC_DEMO_MODE?'Chat AI dan delegasi Sena tidak aktif pada mode demo offline.':'Contoh: “Buatkan strategi bisnis produk digital.” Sena akan membagi pekerjaan ke karyawan yang tepat.'}</p>${chatBox('company','Tulis instruksi untuk perusahaan')}`},
 kantor(){const working=E.filter(e=>BUSY.has(e.id)||(e.id==='sena'&&BUSY.has('company'))||S.tasks.some(t=>t.emp===e.id&&t.st===ST[1])).length;return `<h1>Kantor Virtual</h1><p class="sub">Status di bawah berasal dari chat yang sedang diproses dan tugas yang benar-benar berstatus dikerjakan. ${working} dari ${E.length} karyawan sedang bekerja.</p><div class="g g4">${E.map(e=>{const s=status(e.id),t=S.tasks.find(x=>x.emp===e.id&&x.st===ST[1]),review=S.tasks.find(x=>x.emp===e.id&&x.st===ST[2]),queued=S.tasks.find(x=>x.emp===e.id&&x.st===ST[0]);const task=t||review||queued;return `<a class="c card desk" href="#k-${e.id}">${av(e)}<b>${e.n}</b><div class="mu">${e.r}</div><div class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</div><div class="mu">${t?'Dikerjakan: ':review?'Menunggu review: ':queued?'Belum dimulai: ':'Tidak ada tugas aktif'}${task?esc(task.t.slice(0,40)):''}</div></a>`}).join('')}</div>`},
-tugas(){return `<h1>Manajemen Tugas</h1><div class="g g2"><form data-f="task" class="c"><h2>Tugas baru</h2><label>Judul</label><input name="t" maxlength="120"><label>Karyawan</label><select name="e">${E.map(e=>`<option value="${e.id}">${e.n} · ${e.r}</option>`).join('')}</select><label>Prioritas</label><select name="p">${PR.map((p,i)=>`<option ${i==1?'selected':''}>${p}</option>`).join('')}</select><label>Tenggat</label><input type="date" name="d"><div class="err" id="err"></div><button>Buat tugas</button></form>
-<div class="c"><h2>Daftar tugas (${S.tasks.length})</h2>${S.tasks.length?S.tasks.map(k=>`<div class="t"><b>${esc(k.t)}</b><div class="mu">${esc(employeeName(k.emp))} · Prioritas ${esc(k.pri)} · Tenggat ${esc(k.due||'Belum ditetapkan')}</div><div class="row"><select data-a="st" data-id="${k.id}" style="width:auto">${ST.map(s=>`<option ${s==k.st?'selected':''}>${s}</option>`).join('')}</select><input type="range" min="0" max="100" step="10" value="${k.pg}" data-a="pg" data-id="${k.id}" style="width:120px" aria-label="Progres"><span>${k.pg}%</span><button class="sec" data-a="del" data-id="${k.id}">Hapus</button></div><div class="bar"><i style="width:${k.pg}%"></i></div><details class="task-edit"><summary>Ubah detail tugas</summary><form data-f="edit-task" data-key="${k.id}"><label>Judul tugas</label><input name="t" maxlength="160" value="${esc(k.t)}" required><label>Penanggung jawab</label><select name="e">${taskEditEmployeeOptions(k.emp)}</select><label>Prioritas</label><select name="p">${taskEditPriorityOptions(k.pri)}</select><label>Tenggat waktu</label><input type="date" name="d" value="${esc(k.due||"")}"><p class="mu">Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI. Hasil lama akan tetap tersimpan dan kembali menunggu pemeriksaan CEO.</p><button type="submit" class="sec">Simpan perubahan</button></form></details>${k.result?`<details class="task-result"><summary>Hasil kerja AI · Buka untuk diperiksa</summary>${k.brief?`<p class="mu"><b>Brief:</b> ${esc(k.brief)}</p>`:''}<pre>${esc(k.result)}</pre></details>${k.st===ST[2]?`<div class="row" style="margin-top:8px"><button type="button" class="sm" data-a="approve" data-id="${k.id}">Setujui hasil</button><button type="button" class="sm sec" data-a="revise" data-id="${k.id}">Tandai perlu revisi</button></div><p class="mu" style="font-size:11px">${STATIC_DEMO_MODE?'Mode demo offline: revisi AI tidak tersedia; ubah status tugas secara manual.':'Tandai perlu revisi hanya mengubah status tugas. Untuk mengirim ulang ke AI, isi catatan revisi di bawah.'}</p>${!STATIC_DEMO_MODE&&em(k.emp)?`<form data-f="revise" data-key="${k.id}"><label>Catatan revisi untuk ${esc(employeeName(k.emp))}</label><textarea name="note" rows="3" maxlength="2000" placeholder="Apa yang perlu diperbaiki?"></textarea><button class="sm">Kirim revisi ke AI</button></form>`:''}`:k.st===ST[1]&&REVISING.has(String(k.id))?`<p class="mu">Revisi sedang diproses oleh ${esc(employeeName(k.emp))}…</p>`:k.reviewed?'<span class="chip">Disetujui CEO</span>':''}`:''}<details><summary class="mu">Riwayat (${k.h.length})</summary>${k.h.map(h=>`<div class="mu">${fd(h.at)}: ${esc(h.t)}</div>`).join('')}</details></div>`).join(''):'<p class="mu">Belum ada tugas. Buat tugas di samping atau beri instruksi lewat Chat Perusahaan.</p>'}</div></div>`},
+tugas(){return '<h1>Manajemen Tugas</h1><div class="g g2"><form data-f="task" class="c"><h2>Tugas baru</h2><label>Judul</label><input name="t" maxlength="120"><label>Karyawan</label><select name="e">'+E.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.n)+' · '+esc(e.r)+'</option>').join('')+'</select><label>Prioritas</label><select name="p">'+PR.map((p,i)=>'<option '+(i===1?'selected':'')+'>'+esc(p)+'</option>').join('')+'</select><label>Tenggat</label><input type="date" name="d"><div class="err" id="err"></div><button>Buat tugas</button></form><section class="c"><h2>Daftar tugas</h2>'+taskFilterControls()+'<div id="task-results" aria-live="polite">'+taskResultsView()+'</div></section></div>'},
 kalender(){const d=cal.d,its=x=>[...S.tasks.filter(t=>t.due===x).map(t=>({n:'Deadline: '+t.t,e:0})),...S.events.filter(v=>v.date===x).map(v=>({n:v.type+': '+v.title,e:v.id}))];
 let body='';const ds=dk(d);
 if(cal.m==='hari'){const l=its(ds);body=`<h2>${d.toLocaleDateString('id-ID',{dateStyle:'full'})}</h2>`+(l.length?l.map(i=>`<div class="t">${esc(i.n)} ${i.e?`<button class="sec" data-a="delev" data-id="${i.e}">Hapus</button>`:''}</div>`).join(''):'<p class="mu">Tidak ada jadwal di hari ini.</p>')}
@@ -395,6 +492,7 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(
 if(a==='logout'){void logout();return}
 if(a==='approve'){const task=S.tasks.find(x=>String(x.id)===id);if(!task||!task.result)return;updateTaskStatus(task,ST[3]);task.reviewed=true;task.h.push({at:Date.now(),t:'CEO menyetujui hasil kerja.'});log('CEO menyetujui hasil: '+task.t.slice(0,60));toast('Hasil disetujui.')}
 else if(a==='revise'){const task=S.tasks.find(x=>String(x.id)===id);if(!task||!task.result)return;updateTaskStatus(task,ST[1]);task.reviewed=false;task.h.push({at:Date.now(),t:'CEO menandai hasil perlu revisi. Pengiriman ulang ke AI belum dilakukan.'});log('Hasil ditandai perlu revisi: '+task.t.slice(0,60));toast('Status diubah. Tugas belum dikirim ulang ke AI.')}
+else if(a==='reset-task-filters'){taskFilters={query:'',status:'',employee:'',priority:'',sort:'newest'};document.querySelectorAll('[data-task-filter]').forEach(field=>{field.value=taskFilters[field.dataset.taskFilter]??''});refreshTaskResults();return}
 else if(a==='del'){S.tasks=S.tasks.filter(t=>String(t.id)!==id)}
 else if(a==='delev'){S.events=S.events.filter(v=>String(v.id)!==id)}
 else if(a==='cm'){cal.m=b.dataset.m}
@@ -407,7 +505,14 @@ else if(a==='vrep'){const r=S.reports[+b.dataset.i];copy(r.title+'\n\n'+r.body);
 else if(a==='backup-export'){downloadBackup();return}
 else if(a==='reset'){if(!confirm('Hapus semua data NEXUS AI COMPANY di peramban ini?'))return;try{localStorage.removeItem(KEY)}catch(e){}load()}
 save();render()});
-document.addEventListener('change',async ev=>{const b=ev.target;if(b.id==='backup-file'){const file=b.files?.[0];if(!file)return;try{await importBackupFile(file)}catch(error){toast(error.message||'Gagal memulihkan backup.')}finally{b.value=''}return;}if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
+document.addEventListener('input',ev=>{
+ const field=ev.target;
+ if(field&&field.dataset&&field.dataset.taskFilter==='query'){
+  taskFilters.query=field.value;
+  refreshTaskResults();
+ }
+});
+document.addEventListener('change',async ev=>{const b=ev.target;if(b.dataset&&b.dataset.taskFilter){taskFilters[b.dataset.taskFilter]=b.value;refreshTaskResults();return;}if(b.id==='backup-file'){const file=b.files?.[0];if(!file)return;try{await importBackupFile(file)}catch(error){toast(error.message||'Gagal memulihkan backup.')}finally{b.value=''}return;}if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
 if(b.dataset.a==='st'){updateTaskStatus(k,b.value);k.h.push({at:Date.now(),t:'Status menjadi '+k.st});log('Status “'+k.t.slice(0,40)+'”: '+k.st)}
 else{updateTaskProgress(k,b.value);k.h.push({at:Date.now(),t:'Progres '+k.pg+'% · Status '+k.st});log('Progres tugas “'+k.t.slice(0,40)+'” menjadi '+k.pg+'%')}save();render()});
 addEventListener('hashchange',render);load();render();refreshAIStatus();
