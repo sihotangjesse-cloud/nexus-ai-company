@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — Personal website project workspace
+
+- Added personal website project spaces with six project types and editable project details/status.
+- Generate an offline project checklist assigned across research, planning, design, writing, web development, and QA roles.
+- Link tasks to projects and filter/search tasks by project.
+- Generate and download a standalone responsive HTML website starter locally.
+- Enable offline role templates for project coordination without pretending they are model-generated AI.
+- Keep all features local: no API, Gemini call, hosting, payment, or cloud credit.
+
+
 ## 1.1.0 — NEXUS PERSONAL
 
 - Rebrand aplikasi menjadi NEXUS PERSONAL untuk satu pemilik/pengguna.
