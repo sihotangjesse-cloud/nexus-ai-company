@@ -1,12 +1,14 @@
-# Panduan NEXUS PERSONAL 1.2.0
+# Panduan NEXUS PERSONAL 1.3.0
 
-NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Fokus utamanya adalah membuat dan mengelola proyek website dari perencanaan sampai checklist QA.
+NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Aplikasi selalu offline, termasuk ketika file HTML dibuka melalui server lokal/localhost. Semua proyek dan data kerja disimpan di browser perangkat ini.
 
 ## 1. Buka aplikasi
 
 **Laptop Windows:** unduh ZIP branch `main`, ekstrak, lalu klik dua kali `Buka-NEXUS-Personal.bat`. Launcher hanya membuka HTML lokal; tidak memasang software, menjalankan server, atau memanggil API.
 
 **Android:** ekstrak ZIP dengan aplikasi File/Pengelola File, lalu buka `public/index.html` menggunakan browser. Apabila browser tidak mempertahankan data lokal, gunakan laptop Windows.
+
+Pastikan indikator aplikasi menunjukkan **MODE PRIBADI OFFLINE**.
 
 ## 2. Buat proyek website
 
@@ -29,13 +31,15 @@ Checklist dibagi ke tim virtual: Sena (koordinasi), Nara (riset), Jejak (analisi
 
 ## 4. Buat starter website
 
-Di halaman detail proyek, tekan **Unduh starter website HTML**. NEXUS membuat satu file HTML mandiri berisi struktur halaman, navigasi, hero, fitur, bagian tentang, kontak, dan CSS responsif. Buka file tersebut di browser untuk melihatnya, lalu edit teks, warna, dan komponen menggunakan editor teks/kode.
+Di halaman detail proyek, tekan **Unduh starter website HTML**. NEXUS membuat satu file HTML mandiri berisi struktur halaman, navigasi, hero, fitur, bagian tentang, kontak, dan CSS responsif. Buka file tersebut di browser, lalu edit teks, warna, dan komponen menggunakan editor teks/kode.
 
-Starter HTML adalah fondasi awal. Untuk website dengan database, login, API, pembayaran, atau hosting, komponen tersebut perlu dibangun dan diuji secara terpisah. Tidak ada transaksi atau pembayaran yang dijalankan dari starter.
+Starter HTML adalah fondasi awal. Untuk website dengan database, login, API, pembayaran, atau hosting, komponen tersebut perlu dibangun dan diuji secara terpisah. NEXUS PERSONAL tidak menjalankan transaksi atau pembayaran.
 
 ## 5. Gunakan tim virtual offline
 
-Menu **Koordinasi** dan profil peran memberikan template kerja lokal. Kamu dapat menulis brief dan mendapatkan kerangka riset, desain, copywriting, analisis, coding, dan QA. Template tersebut bukan hasil model AI generatif dan tidak mengakses internet.
+Menu **Koordinasi** dan profil peran memberikan template kerja lokal. Kamu dapat menulis brief dan mendapatkan kerangka riset, desain, copywriting, analisis, coding, dan QA. Template ini bukan model AI generatif dan tidak mengakses internet.
+
+Antarmuka sengaja menolak semua permintaan backend/API. Mode offline tetap aktif walaupun halaman dibuka melalui localhost, sehingga aplikasi tidak mencoba memeriksa server atau layanan AI.
 
 ## 6. Kalender, laporan, dan backup
 
@@ -47,4 +51,4 @@ Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup. Backup t
 
 Data tersimpan di browser/perangkat ini. Tidak ada akun online, login aplikasi, atau sinkronisasi otomatis. Jaga profil browser dan perangkat tetap privat, serta buat backup berkala.
 
-Mode offline tidak menggunakan API key, Gemini, layanan cloud, deployment, atau kredit. Jangan menjalankan backend AI atau mengisi API key bila ingin mempertahankan aturan nol biaya.
+Aplikasi tidak mengirim permintaan ke API AI dan tidak memerlukan API key, kredit, langganan, deployment, hosting, atau resource cloud. Jangan menjalankan backend lama atau menambahkan API key bila ingin mempertahankan mode pribadi offline.
