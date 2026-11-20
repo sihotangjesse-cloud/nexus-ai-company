@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 — Forced-offline personal workspace
+
+- Force the frontend into offline-only mode for every protocol, not just `file://`.
+- Skip backend health checks and login checks; keep chat and team templates local.
+- Block browser API paths before `fetch`, including when the page is opened through localhost.
+- Update smoke tests to prove the HTTP-origin app makes no backend/API request.
+- Clarify the single-owner and zero-API/no-credit operating model in the guides.
+
 ## 1.2.0 — Personal website project workspace
 
 - Added personal website project spaces with six project types and editable project details/status.
@@ -9,7 +17,6 @@
 - Enable offline role templates for project coordination without pretending they are model-generated AI.
 - Keep all features local: no API, Gemini call, hosting, payment, or cloud credit.
 
-
 ## 1.1.0 — NEXUS PERSONAL
 
 - Rebrand aplikasi menjadi NEXUS PERSONAL untuk satu pemilik/pengguna.
@@ -17,7 +24,6 @@
 - Tambahkan panduan penggunaan pribadi untuk Windows dan Android.
 - Pertahankan mode offline: tidak ada API key, layanan AI eksternal, hosting, atau kredit cloud.
 - Perjelas batas privasi: tanpa login/PIN dan data aktif localStorage belum dienkripsi.
-
 
 ## 1.0.0 — Fondasi rilis offline-first
 
