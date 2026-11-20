@@ -19,7 +19,7 @@ function extractFunction(name, nextMarker) {
   return script.slice(start, end);
 }
 const normalizeSite = new Function('isRecord', 'WEBSITE_TYPES',
-  extractFunction('normalizeWebsiteContent', 'function normalizeProject(raw){') + ';return normalizeWebsiteContent;'
+  extractFunction('defaultWebsiteContent', 'function normalizeProject(raw){') + ';return normalizeWebsiteContent;'
 )((value) => !!value && typeof value === 'object' && !Array.isArray(value), websiteTypes);
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, char => ({
   '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
