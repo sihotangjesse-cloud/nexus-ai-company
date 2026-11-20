@@ -1,6 +1,6 @@
 {
   "name": "nexus-ai-company",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "NEXUS AI COMPANY — virtual company workspace with role-based AI employees.",
   "type": "module",
