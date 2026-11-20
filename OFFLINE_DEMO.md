@@ -73,3 +73,14 @@ These operations run locally in the current browser. They do not send task infor
 - **Simpan laporan** stores the report in the current browser. **Salin teks (ekspor)** copies it for use elsewhere.
 
 All calculations use the browser's local task and activity data. Completion rates measure the share of assigned tasks marked complete; they do not measure output quality or actual business revenue/profit.
+
+
+## Export operational reports to CSV (v0.8.0)
+
+1. Open **Laporan**.
+2. Choose **Harian** (activity from the last 24 hours) or **Mingguan** (activity from the last seven days).
+3. Select **Unduh laporan CSV** to export the metrics, status distribution, employee summaries, deadlines, and recent local activity.
+4. Select **Unduh detail tugas CSV** to export one row per task with its title, owner, priority, status, deadline, progress, and review flag.
+5. Open the downloaded CSV file in a spreadsheet program.
+
+Both exports are generated in the browser. The task-detail CSV does not include AI output or chat history. CSV export does not upload data or call an external API.
