@@ -104,6 +104,8 @@ test('company chat uses a local role template and never calls an AI endpoint', a
   assert.equal(state.tasks.length, 0);
   assert.equal(state.chats.company.length, 2);
   assert.match(state.chats.company[1].t, /Template kerja offline/);
+  browser.sandbox.location.hash = '#chat';
+  browser.handlers.window.hashchange?.forEach((callback) => callback());
   assert.match(browser.elements['#main'].innerHTML, /Buat kerangka offline/);
   assert.deepEqual(browser.calls, []);
 });
