@@ -36,8 +36,8 @@ test('CSV serializer adds UTF-8 BOM, CRLF rows, quotes fields, and escapes embed
 
 test('CSV serializer neutralizes spreadsheet formula prefixes in exported text',()=>{
  const csv=helpers.serializeCsv(['Judul','Catatan'],[['=1+1','  @SUM(A1:A2)']]);
- assert.ok(csv.includes('"\\'=1+1"'));
- assert.ok(csv.includes('"\\'  @SUM(A1:A2)"'));
+  assert.ok(csv.includes(`"'=1+1"`));
+  assert.ok(csv.includes(`"'  @SUM(A1:A2)"`));
 });
 
 test('operational CSV includes summary metrics, status breakdown, employees, deadlines, and period activity',()=>{
