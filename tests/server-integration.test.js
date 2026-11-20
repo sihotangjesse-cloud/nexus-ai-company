@@ -181,7 +181,7 @@ describe('request hygiene, health, CSP and origin checks (local mode)', { skip: 
   test('the page is served with a CSP that allows only the application script hash', async () => {
     const res = await request(srv, '/', { origin: null });
     assert.equal(res.status, 200);
-    assert.match(res.text, /NEXUS AI COMPANY/);
+    assert.match(res.text, /NEXUS PERSONAL/);
     const html = await readFile(`${projectRoot}public/index.html`, 'utf8');
     const csp = res.headers.get('content-security-policy') || '';
     assert.ok(csp.includes(`script-src 'self' ${inlineScriptHash(html)}`), 'script-src carries the hash of the served inline script');
