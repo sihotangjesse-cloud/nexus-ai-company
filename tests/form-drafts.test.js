@@ -203,11 +203,9 @@ test('a chat message is cleared once it has been sent', async () => {
   assert.match(b.elements['#main'].innerHTML, /Tolong ringkas pasar kopi/);
 });
 
-test('the login password survives a status refresh while the login screen is shown', async () => {
-  const b = createBrowser({ health: { ok: true, authRequired: true, authenticated: false, aiConfigured: false } });
+test('personal offline mode ignores backend auth status and never renders a login screen', async () => {
+  const b = createBrowser({ health: { ok: true, authRequired: true, authenticated: false, aiConfigured: true } });
   await settle();
-  assert.ok(b.form('login'), 'login screen is rendered when auth is required');
-  b.field('login', 'password').value = 'rahasia-sementara';
-  b.rerender();
-  assert.equal(b.field('login', 'password').value, 'rahasia-sementara');
+  assert.equal(b.form('login'), undefined, 'login screen is disabled in personal offline mode');
+  assert.match(b.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
 });
