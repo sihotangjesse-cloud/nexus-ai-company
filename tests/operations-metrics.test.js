@@ -77,11 +77,11 @@ test('metrics ignore malformed rows and do not mutate input task arrays',()=>{
 });
 
 test('dashboard and reports expose operational summaries and explicit metric limitations',()=>{
- assert.match(script,/function getOperationalMetrics\\(/);
+ assert.match(script,/function getOperationalMetrics\(/);
  assert.match(script,/Kinerja penugasan karyawan/);
  assert.match(script,/BATASAN DATA/);
  assert.match(html,/Tugas terlambat/);
  assert.match(html,/data-a="srep"/);
  assert.match(html,/data-a="crep"/);
- assert.match(html,/COMPANY OS · v0\\.7\\.0/);
+ assert.match(html,/COMPANY OS · v0\.7\.0/);
 });
