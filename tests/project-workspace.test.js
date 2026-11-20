@@ -26,7 +26,7 @@ function extractFunction(name, nextMarker) {
 
 const normalizeSite = new Function(
   'isRecord', 'WEBSITE_TYPES',
-  extractFunction('normalizeWebsiteContent', 'function normalizeProject(raw){') + ';return normalizeWebsiteContent;'
+  extractFunction('defaultWebsiteContent', 'function normalizeProject(raw){') + ';return normalizeWebsiteContent;'
 )((value) => !!value && typeof value === 'object' && !Array.isArray(value), websiteTypes);
 
 const buildPlan = new Function(
