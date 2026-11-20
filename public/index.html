@@ -579,7 +579,7 @@ function makeOperationalCsv(period,tasks,employees,activity,now=new Date()){
  add('Ekspor','Dibuat pada','','','','','','','','',now.toISOString(),'Laporan operasional lokal');
  add('Ringkasan','Periode aktivitas','','','','','','','','','',periodLabel);
  add('Ringkasan','Total tugas','','','','','',metrics.total,'','','','Snapshot saat ekspor');
- add('Ringkasan','Tugas selesai','','','','','',metrics.completed,metrics.completed,metrics.completionRate,'','Status selesai dibagi seluruh tugas');
+ add('Ringkasan','Tugas selesai','','','','','',metrics.total,metrics.completed,metrics.completionRate,'','Jumlah tugas dan persentase yang berstatus selesai');
  add('Ringkasan','Sedang dikerjakan','','','','','',metrics.inProgress,'','','','');
  add('Ringkasan','Menunggu pemeriksaan','','','','','',metrics.inReview,'','','','');
  add('Ringkasan','Belum dimulai','','','','','',metrics.queued,'','','','');
