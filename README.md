@@ -1,107 +1,60 @@
-# NEXUS AI COMPANY
+# NEXUS PERSONAL
 
-**Versi sumber: 1.0.0 — fondasi rilis offline-first**
+**Versi 1.1.0 — edisi ruang kerja pribadi**
 
-NEXUS AI COMPANY adalah ruang kerja perusahaan virtual dengan delapan peran AI: Sena (koordinator), Nara (riset pasar), Juno (direktur kreatif), Kata (copywriter), Arka (manajer pemasaran), Jejak (analis bisnis), Garis (storyboard artist), dan Rupa (art director).
+NEXUS PERSONAL dibuat untuk **satu pemilik/pengguna**, dengan kamu sebagai CEO dan delapan peran karyawan virtual: Sena (koordinator), Nara (riset pasar), Juno (direktur kreatif), Kata (copywriter), Arka (pemasaran), Jejak (analis bisnis), Garis (storyboard), dan Rupa (art direction).
 
-## Status rilis
+## Aplikasi siap dibuka secara lokal
 
-Versi 1.0.0 merapikan fondasi aplikasi dan dokumentasi. **Demo offline dapat dijalankan secara lokal. Fitur AI online belum dikonfigurasi atau diaktifkan pada demo offline.** Rilis ini bukan layanan website yang sudah di-hosting dan bukan klaim bahwa aplikasi siap dipakai sebagai layanan multi-pengguna di internet.
+Edisi pribadi ini berjalan langsung di browser. Tidak perlu Node.js, instalasi software, server, hosting, kartu, langganan, atau kredit cloud.
 
-## Mulai tanpa layanan berbayar
+### Windows (laptop Acer)
 
-Mode demo offline tidak memerlukan Node.js, instalasi dependensi, API key, server, hosting, akun pembayaran, kartu, atau kredit cloud.
+1. Unduh [ZIP NEXUS PERSONAL dari branch main](https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip).
+2. Ekstrak file ZIP ke folder yang mudah ditemukan, misalnya Documents.
+3. Buka folder hasil ekstraksi.
+4. Klik dua kali **Buka-NEXUS-Personal.bat**.
+5. Browser akan membuka aplikasi. Pastikan indikator bertuliskan **MODE DEMO OFFLINE**.
 
-1. Buka [ZIP branch main](https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip).
-2. Ekstrak ZIP di komputer.
-3. Buka folder `public`.
-4. Buka `index.html` memakai browser modern seperti Chrome atau Edge.
-5. Pastikan indikator aplikasi menampilkan **MODE DEMO OFFLINE**.
+Bila file launcher tidak terbuka, buka folder `public` lalu klik dua kali `index.html`.
 
-Dalam mode ini, aplikasi memblokir permintaan API sebelum jaringan dipanggil. Chat AI, delegasi Sena, revisi AI, login backend, dan pemeriksaan kesehatan backend dinonaktifkan. Fitur dashboard, tugas, kalender, laporan, ekspor, dan backup berjalan di browser.
+### Android
 
-Panduan lengkap tersedia di [OFFLINE_DEMO.md](OFFLINE_DEMO.md).
+1. Unduh ZIP dari tautan di atas.
+2. Gunakan aplikasi File/Pengelola File untuk mengekstraknya.
+3. Buka folder hasil ekstraksi, lalu folder `public`.
+4. Pilih `index.html` dan buka memakai browser.
+5. Bila browser Android tidak bisa menyimpan data dari file lokal, gunakan aplikasi di laptop Windows. Dukungan file lokal berbeda antarbrowser.
 
-## Fitur yang tersedia secara lokal
+Panduan tambahan: [PANDUAN_PERSONAL.md](PANDUAN_PERSONAL.md).
 
-- Dashboard metrik tugas, kemajuan, status, tenggat, dan ringkasan penanggung jawab.
-- Direktori delapan peran karyawan virtual.
-- Membuat, mengubah, mencari, menyaring, mengurutkan, dan mengelola tugas.
-- Kalender dan agenda.
-- Laporan harian dan mingguan.
-- Ekspor laporan dan detail tugas ke CSV dengan perlindungan terhadap formula CSV berbahaya.
-- Backup JSON biasa dan backup terenkripsi dengan kata sandi.
-- Pemulihan backup setelah konfirmasi.
+## Apa yang bisa dilakukan?
 
-Data demo disimpan pada `localStorage` profil browser yang sedang digunakan. Data tidak tersinkron otomatis antarperangkat.
+- Melihat dashboard pekerjaan dan ringkasan tugas.
+- Mengelola tugas: buat, ubah, cari, filter, urutkan, dan hapus.
+- Mengatur prioritas, penanggung jawab virtual, status, progres, serta tenggat.
+- Menggunakan kalender dan agenda.
+- Membuat laporan harian/mingguan.
+- Mengunduh laporan dan detail tugas sebagai CSV.
+- Membuat backup JSON biasa atau backup terenkripsi.
+- Memulihkan data dari file backup.
 
-## Backup dan privasi data
+## Batas AI dan biaya
 
-- Backup JSON biasa **tidak dienkripsi**.
-- Backup terenkripsi memakai AES-256-GCM dan derivasi kunci PBKDF2-SHA-256. Kata sandi tidak disimpan oleh aplikasi. Kata sandi yang terlupa tidak dapat dipulihkan oleh aplikasi.
-- Enkripsi backup hanya melindungi file backup. Data aktif di `localStorage` **tetap tidak dienkripsi**.
-- Menghapus data browser atau memakai profil browser lain dapat menghilangkan data lokal. Simpan backup di tempat privat.
-- Jangan masukkan kata sandi akun lain, data keuangan, atau informasi pribadi sensitif ke dalam demo.
+Mode offline **belum menjalankan model AI sungguhan**. Chat AI, delegasi otomatis oleh Sena, dan revisi AI sengaja dinonaktifkan. Delapan karyawan adalah peran/struktur kerja pada aplikasi; balasan AI langsung tidak tersedia dalam edisi tanpa API.
 
-## Backend AI opsional — bukan bagian dari demo nol-kredit
+Repositori memiliki backend AI opsional, tetapi tidak digunakan saat membuka aplikasi lokal. Menyalakan AI dengan penyedia eksternal dapat menggunakan kuota dan berpotensi menimbulkan biaya. Karena aturan proyek adalah nol biaya, jangan memasukkan API key atau menjalankan endpoint AI.
 
-Repositori juga menyimpan server Node.js dan endpoint Gemini untuk eksperimen backend. Fitur ini **tidak diperlukan** untuk demo offline. Tidak ada API key yang disediakan atau dipasang oleh proyek ini.
+## Data pribadi dan privasi
 
-Mengisi `GEMINI_API_KEY` dan mengirim permintaan ke Gemini dapat menggunakan kuota provider dan berpotensi menimbulkan biaya sesuai pengaturan akun provider. Agar tetap dalam mode tanpa biaya, biarkan API key kosong dan jangan mengaktifkan endpoint AI. Jangan menambahkan API key ke file frontend atau commit ke GitHub.
+- Data tugas, kalender, chat demo, dan laporan disimpan di `localStorage` browser pada perangkat yang sedang dipakai.
+- Tidak ada akun online atau sinkronisasi antarperangkat.
+- Mode ini ditujukan untuk satu pemilik, tetapi **tidak memiliki layar login/PIN**. Siapa pun yang dapat membuka profil browser yang sama mungkin dapat melihat data.
+- Data aktif `localStorage` belum dienkripsi.
+- Backup JSON biasa tidak terenkripsi. Backup terenkripsi melindungi file ekspor dengan AES-256-GCM dan kata sandi; enkripsi backup tidak melindungi data aktif di browser.
+- Simpan backup terenkripsi di tempat aman. Kata sandi yang terlupa tidak dapat dipulihkan oleh aplikasi.
+- Jangan masukkan password akun lain atau data sangat sensitif.
 
-Persyaratan backend bila suatu saat diuji secara mandiri:
+## Pemeriksaan kode
 
-- Node.js 20 atau lebih baru.
-- Salin `.env.example` menjadi `.env` hanya untuk konfigurasi lokal.
-- `npm ci --no-audit --no-fund` untuk memasang dependensi dari lockfile.
-- `npm run check` dan `npm test` untuk pemeriksaan.
-- `npm start` untuk menjalankan server secara lokal.
-
-Tes integrasi backend mengganti Gemini dengan mock lokal; tes tidak memerlukan panggilan ke layanan Gemini yang sebenarnya. Jangan mengartikan tes yang lulus sebagai verifikasi API key, kuota provider, atau layanan AI langsung.
-
-## Batas keamanan dan operasional
-
-- Autentikasi backend yang tersedia adalah satu kata sandi bersama untuk satu pemilik, bukan akun multi-pengguna.
-- Cookie sesi memakai atribut HttpOnly dan SameSite=Strict; sesi berakhir setelah 12 jam.
-- Batas login, permintaan AI, dan panggilan Gemini berlaku per proses. Batas ini bukan kuota biaya global, tidak dibagi lintas beberapa instance, dan kembali dari awal setelah server dimulai ulang.
-- Data tugas dan riwayat aplikasi masih berada di browser; belum ada database bersama atau sinkronisasi.
-- Jangan membuka mode pengembangan tanpa autentikasi ke internet.
-- Jangan menganggap aplikasi siap produksi publik. Penggunaan publik memerlukan audit tambahan, pengelolaan secret, penyimpanan persisten, kontrol akses per pengguna, pembatasan global, pemantauan, backup operasional, HTTPS, dan pengendalian biaya provider.
-
-## Pemeriksaan proyek
-
-Workflow GitHub Actions menjalankan Node.js 22, instalasi dari `package-lock.json`, pemeriksaan sintaks/frontend, dan seluruh tes otomatis ketika ada pull request atau push ke branch utama. Pengujian tidak melakukan panggilan Gemini langsung.
-
-Perintah lokal:
-
-```bash
-npm ci --no-audit --no-fund
-npm run check
-npm test
-```
-
-## Endpoint backend (referensi)
-
-| Metode | Endpoint | Fungsi |
-| --- | --- | --- |
-| GET | `/api/health` | Status server dan sesi; tidak membuktikan koneksi model AI |
-| POST | `/api/login` | Login single-owner bila autentikasi aktif |
-| POST | `/api/logout` | Menghapus cookie sesi |
-| POST | `/api/chat` | Meminta jawaban dari satu peran AI |
-| POST | `/api/company` | Meminta Sena membagi tugas ke spesialis |
-| POST | `/api/revise` | Meminta spesialis merevisi hasil kerja |
-
-Endpoint AI hanya relevan ketika backend dan kredensial provider dikonfigurasi secara terpisah. Demo offline tidak menggunakannya.
-
-## Berkas penting
-
-- `public/index.html` — aplikasi browser satu berkas.
-- `server.js` — server Express dan endpoint backend opsional.
-- `auth.js` — token sesi dan pemeriksaan kata sandi.
-- `usage-budget.js` — batas panggilan AI per proses.
-- `history.js` — pembentukan dan pembatasan konteks percakapan.
-- `workflow.js` — validasi dan perencanaan tugas.
-- `tests/` — tes unit, UI, dan integrasi dengan mock.
-- `OFFLINE_DEMO.md` — panduan menjalankan demo tanpa backend.
-- `CHANGELOG.md` — riwayat perubahan.
-
+CI memakai GitHub Actions untuk menjalankan instalasi dari lockfile, pemeriksaan sintaks/frontend, dan tes otomatis. Pengujian backend memakai mock lokal; tes tidak memanggil Gemini sungguhan.
