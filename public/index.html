@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NEXUS AI COMPANY</title>
+<title>NEXUS PERSONAL</title>
 <style>
 :root{color-scheme:dark;--bg:#081126;--surface:rgba(17,29,55,.78);--surface-strong:rgba(21,36,67,.94);--gl:rgba(255,255,255,.055);--ln:rgba(151,178,222,.17);--ln-strong:rgba(151,178,222,.28);--tx:#edf3ff;--mu:#9eafcf;--ac:#65c7ff;--ac-soft:rgba(101,199,255,.13);--ok:#5de0a5;--ok-soft:rgba(93,224,165,.12);--wn:#f5c66c;--wn-soft:rgba(245,198,108,.12);--er:#ff7788;--shadow:0 18px 48px rgba(0,0,0,.2);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;scroll-behavior:smooth}
@@ -102,7 +102,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 <script>
 const $=s=>document.querySelector(s);
 const STATIC_DEMO_MODE=location.protocol==='file:';
-const STATIC_DEMO_NOTICE='Mode demo offline: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
+const STATIC_DEMO_NOTICE='NEXUS PERSONAL · mode lokal untuk satu pemilik: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
@@ -156,7 +156,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.0.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.1.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -469,12 +469,12 @@ function markAIVerified(model){AI_STATUS={...AI_STATUS,checked:true,keyConfigure
 function markAIFailed(error){AI_STATUS={...AI_STATUS,checked:true,verified:false,message:error?.message||'Permintaan AI gagal.'};}
 function topHeader(){
 let state,title,detail;
-if(STATIC_DEMO_MODE){state='is-neutral';title='MODE DEMO OFFLINE';detail='AI nonaktif · data lokal di browser';}
+if(STATIC_DEMO_MODE){state='is-neutral';title='MODE DEMO OFFLINE';detail='Ruang pribadi · data lokal';}
 else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Model '+(AI_STATUS.model||'AI');}
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v1.0.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.1.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -588,7 +588,7 @@ laporan(){
 },
 pengaturan(){return `<h1>Pengaturan</h1><div class="g g2">
 <div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File dibuat di perangkat ini dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON biasa</button></div><label for="backup-file">Pulihkan dari file backup (JSON biasa)</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">File backup tidak dienkripsi pada format JSON biasa. Pemulihan mengganti data NEXUS saat ini setelah konfirmasi. Maksimal ukuran file 2 MB.</p><hr><h3>Backup terenkripsi</h3><p class="mu">Enkripsi backup memakai AES-256-GCM dan PBKDF2-SHA-256. Gunakan kata sandi kuat minimal 12 karakter. Kata sandi tidak disimpan oleh aplikasi.</p><form data-f="encrypted-backup-export"><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="new-password" required><label>Ulangi kata sandi</label><input name="confirmPassword" type="password" minlength="12" autocomplete="new-password" required><button type="submit">Unduh backup terenkripsi</button></form><hr><form data-f="encrypted-backup-import"><h3>Pulihkan backup terenkripsi</h3><label>File backup terenkripsi</label><input name="file" type="file" accept=".json,application/json" required><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="current-password" required><button type="submit">Dekripsi & pulihkan backup</button></form><p class="mu">Penting: simpan kata sandi secara terpisah. Jika lupa, backup terenkripsi tidak dapat dipulihkan. Enkripsi ini hanya melindungi file backup; data aktif di penyimpanan browser (localStorage) masih belum dienkripsi.</p></div>
-<form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
+<form data-f="ceo" class="c"><h2>Profil Pemilik</h2><label>Nama pemilik</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
 <div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${STATIC_DEMO_MODE?'Mode demo offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
 function makeRep(period){
  const now=new Date(),metrics=getOperationalMetrics(S.tasks,E,now),windowMs=period==='harian'?864e5:7*864e5;
@@ -724,7 +724,7 @@ function render(){const drafts=captureFormDrafts(),saved=captureFocusedField();
 if(AUTH.required&&!AUTH.authenticated&&!AUTH.checked){$('#nav').innerHTML='';$('#main').innerHTML='<div class="card" role="status" aria-live="polite"><p>Memeriksa sesi…</p></div>';return;}
 if(AUTH.required&&!AUTH.authenticated){$('#nav').innerHTML='';$('#main').innerHTML=loginView();restoreFormState(drafts,saved);return;}
 const h=(location.hash||'#dashboard').slice(1);const v=h.startsWith('k-')&&em(h.slice(2))?'karyawan':(V[h]?h:'dashboard');
-$('#nav').innerHTML='<div class="nav-brand"><span class="brand-mark">'+svgIcon('sparkles')+'</span><div><strong>NEXUS AI</strong><small>COMPANY WORKSPACE</small></div></div>'+nav.map(n=>`<a href="#${n[0]}" class="${n[0]===v?'on':''}" ${n[0]===v?'aria-current="page"':''}><span class="nav-icon">${svgIcon(n[2])}</span><span>${n[1]}</span></a>`).join('');
+$('#nav').innerHTML='<div class="nav-brand"><span class="brand-mark">'+svgIcon('sparkles')+'</span><div><strong>NEXUS PERSONAL</strong><small>RUANG KERJA PRIBADI</small></div></div>'+nav.map(n=>`<a href="#${n[0]}" class="${n[0]===v?'on':''}" ${n[0]===v?'aria-current="page"':''}><span class="nav-icon">${svgIcon(n[2])}</span><span>${n[1]}</span></a>`).join('');
 $('#main').innerHTML=topHeader()+(STATIC_DEMO_MODE?`<div class="demo" role="note">${esc(STATIC_DEMO_NOTICE)}</div>`:'')+(h.startsWith('k-')&&em(h.slice(2))?V.emp(h.slice(2)):V[v]());
 restoreFormState(drafts,saved);
 const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight}
