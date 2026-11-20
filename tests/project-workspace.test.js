@@ -26,17 +26,17 @@ function extractFunction(name, nextMarker) {
 
 const buildPlan = new Function(
   'WEBSITE_TYPES',
-  extractFunction('buildWebsitePlan', '\\nfunction buildWebsiteStarter(project){') + '\\nreturn buildWebsitePlan;'
+  extractFunction('buildWebsitePlan', 'function buildWebsiteStarter(project){') + ';return buildWebsitePlan;'
 )(websiteTypes);
 
 const buildStarter = new Function(
   'esc', 'WEBSITE_TYPES',
-  extractFunction('buildWebsiteStarter', '\\nfunction downloadWebsiteStarter(project){') + '\\nreturn buildWebsiteStarter;'
+  extractFunction('buildWebsiteStarter', 'function downloadWebsiteStarter(project){') + ';return buildWebsiteStarter;'
 )(escapeHtml, websiteTypes);
 
 const normalizeProject = new Function(
   'isRecord', 'WEBSITE_TYPES', 'PROJECT_STATUSES',
-  extractFunction('normalizeProject', '\\nfunction normalizeTask(raw){') + '\\nreturn normalizeProject;'
+  extractFunction('normalizeProject', 'function normalizeTask(raw){') + ';return normalizeProject;'
 )((value) => !!value && typeof value === 'object' && !Array.isArray(value), websiteTypes,
  ['Perencanaan', 'Berjalan', 'Ditunda', 'Selesai']);
 
