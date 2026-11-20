@@ -191,7 +191,7 @@ function base64ToBytes(value){
  const binary=atob(value);
  return Uint8Array.from(binary,char=>char.charCodeAt(0));
 }
-async function deriveBackupKey(password,salt,cryptoProvider=crypto){
+async function deriveBackupKey(password,salt,cryptoProvider=globalThis.crypto){
  if(typeof password!=='string'||password.length<12)throw new Error('Kata sandi backup harus minimal 12 karakter.');
  if(!cryptoProvider?.subtle)throw new Error('Browser ini tidak mendukung enkripsi backup. Gunakan Chrome atau Edge versi terbaru.');
  const material=await cryptoProvider.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
@@ -203,7 +203,8 @@ async function deriveBackupKey(password,salt,cryptoProvider=crypto){
   ['encrypt','decrypt']
  );
 }
-async function encryptBackupPayload(payload,password,cryptoProvider=crypto){
+async function encryptBackupPayload(payload,password,cryptoProvider=globalThis.crypto){
+ if(!cryptoProvider?.subtle||typeof cryptoProvider.getRandomValues!=='function')throw new Error('Browser ini tidak mendukung enkripsi backup. Gunakan Chrome atau Edge versi terbaru.');
  if(typeof password!=='string'||password.length<12)throw new Error('Kata sandi backup harus minimal 12 karakter.');
  const plaintext=new TextEncoder().encode(JSON.stringify(payload));
  if(plaintext.byteLength>MAX_BACKUP_BYTES)throw new Error('Data backup melebihi batas 2 MB. Hapus data lama atau gunakan backup yang lebih kecil.');
@@ -223,7 +224,7 @@ async function encryptBackupPayload(payload,password,cryptoProvider=crypto){
   exportedAt:new Date().toISOString()
  };
 }
-async function decryptBackupPayload(envelope,password,cryptoProvider=crypto){
+async function decryptBackupPayload(envelope,password,cryptoProvider=globalThis.crypto){
  if(!isRecord(envelope)||envelope.format!==ENCRYPTED_BACKUP_FORMAT||envelope.version!==ENCRYPTED_BACKUP_VERSION||
   envelope.cipher!=='AES-256-GCM'||envelope.kdf!=='PBKDF2-SHA-256'||envelope.iterations!==BACKUP_KDF_ITERATIONS){
   throw new Error('Format backup terenkripsi tidak dikenal atau versinya tidak didukung.');
