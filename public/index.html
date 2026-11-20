@@ -363,7 +363,7 @@ function buildWebsiteStarter(project){
  '<section class="about" id="tentang"><div class="wrap"><div class="section-title"><div class="eyebrow">Tentang</div><h2>'+esc(site.aboutTitle)+'</h2><p class="muted">'+esc(site.aboutText)+'</p></div></div></section>',
  '<section id="kontak"><div class="wrap"><div class="contact"><div class="eyebrow">Langkah berikutnya</div><h2>'+esc(site.contactTitle)+'</h2><p>'+esc(site.contactText)+'</p><a class="btn" href="#top">Kembali ke atas</a></div></div></section></main>',
  '<footer><div class="wrap">© '+new Date().getFullYear()+' '+brand+'. Website starter lokal dari NEXUS PERSONAL.</div></footer>','</body>','</html>'
- ].join('\\n');
+ ].join('\n');
 }
 function websiteContentFromForm(form,project){
  const data=new FormData(form),raw={};
@@ -378,7 +378,6 @@ function refreshWebsitePreview(form){
 }
 function downloadWebsiteStarter(project,siteOverride){
  const source=buildWebsiteStarter({...project,site:siteOverride||project.site}),blob=new Blob([source],{type:'text/html;charset=utf-8'});
- const source=buildWebsiteStarter(project),blob=new Blob([source],{type:'text/html;charset=utf-8'});
  const url=URL.createObjectURL(blob),link=document.createElement('a');
  const slug=String(project.name||'website').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'website';
  link.href=url;link.download=slug+'-starter.html';document.body.appendChild(link);link.click();link.remove();
