@@ -1,51 +1,43 @@
-# NEXUS AI COMPANY — Demo Offline (Zero-Credit)
+# Panduan NEXUS PERSONAL
 
-Mode ini adalah demo browser lokal. **Tidak ada server, API, Gemini, API key, deployment, hosting, pembayaran, kartu, atau kredit cloud yang dibutuhkan atau digunakan.**
+NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Kamu menjadi CEO dan menggunakan dashboard/tugas/laporan untuk mengatur pekerjaan. Mode ini tidak membutuhkan akun atau layanan cloud.
 
-## Cara membuka
+## 1. Buka di laptop Windows
 
-1. Unduh [ZIP branch main](https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip).
-2. Ekstrak file ZIP.
-3. Buka folder `public`.
-4. Buka `index.html` dengan browser modern seperti Chrome atau Edge.
-5. Pastikan header menampilkan **MODE DEMO OFFLINE**.
+1. Unduh ZIP branch `main`: https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip
+2. Ekstrak ZIP.
+3. Klik dua kali `Buka-NEXUS-Personal.bat`.
+4. Browser membuka aplikasi dalam mode offline.
 
-Mode ini paling mudah dijalankan di komputer. Dukungan membuka file lokal dapat berbeda di browser perangkat seluler.
+Launcher hanya membuka file HTML lokal. Launcher tidak memasang program, tidak membuat koneksi API, tidak menjalankan server, dan tidak membutuhkan administrator.
 
-## Fitur yang berjalan
+## 2. Buka di Android
 
-- Dashboard dan direktori karyawan contoh.
-- Membuat dan mengelola tugas, mengubah status/progres, serta mengedit judul, penanggung jawab, prioritas, dan tenggat.
-- Pencarian, filter gabungan, dan pengurutan tugas.
-- Kalender dan agenda.
-- Laporan harian dan mingguan.
-- Ekspor laporan dan detail tugas ke CSV.
-- Penyimpanan lokal melalui `localStorage`.
-- Backup JSON biasa dan backup terenkripsi dengan kata sandi.
-- Pemulihan backup setelah konfirmasi.
+1. Unduh ZIP.
+2. Ekstrak menggunakan aplikasi File/Pengelola File.
+3. Masuk ke `public/index.html`.
+4. Pilih browser untuk membukanya.
 
-## Fitur yang sengaja dinonaktifkan
+Browser Android memiliki aturan berbeda untuk file lokal. Apabila data tidak tersimpan setelah halaman ditutup, gunakan versi laptop atau browser lain yang mendukung penyimpanan lokal untuk file tersebut.
 
-- Chat dengan karyawan AI.
-- Delegasi perusahaan oleh Sena.
-- Revisi tugas oleh AI.
-- Login dan pemeriksaan kesehatan backend.
+## 3. Mulai menggunakan
 
-Mode demo memblokir permintaan API sebelum ada permintaan jaringan. Jangan menambahkan API key atau kata sandi backend ke berkas HTML.
+- Buka **Pengaturan → Profil Pemilik** untuk mengubah nama pemilik/CEO.
+- Buat tugas pada menu **Tugas**.
+- Atur prioritas, penanggung jawab virtual, tenggat, status, dan progres.
+- Gunakan **Kalender** untuk agenda.
+- Buka **Laporan** untuk ringkasan harian atau mingguan.
+- Gunakan tombol ekspor untuk menyimpan CSV.
+- Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup.
 
-## Data dan privasi
+## 4. Simpan data
 
-- Data hanya disimpan pada profil browser dan perangkat yang sedang digunakan.
-- Data tidak disinkronkan otomatis ke perangkat lain atau layanan cloud.
-- Backup JSON biasa tidak dienkripsi.
-- Backup terenkripsi melindungi file hasil ekspor dengan kata sandi. Enkripsi ini tidak melindungi data aktif pada `localStorage`.
-- Aplikasi tidak menyimpan kata sandi backup. File tidak dapat dipulihkan bila kata sandinya terlupa.
-- Menghapus data browser atau memakai profil browser lain dapat membuat data demo tidak tersedia, kecuali ada backup.
-- Jangan masukkan data pribadi, keuangan, atau kata sandi akun lain.
+Data aplikasi disimpan oleh browser pada perangkat ini. Tutup tab tidak sama dengan menghapus data, tetapi menghapus data situs/browser, memakai profil browser lain, atau berpindah perangkat dapat membuat data tidak terlihat. Buat backup secara berkala.
 
-## Batasan penting
+Backup JSON biasa tidak dienkripsi. Backup terenkripsi memerlukan kata sandi minimal 12 karakter. Simpan kata sandi backup secara terpisah; aplikasi tidak dapat memulihkannya bila lupa.
 
-Demo ini bukan website yang sudah di-hosting dan bukan layanan AI produksi. Server Node.js serta integrasi Gemini yang ada di repositori merupakan komponen backend opsional dan tidak digunakan oleh demo offline.
+**Perhatian:** backup terenkripsi tidak mengenkripsi data aktif di `localStorage`. Mode personal ini juga tidak memiliki login atau PIN aplikasi. Jaga perangkat dan profil browser tetap terkunci.
 
-Mengisi API key dan mengirim permintaan ke penyedia AI dapat memakai kuota atau menimbulkan biaya provider. Untuk mempertahankan mode tanpa biaya, jangan mengisi API key dan jangan menjalankan endpoint AI.
+## 5. Fitur AI
 
+Chat AI dan delegasi otomatis belum aktif dalam mode offline. Aplikasi tidak memakai API key, tidak mengirim data ke Gemini, dan tidak menggunakan kredit. Mengaktifkan AI eksternal di masa depan bisa memakai kuota dan berpotensi menimbulkan biaya, sehingga saat ini fitur tersebut dibiarkan nonaktif.
