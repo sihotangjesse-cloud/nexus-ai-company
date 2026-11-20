@@ -155,7 +155,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.7.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.8.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -395,7 +395,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.7.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.8.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -498,9 +498,9 @@ laporan(){
  const r=makeRep(rep),metrics=getOperationalMetrics(S.tasks,E,new Date());
  const employees=metrics.employeeStats.map(item=>'<div class="ops-employee"><div class="ops-employee-head"><b>'+esc(item.name)+'</b><span class="mu">'+item.completed+'/'+item.total+' selesai · '+item.completionRate+'%</span></div><div class="ops-track"><i style="width:'+item.completionRate+'%"></i></div><div class="mu ops-employee-meta">'+item.inProgress+' dikerjakan · '+item.inReview+' diperiksa · '+item.queued+' tertunda</div></div>').join('');
  const status=ST.map(label=>'<div class="ops-bar-row"><span>'+esc(label)+'</span><div class="ops-track"><i style="width:'+(metrics.total?Math.round(metrics.statusCounts[label]/metrics.total*100):0)+'%"></i></div><b>'+metrics.statusCounts[label]+'</b></div>').join('');
- return '<h1>Laporan Perusahaan</h1><p class="sub">Ringkasan dari tugas dan aktivitas lokal. Tidak ada angka keuangan atau penjualan yang dibuat-buat.</p>'+
+ return '<h1>Laporan Perusahaan</h1><p class="sub">Ringkasan dari tugas dan aktivitas lokal. Tidak ada angka keuangan atau penjualan yang dibuat-buat. Ekspor CSV dibuat di browser dan tidak mengirim data ke server.</p>'+
  '<div class="row" style="margin-bottom:10px">'+['harian','mingguan'].map(m=>'<button class="'+(rep===m?'on':'sec')+'" data-a="rm" data-m="'+m+'">'+m[0].toUpperCase()+m.slice(1)+'</button>').join('')+
- '<button data-a="srep">Simpan laporan</button><button class="sec" data-a="crep">Salin teks (ekspor)</button></div>'+
+ '<button data-a="srep">Simpan laporan</button><button class="sec" data-a="crep">Salin teks (ekspor)</button><button class="sec" data-a="csv-report">Unduh laporan CSV</button><button class="sec" data-a="csv-tasks">Unduh detail tugas CSV</button></div>'+
  '<div class="g g2"><section class="c"><h2>Status tugas saat ini</h2>'+status+'</section>'+
  '<section class="c"><h2>Kinerja penugasan per karyawan</h2>'+employees+'<p class="mu ops-note">Persentase adalah bagian tugas berstatus selesai dari seluruh tugas yang ditugaskan kepada karyawan tersebut. Ini bukan penilaian mutu hasil.</p></section>'+
  '<section class="c"><h2>Ringkasan laporan '+(rep==='harian'?'harian':'mingguan')+'</h2><pre>'+esc(r.body)+'</pre></section>'+
@@ -553,6 +553,84 @@ function makeRep(period){
  ].join('\n');
  return {title:'Laporan Operasional '+period+' · '+now.toLocaleDateString('id-ID',{dateStyle:'long'}),body};
 }
+function csvCell(value){
+ let text=value===null||value===undefined?'':String(value);
+ if(/^[\s\u0000-\u001f]*[=+\-@]/.test(text))text="'"+text;
+ return '"'+text.replace(/"/g,'""')+'"';
+}
+function serializeCsv(headers,rows){
+ const all=[headers,...(Array.isArray(rows)?rows:[])];
+ return '\uFEFF'+all.map(row=>headers.map((_,index)=>csvCell(Array.isArray(row)?row[index]:'')).join(',')).join('\r\n')+'\r\n';
+}
+function makeOperationalCsv(period,tasks,employees,activity,now=new Date()){
+ const rows=Array.isArray(tasks)?tasks.filter(task=>task&&typeof task==='object'):[];
+ const metrics=getOperationalMetrics(rows,employees,now);
+ const windowMs=period==='harian'?864e5:7*864e5;
+ const periodLabel=period==='harian'?'24 jam terakhir':'7 hari terakhir';
+ const entries=(Array.isArray(activity)?activity:[]).filter(item=>{
+  const at=Number(item?.at),stamp=new Date(at).getTime();
+  return Number.isFinite(at)&&Number.isFinite(stamp)&&now.getTime()-stamp>=0&&now.getTime()-stamp<windowMs;
+ });
+ const headers=['Bagian','Metrik atau Item','Status','Penanggung Jawab','Prioritas','Tenggat','Progres (%)','Jumlah Tugas','Tugas Selesai','Persentase Selesai (%)','Waktu','Keterangan'];
+ const data=[];
+ const add=(section,item,status='',owner='',priority='',due='',progress='',total='',completed='',rate='',time='',note='')=>{
+  data.push([section,item,status,owner,priority,due,progress,total,completed,rate,time,note]);
+ };
+ add('Ekspor','Dibuat pada','','','','','','','','',now.toISOString(),'Laporan operasional lokal');
+ add('Ringkasan','Periode aktivitas','','','','','','','','','',periodLabel);
+ add('Ringkasan','Total tugas','','','','','',metrics.total,'','','','Snapshot saat ekspor');
+ add('Ringkasan','Tugas selesai','','','','','',metrics.completed,metrics.completed,metrics.completionRate,'','Status selesai dibagi seluruh tugas');
+ add('Ringkasan','Sedang dikerjakan','','','','','',metrics.inProgress,'','','','');
+ add('Ringkasan','Menunggu pemeriksaan','','','','','',metrics.inReview,'','','','');
+ add('Ringkasan','Belum dimulai','','','','','',metrics.queued,'','','','');
+ add('Ringkasan','Tugas terlambat','','','','','',metrics.overdue,'','','','Tugas belum selesai dengan tenggat sebelum hari ini');
+ add('Ringkasan','Tenggat dalam 7 hari','','','','','',metrics.dueSoon,'','','','Tugas belum selesai dengan tenggat hingga tujuh hari ke depan');
+ add('Ringkasan','Rata-rata progres','','','','',metrics.averageProgress,'','','','','Rata-rata progres semua tugas');
+ ST.forEach(status=>{
+  const count=metrics.statusCounts[status]||0;
+  add('Status',status,status,'','','','',count,'',metrics.total?Math.round(count/metrics.total*100):0,'','Jumlah tugas pada status ini');
+ });
+ metrics.employeeStats.forEach(employee=>{
+  add('Karyawan',employee.name,'','','','',employee.averageProgress,employee.total,employee.completed,employee.completionRate,'',
+   employee.inProgress+' dikerjakan; '+employee.inReview+' diperiksa; '+employee.queued+' tertunda');
+ });
+ const progressOf=task=>Math.max(0,Math.min(100,Number.isFinite(Number(task.pg))?Number(task.pg):(task.st===ST[3]?100:0)));
+ metrics.overdueTasks.forEach(task=>{
+  add('Tenggat',task.t,'Terlambat',employeeName(task.emp),task.pri,task.due,progressOf(task),'','','','','Perlu tindak lanjut');
+ });
+ metrics.dueSoonTasks.forEach(task=>{
+  add('Tenggat',task.t,'Mendekati tenggat',employeeName(task.emp),task.pri,task.due,progressOf(task),'','','','','Tenggat dalam tujuh hari');
+ });
+ entries.sort((a,b)=>Number(b.at)-Number(a.at)).forEach(item=>{
+  add('Aktivitas',String(item.t||'Aktivitas').slice(0,500),'','','','','','','','',new Date(Number(item.at)).toISOString(),'Catatan aktivitas lokal');
+ });
+ return serializeCsv(headers,data);
+}
+function makeTaskCsv(tasks,employees,now=new Date()){
+ const rows=Array.isArray(tasks)?tasks.filter(task=>task&&typeof task==='object'):[];
+ const metrics=getOperationalMetrics(rows,employees,now);
+ const headers=['ID Tugas','Judul Tugas','Penanggung Jawab','Prioritas','Status','Tenggat','Kategori Tenggat','Progres (%)','Disetujui CEO'];
+ const data=rows.map(task=>{
+  let dueCategory='Tidak ada perhatian khusus';
+  if(task.st!==ST[3]&&/^\d{4}-\d{2}-\d{2}$/.test(String(task.due||''))){
+   if(task.due<metrics.today)dueCategory='Terlambat';
+   else if(task.due<=metrics.weekEnd)dueCategory='Tenggat 7 hari';
+  }
+  const progress=Math.max(0,Math.min(100,Number.isFinite(Number(task.pg))?Number(task.pg):(task.st===ST[3]?100:0)));
+  return [task.id??'',task.t??'',employeeName(task.emp),task.pri??'',task.st??'',task.due??'',dueCategory,progress,task.reviewed?'Ya':'Tidak'];
+ });
+ return serializeCsv(headers,data);
+}
+function downloadCsv(content,filename,message){
+ const blob=new Blob([content],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;link.download=filename;
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ toast(message);
+}
+
 function copy(t){const done=()=>toast('Laporan disalin');try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}function fb(){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){toast('Gagal menyalin. Salin manual dari layar.')}a.remove()}}
 function captureFocusedField(){const active=document.activeElement;if(!active||!$('#main').contains(active)||!active.name)return null;const form=active.closest('form[data-f]');if(!form)return null;return {formType:form.dataset.f,key:form.dataset.key||'',name:active.name,start:typeof active.selectionStart==='number'?active.selectionStart:null,end:typeof active.selectionEnd==='number'?active.selectionEnd:null};}
 // Every named control that differs from its HTML default is kept across a re-render.
@@ -627,6 +705,8 @@ else if(a==='cn'){const n=+b.dataset.n,d=new Date(cal.d);if(cal.m==='hari')d.set
 else if(a==='day'){cal={m:'hari',d:new Date(b.dataset.d+'T00:00:00')}}
 else if(a==='rm'){rep=b.dataset.m}
 else if(a==='srep'){const r=makeRep(rep);S.reports.unshift({title:r.title,body:r.body});log('Laporan disimpan: '+r.title);toast('Laporan disimpan')}
+else if(a==='csv-report'){const date=dk(new Date());downloadCsv(makeOperationalCsv(rep,S.tasks,E,S.log,new Date()),'nexus-laporan-operasional-'+rep+'-'+date+'.csv','Laporan operasional CSV berhasil diunduh.');return}
+else if(a==='csv-tasks'){const date=dk(new Date());downloadCsv(makeTaskCsv(S.tasks,E,new Date()),'nexus-detail-tugas-'+date+'.csv','Detail tugas CSV berhasil diunduh.');return}
 else if(a==='crep'){copy(makeRep(rep).body);return}
 else if(a==='vrep'){const r=S.reports[+b.dataset.i];copy(r.title+'\n\n'+r.body);return}
 else if(a==='backup-export'){downloadBackup();return}
