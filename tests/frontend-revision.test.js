@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
-const script = html.match(/<script>([\\s\\S]*?)<\\/script>/)?.[1];
+const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(script, 'frontend inline script must exist');
 
 const start = script.indexOf('async function reviseTask(');
-const end = script.indexOf('\\nfunction err(', start);
+const end = script.indexOf('\nfunction err(', start);
 assert.ok(start >= 0 && end > start, 'reviseTask must exist');
 const reviseSource = script.slice(start, end);
 
@@ -36,7 +36,7 @@ function createOfflineRevisionHarness(task = {}) {
   const reviseTask = new Function(
     'PERSONAL_OFFLINE_MODE', 'S', 'REVISING', 'em', 'ST', 'save', 'render',
     'api', 'markAIVerified', 'markAIFailed', 'push', 'log', 'toast',
-    reviseSource + '\\nreturn reviseTask;'
+    reviseSource + '\nreturn reviseTask;'
   )(
     true, S, REVISING, em, ST, () => {}, () => {}, api,
     () => {}, () => {}, push, () => {}, (message) => toasts.push(message)
