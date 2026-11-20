@@ -106,6 +106,7 @@ const STATIC_DEMO_NOTICE='Mode demo offline: data hanya tersimpan di browser ini
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
+const ENCRYPTED_BACKUP_FORMAT='nexus-ai-company-encrypted-backup',ENCRYPTED_BACKUP_VERSION=1,BACKUP_KDF_ITERATIONS=310000,MAX_ENCRYPTED_BACKUP_BYTES=3*1024*1024;
 const ST=['Belum dikerjakan','Sedang dikerjakan','Dalam pemeriksaan','Selesai'],PR=['Rendah','Sedang','Tinggi'];
 const E=[
 {id:'sena',n:'Sena',r:'Team Leader',c:'#4cc3ff',d:'Mengatur pekerjaan tim, memilih spesialis yang relevan, mengumpulkan hasil, dan menyerahkannya kepada CEO untuk ditinjau.',k:['Koordinasi','Delegasi','Quality control','Pelaporan'],sys:'Kamu Sena, Team Leader. Pecah instruksi CEO menjadi tugas dan tunjuk spesialis yang relevan. Hasil spesialis harus ditinjau oleh CEO; jangan mengklaim pemeriksaan otomatis.'},
@@ -155,7 +156,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.8.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'0.9.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -178,6 +179,84 @@ async function importBackupFile(file){
  toast('Backup berhasil dipulihkan di perangkat ini.');
  return true;
 }
+function bytesToBase64(bytes){
+ let binary='';
+ for(let offset=0;offset<bytes.length;offset+=0x8000){
+  binary+=String.fromCharCode(...bytes.subarray(offset,Math.min(offset+0x8000,bytes.length)));
+ }
+ return btoa(binary);
+}
+function base64ToBytes(value){
+ if(typeof value!=='string'||!value||value.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(value))throw new Error('Data backup terenkripsi tidak valid.');
+ const binary=atob(value);
+ return Uint8Array.from(binary,char=>char.charCodeAt(0));
+}
+async function deriveBackupKey(password,salt,cryptoProvider=globalThis.crypto){
+ if(typeof password!=='string'||password.length<12)throw new Error('Kata sandi backup harus minimal 12 karakter.');
+ if(!cryptoProvider?.subtle)throw new Error('Browser ini tidak mendukung enkripsi backup. Gunakan Chrome atau Edge versi terbaru.');
+ const material=await cryptoProvider.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+ return cryptoProvider.subtle.deriveKey(
+  {name:'PBKDF2',salt,iterations:BACKUP_KDF_ITERATIONS,hash:'SHA-256'},
+  material,
+  {name:'AES-GCM',length:256},
+  false,
+  ['encrypt','decrypt']
+ );
+}
+async function encryptBackupPayload(payload,password,cryptoProvider=globalThis.crypto){
+ if(!cryptoProvider?.subtle||typeof cryptoProvider.getRandomValues!=='function')throw new Error('Browser ini tidak mendukung enkripsi backup. Gunakan Chrome atau Edge versi terbaru.');
+ if(typeof password!=='string'||password.length<12)throw new Error('Kata sandi backup harus minimal 12 karakter.');
+ const plaintext=new TextEncoder().encode(JSON.stringify(payload));
+ if(plaintext.byteLength>MAX_BACKUP_BYTES)throw new Error('Data backup melebihi batas 2 MB. Hapus data lama atau gunakan backup yang lebih kecil.');
+ const salt=cryptoProvider.getRandomValues(new Uint8Array(16));
+ const iv=cryptoProvider.getRandomValues(new Uint8Array(12));
+ const key=await deriveBackupKey(password,salt,cryptoProvider);
+ const encrypted=await cryptoProvider.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,plaintext);
+ return {
+  format:ENCRYPTED_BACKUP_FORMAT,
+  version:ENCRYPTED_BACKUP_VERSION,
+  cipher:'AES-256-GCM',
+  kdf:'PBKDF2-SHA-256',
+  iterations:BACKUP_KDF_ITERATIONS,
+  salt:bytesToBase64(salt),
+  iv:bytesToBase64(iv),
+  ciphertext:bytesToBase64(new Uint8Array(encrypted)),
+  exportedAt:new Date().toISOString()
+ };
+}
+async function decryptBackupPayload(envelope,password,cryptoProvider=globalThis.crypto){
+ if(!isRecord(envelope)||envelope.format!==ENCRYPTED_BACKUP_FORMAT||envelope.version!==ENCRYPTED_BACKUP_VERSION||
+  envelope.cipher!=='AES-256-GCM'||envelope.kdf!=='PBKDF2-SHA-256'||envelope.iterations!==BACKUP_KDF_ITERATIONS){
+  throw new Error('Format backup terenkripsi tidak dikenal atau versinya tidak didukung.');
+ }
+ if(typeof password!=='string'||password.length<12)throw new Error('Kata sandi backup harus minimal 12 karakter.');
+ if(typeof envelope.ciphertext!=='string'||envelope.ciphertext.length>Math.ceil((MAX_BACKUP_BYTES+16)*4/3)+4){
+  throw new Error('File backup terenkripsi terlalu besar atau tidak valid.');
+ }
+ const salt=base64ToBytes(envelope.salt),iv=base64ToBytes(envelope.iv),ciphertext=base64ToBytes(envelope.ciphertext);
+ if(salt.length!==16||iv.length!==12||ciphertext.length<16||ciphertext.length>MAX_BACKUP_BYTES+16){
+  throw new Error('Data backup terenkripsi tidak valid.');
+ }
+ const key=await deriveBackupKey(password,salt,cryptoProvider);
+ try{
+  const decrypted=await cryptoProvider.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,ciphertext);
+  const text=new TextDecoder('utf-8',{fatal:true}).decode(decrypted);
+  return JSON.parse(text);
+ }catch(error){
+  throw new Error('Kata sandi salah atau file backup terenkripsi rusak.');
+ }
+}
+function downloadEncryptedBackup(envelope){
+ const blob=new Blob([JSON.stringify(envelope,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;
+ link.download='nexus-ai-company-backup-encrypted-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ toast('Backup terenkripsi berhasil diunduh. Simpan kata sandinya secara terpisah.');
+}
+
 function employeeName(id){return em(id)?.n||'Karyawan tidak dikenal'}
 function log(t){S.log.unshift({at:Date.now(),t:String(t).slice(0,500)});S.log=S.log.slice(0,40)}
 function toast(t){const x=$('#toast');x.textContent=t;x.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>x.style.display='none',2800)}
@@ -395,7 +474,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.8.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>COMPANY OS · v0.9.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -508,7 +587,7 @@ laporan(){
  '<div class="c" style="margin-top:12px"><h2>Laporan tersimpan ('+S.reports.length+')</h2>'+(S.reports.map((item,i)=>'<div class="t"><b>'+esc(item.title)+'</b> <button class="sec" data-a="vrep" data-i="'+i+'">Salin</button></div>').join('')||'<p class="mu">Belum ada laporan tersimpan.</p>')+'</div>';
 },
 pengaturan(){return `<h1>Pengaturan</h1><div class="g g2">
-<div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File tetap berada di perangkatmu dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON</button></div><label for="backup-file">Pulihkan dari file backup</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">Pemulihan akan mengganti data NEXUS saat ini setelah kamu menyetujuinya. Maksimal ukuran file 2 MB.</p><p class="mu">File backup tidak dienkripsi. Simpan secara pribadi dan jangan bagikan karena dapat berisi catatan kerja.</p></div>
+<div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File dibuat di perangkat ini dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON biasa</button></div><label for="backup-file">Pulihkan dari file backup (JSON biasa)</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">File backup tidak dienkripsi pada format JSON biasa. Pemulihan mengganti data NEXUS saat ini setelah konfirmasi. Maksimal ukuran file 2 MB.</p><hr><h3>Backup terenkripsi</h3><p class="mu">Enkripsi backup memakai AES-256-GCM dan PBKDF2-SHA-256. Gunakan kata sandi kuat minimal 12 karakter. Kata sandi tidak disimpan oleh aplikasi.</p><form data-f="encrypted-backup-export"><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="new-password" required><label>Ulangi kata sandi</label><input name="confirmPassword" type="password" minlength="12" autocomplete="new-password" required><button type="submit">Unduh backup terenkripsi</button></form><hr><form data-f="encrypted-backup-import"><h3>Pulihkan backup terenkripsi</h3><label>File backup terenkripsi</label><input name="file" type="file" accept=".json,application/json" required><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="current-password" required><button type="submit">Dekripsi & pulihkan backup</button></form><p class="mu">Penting: simpan kata sandi secara terpisah. Jika lupa, backup terenkripsi tidak dapat dipulihkan. Enkripsi ini hanya melindungi file backup; data aktif di penyimpanan browser (localStorage) masih belum dienkripsi.</p></div>
 <form data-f="ceo" class="c"><h2>Profil CEO</h2><label>Nama CEO</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
 <div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${STATIC_DEMO_MODE?'Mode demo offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
 function makeRep(period){
@@ -676,6 +755,38 @@ async function reviseTask(id,note){
 }
 function err(t){const e=$('#err');if(e)e.textContent=t}
 document.addEventListener('submit',async ev=>{const f=ev.target;const k=f.dataset.f;if(!k)return;ev.preventDefault();const d=new FormData(f);
+if(k==='encrypted-backup-export'){
+ const password=String(d.get('password')||''),confirmation=String(d.get('confirmPassword')||'');
+ const passwordField=f.elements?.namedItem?.('password'),confirmField=f.elements?.namedItem?.('confirmPassword');
+ if(password.length<12){toast('Kata sandi backup harus minimal 12 karakter.');return}
+ if(password!==confirmation){toast('Kedua kata sandi tidak sama.');return}
+ if(passwordField)passwordField.value='';if(confirmField)confirmField.value='';
+ try{
+  const envelope=await encryptBackupPayload(createBackupPayload(),password);
+  downloadEncryptedBackup(envelope);
+ }catch(error){toast(error.message||'Gagal membuat backup terenkripsi.')}
+ finally{if(passwordField)passwordField.value='';if(confirmField)confirmField.value='';}
+ return;
+}
+if(k==='encrypted-backup-import'){
+ const fileField=f.elements?.namedItem?.('file'),passwordField=f.elements?.namedItem?.('password');
+ const file=fileField?.files?.[0],password=String(d.get('password')||'');
+ if(!file){toast('Pilih file backup terenkripsi terlebih dahulu.');return}
+ if(passwordField)passwordField.value='';
+ try{
+  if(file.size>MAX_ENCRYPTED_BACKUP_BYTES)throw new Error('File backup terenkripsi terlalu besar. Batas maksimal 3 MB.');
+  const envelopeText=await file.text();
+  if(new TextEncoder().encode(envelopeText).byteLength>MAX_ENCRYPTED_BACKUP_BYTES)throw new Error('File backup terenkripsi terlalu besar. Batas maksimal 3 MB.');
+  let envelope;try{envelope=JSON.parse(envelopeText)}catch(error){throw new Error('File backup terenkripsi bukan JSON yang valid.')}
+  const payload=await decryptBackupPayload(envelope,password);
+  const restored=parseBackupText(JSON.stringify(payload));
+  if(!confirm('Pulihkan backup terenkripsi ini? Data NEXUS saat ini akan diganti dengan isi backup.'))return;
+  S=restored;log('Data dipulihkan dari backup terenkripsi lokal.');
+  save();render();toast('Backup terenkripsi berhasil dipulihkan.');
+ }catch(error){toast(error.message||'Gagal memulihkan backup terenkripsi.')}
+ finally{if(passwordField)passwordField.value='';if(fileField)fileField.value='';}
+ return;
+}
 if(k==='login'){const password=String(d.get('password')||'');const passwordField=f.elements?.namedItem?.('password');if(passwordField)passwordField.value='';try{await api('/api/login',{password});AUTH.authenticated=true;AUTH.error='';f.reset();await refreshAIStatus();toast('Berhasil masuk.')}catch(e){AUTH.error=e.message;render()}return}
 if(k==='edit-task'){
  const task=S.tasks.find(x=>String(x.id)===(f.dataset.key||''));

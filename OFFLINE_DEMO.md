@@ -20,6 +20,7 @@ You can also open `public/index.html` from a local file manager on a supported d
 - Local reports and export/copy
 - Browser-local persistence via `localStorage`
 - Manual JSON backup and restore in Pengaturan (no cloud upload)
+- Password-protected backup export and restore using browser encryption (Web Crypto)
 
 ## What is deliberately disabled
 
@@ -35,7 +36,7 @@ The demo blocks API calls before any network request is made. Do not add an API 
 - Data is stored only in the current browser profile on the current device.
 - It does not sync automatically to another device or cloud service.
 - Use Pengaturan → Unduh Backup JSON to save a local copy. Use Pulihkan dari file backup to restore it; this replaces current data after confirmation.
-- Backup JSON files are not encrypted. Keep them private and avoid including sensitive information.
+- Plain JSON backup files are not encrypted. The encrypted-backup option protects exported backup files with a password. Active browser storage is still unencrypted; keep the device and browser profile private.
 - Clearing browser data or using a different browser/profile may make the demo data unavailable unless you have saved a backup.
 - Do not enter sensitive personal, financial, or password information.
 
@@ -84,3 +85,16 @@ All calculations use the browser's local task and activity data. Completion rate
 5. Open the downloaded CSV file in a spreadsheet program.
 
 Both exports are generated in the browser. The task-detail CSV does not include AI output or chat history. CSV export does not upload data or call an external API.
+
+
+## Encrypted backup (v0.9.0)
+
+1. Open **Pengaturan** and find **Backup & Pemulihan Data**.
+2. Under **Backup terenkripsi**, enter a strong password of at least 12 characters twice.
+3. Select **Unduh backup terenkripsi** and keep the downloaded JSON file.
+4. To restore it, choose the file under **Pulihkan backup terenkripsi**, enter the same password, and submit.
+5. Confirm the restore. The current browser data is replaced by the backup contents.
+
+The file uses AES-256-GCM encryption with a key derived from the password using PBKDF2-SHA-256. Each backup receives a fresh random salt and IV. The password is never saved by the app. If you forget it, the file cannot be decrypted.
+
+The regular **Unduh Backup JSON biasa** option remains unencrypted. This encryption only protects exported backup files; it does not encrypt live data held in browser storage.

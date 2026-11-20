@@ -13,7 +13,7 @@ Virtual company workspace with eight role-based AI employees:
 
 ## Project status
 
-This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.7.0. The local task manager supports searching, filtering by status/owner/priority, sorting, and editing task title, owner, priority, and due date; material edits return existing AI output to CEO review. The dashboard and operational reports summarize task status, progress, employee assignments, overdue tasks, upcoming deadlines, and recent local activity. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
+This is an early backend-enabled MVP built from the original single-file HTML prototype. Current source package version: 0.9.0. The local task manager supports searching, filtering by status/owner/priority, sorting, and editing task title, owner, priority, and due date; material edits return existing AI output to CEO review. The dashboard and operational reports summarize task status, progress, employee assignments, overdue tasks, upcoming deadlines, and recent local activity. The offline UI also supports manual JSON backup and restore on the current device. The dashboard, task manager, calendar, reports, and browser-local data remain in `public/index.html`. Version 0.2.1 adds safer error messages, UTF-8-aware history budgeting, retained specialist context, and improved AI connection status. Version 0.3.0 applies UI/UX Stage 1: refreshed visual design, icon-based desktop/mobile navigation, and an adaptive AI status pill. Backend architecture and browser-local data format are unchanged. The Gemini history sanitizer and deterministic unit tests are in `history.js` and `tests/`. The new Node.js server provides:
 
 - `GET /api/health` — checks server availability and session state. AI-key configuration is only shown after authentication. It does **not** prove that the key or model works; a successful chat is required to verify connectivity.
 - `POST /api/chat` — chats with one specialist using that employee's role prompt.
@@ -197,3 +197,14 @@ See [OFFLINE_DEMO.md](OFFLINE_DEMO.md) for the walkthrough and its limitations.
 - The task-detail CSV intentionally excludes AI results, chat messages, and private work briefs.
 - CSV fields are quoted, embedded quotes are escaped, a UTF-8 BOM is included for spreadsheet compatibility, and formula-like text is neutralized before export.
 - No new package, hosting service, API key, payment method, or cloud credit is required.
+
+
+## v0.9.0 — Encrypted local backups
+
+- Add password-protected backup export and restore using Web Crypto: AES-256-GCM with PBKDF2-SHA-256 and a fresh random salt and IV for each export.
+- Require a password of at least 12 characters and confirmation when exporting. Passwords are not saved by the app.
+- Keep the existing plain JSON backup option for compatibility.
+- Encrypted backups are generated and decrypted entirely in the browser. No server, Gemini, external API, or network upload is used.
+- The encrypted-backup file is limited to 3 MB; its decrypted NEXUS JSON payload is limited to 2 MB.
+- The encryption protects exported backup files only. Active browser data in localStorage is still unencrypted in this version.
+- A forgotten password cannot be recovered. Keep the password separately from the backup file.
