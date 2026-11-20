@@ -1,43 +1,50 @@
-# Panduan NEXUS PERSONAL
+# Panduan NEXUS PERSONAL 1.2.0
 
-NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Kamu menjadi CEO dan menggunakan dashboard/tugas/laporan untuk mengatur pekerjaan. Mode ini tidak membutuhkan akun atau layanan cloud.
+NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Fokus utamanya adalah membuat dan mengelola proyek website dari perencanaan sampai checklist QA.
 
-## 1. Buka di laptop Windows
+## 1. Buka aplikasi
 
-1. Unduh ZIP branch `main`: https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip
-2. Ekstrak ZIP.
-3. Klik dua kali `Buka-NEXUS-Personal.bat`.
-4. Browser membuka aplikasi dalam mode offline.
+**Laptop Windows:** unduh ZIP branch `main`, ekstrak, lalu klik dua kali `Buka-NEXUS-Personal.bat`. Launcher hanya membuka HTML lokal; tidak memasang software, menjalankan server, atau memanggil API.
 
-Launcher hanya membuka file HTML lokal. Launcher tidak memasang program, tidak membuat koneksi API, tidak menjalankan server, dan tidak membutuhkan administrator.
+**Android:** ekstrak ZIP dengan aplikasi File/Pengelola File, lalu buka `public/index.html` menggunakan browser. Apabila browser tidak mempertahankan data lokal, gunakan laptop Windows.
 
-## 2. Buka di Android
+## 2. Buat proyek website
 
-1. Unduh ZIP.
-2. Ekstrak menggunakan aplikasi File/Pengelola File.
-3. Masuk ke `public/index.html`.
-4. Pilih browser untuk membukanya.
+1. Buka menu **Proyek**.
+2. Isi nama proyek dan pilih jenis website: company profile, landing page, portfolio, toko online, blog, atau web app/dashboard.
+3. Jelaskan tujuan website dan siapa pengguna yang dituju.
+4. Isi teknologi yang ingin dipakai, misalnya HTML, CSS, JavaScript atau React.
+5. Tentukan target tanggal (opsional), lalu tekan **Buat proyek + checklist kerja**.
+6. NEXUS membuat daftar pekerjaan dan menghubungkannya dengan proyek.
 
-Browser Android memiliki aturan berbeda untuk file lokal. Apabila data tidak tersimpan setelah halaman ditutup, gunakan versi laptop atau browser lain yang mendukung penyimpanan lokal untuk file tersebut.
+Checklist dibagi ke tim virtual: Sena (koordinasi), Nara (riset), Jejak (analisis/sitemap), Juno (user flow), Rupa (visual), Kata (copywriting), Arka (SEO/pemasaran), Raka (developer), dan Tara (QA).
 
-## 3. Mulai menggunakan
+## 3. Kerjakan dan pantau tugas
 
-- Buka **Pengaturan → Profil Pemilik** untuk mengubah nama pemilik/CEO.
-- Buat tugas pada menu **Tugas**.
-- Atur prioritas, penanggung jawab virtual, tenggat, status, dan progres.
-- Gunakan **Kalender** untuk agenda.
-- Buka **Laporan** untuk ringkasan harian atau mingguan.
-- Gunakan tombol ekspor untuk menyimpan CSV.
-- Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup.
+- Buka detail proyek untuk melihat checklist, total tugas, jumlah selesai, dan progres.
+- Ubah status dan progres setiap tugas sesuai pekerjaan yang benar-benar selesai.
+- Gunakan detail tugas untuk mengubah judul, penanggung jawab, prioritas, dan tenggat.
+- Buka menu **Tugas** untuk mencari dan menyaring seluruh tugas, termasuk filter berdasarkan proyek.
+- Ubah status proyek pada formulir detail proyek.
 
-## 4. Simpan data
+## 4. Buat starter website
 
-Data aplikasi disimpan oleh browser pada perangkat ini. Tutup tab tidak sama dengan menghapus data, tetapi menghapus data situs/browser, memakai profil browser lain, atau berpindah perangkat dapat membuat data tidak terlihat. Buat backup secara berkala.
+Di halaman detail proyek, tekan **Unduh starter website HTML**. NEXUS membuat satu file HTML mandiri berisi struktur halaman, navigasi, hero, fitur, bagian tentang, kontak, dan CSS responsif. Buka file tersebut di browser untuk melihatnya, lalu edit teks, warna, dan komponen menggunakan editor teks/kode.
 
-Backup JSON biasa tidak dienkripsi. Backup terenkripsi memerlukan kata sandi minimal 12 karakter. Simpan kata sandi backup secara terpisah; aplikasi tidak dapat memulihkannya bila lupa.
+Starter HTML adalah fondasi awal. Untuk website dengan database, login, API, pembayaran, atau hosting, komponen tersebut perlu dibangun dan diuji secara terpisah. Tidak ada transaksi atau pembayaran yang dijalankan dari starter.
 
-**Perhatian:** backup terenkripsi tidak mengenkripsi data aktif di `localStorage`. Mode personal ini juga tidak memiliki login atau PIN aplikasi. Jaga perangkat dan profil browser tetap terkunci.
+## 5. Gunakan tim virtual offline
 
-## 5. Fitur AI
+Menu **Koordinasi** dan profil peran memberikan template kerja lokal. Kamu dapat menulis brief dan mendapatkan kerangka riset, desain, copywriting, analisis, coding, dan QA. Template tersebut bukan hasil model AI generatif dan tidak mengakses internet.
 
-Chat AI dan delegasi otomatis belum aktif dalam mode offline. Aplikasi tidak memakai API key, tidak mengirim data ke Gemini, dan tidak menggunakan kredit. Mengaktifkan AI eksternal di masa depan bisa memakai kuota dan berpotensi menimbulkan biaya, sehingga saat ini fitur tersebut dibiarkan nonaktif.
+## 6. Kalender, laporan, dan backup
+
+Gunakan **Kalender** untuk agenda dan **Laporan** untuk ringkasan pekerjaan. Laporan dapat disalin atau diunduh sebagai CSV.
+
+Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup. Backup terenkripsi membutuhkan kata sandi minimal 12 karakter. Enkripsi hanya melindungi file backup; data aktif localStorage belum terenkripsi.
+
+## 7. Data pribadi dan biaya
+
+Data tersimpan di browser/perangkat ini. Tidak ada akun online, login aplikasi, atau sinkronisasi otomatis. Jaga profil browser dan perangkat tetap privat, serta buat backup berkala.
+
+Mode offline tidak menggunakan API key, Gemini, layanan cloud, deployment, atau kredit. Jangan menjalankan backend AI atau mengisi API key bila ingin mempertahankan aturan nol biaya.
