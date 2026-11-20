@@ -1,8 +1,14 @@
 # NEXUS PERSONAL
 
-**Versi 1.2.0 — ruang kerja pribadi dan proyek website**
+**Versi 1.3.0 — ruang kerja pribadi, selalu offline**
 
-NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu bertindak sebagai CEO dan menggunakan tim virtual untuk mengatur proyek, terutama membuat website dari ide sampai checklist pengujian.
+NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu bertindak sebagai CEO dan menggunakan ruang kerja proyek untuk merencanakan website, mengelola checklist, membuat starter HTML, dan memantau pekerjaan.
+
+## Aturan operasi pribadi
+
+Versi ini **selalu berjalan dalam mode offline**, baik dibuka dari file HTML maupun melalui alamat localhost. Antarmuka tidak memeriksa endpoint kesehatan, tidak melakukan login backend, dan tidak mengirim chat, revisi, atau pekerjaan ke API AI. Template tim virtual bersifat lokal, bukan jawaban dari model AI.
+
+Tidak perlu mengisi API key, membuat akun layanan AI, menambah kartu, memakai kredit, menjalankan deployment, atau menyiapkan hosting. Backend lama tetap ada di repositori untuk pengujian/riwayat pengembangan, tetapi tidak digunakan oleh antarmuka NEXUS PERSONAL.
 
 ## Buka aplikasi tanpa instalasi
 
@@ -10,7 +16,7 @@ NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu bertindak sebagai 
 1. Unduh [ZIP versi main](https://github.com/sihotangjesse-cloud/nexus-ai-company/archive/refs/heads/main.zip).
 2. Ekstrak ZIP.
 3. Klik dua kali **Buka-NEXUS-Personal.bat**.
-4. Browser membuka NEXUS PERSONAL. Pastikan indikator menunjukkan **MODE DEMO OFFLINE**.
+4. Browser membuka NEXUS PERSONAL. Indikator harus menunjukkan **MODE PRIBADI OFFLINE**.
 
 Jika launcher tidak terbuka, buka folder `public` dan klik dua kali `index.html`.
 
@@ -19,7 +25,7 @@ Jika launcher tidak terbuka, buka folder `public` dan klik dua kali `index.html`
 2. Buka `public/index.html` dengan browser.
 3. Dukungan penyimpanan file lokal berbeda antar-browser Android. Untuk penyimpanan yang paling konsisten, gunakan laptop Windows.
 
-Aplikasi tidak membutuhkan Node.js, server, hosting, kartu, langganan, atau kredit cloud.
+Aplikasi dapat digunakan langsung tanpa memasang Node.js. Launcher Windows hanya membuka file HTML lokal.
 
 ## Ruang proyek website
 
@@ -53,21 +59,15 @@ Di detail proyek pilih **Unduh starter website HTML** untuk membuat file awal we
 - Kalender, agenda, laporan harian/mingguan, ekspor CSV.
 - Backup JSON biasa atau terenkripsi dan pemulihan data.
 
-## AI dan aturan tanpa biaya
-
-NEXUS PERSONAL pada mode offline **tidak menjalankan model AI eksternal**. Chat peran memberikan kerangka/checklist offline, bukan jawaban generatif. Pembuatan proyek, checklist, dan starter HTML berjalan di browser tanpa API.
-
-Backend Gemini tetap opsional di repositori tetapi tidak dipakai aplikasi offline. Jangan menambahkan API key atau mengaktifkan endpoint AI. Permintaan ke penyedia AI dapat memakai kuota dan berpotensi menimbulkan biaya, sehingga fitur tersebut tidak diaktifkan.
-
 ## Data dan privasi
 
-- Data proyek, tugas, agenda, dan laporan disimpan di `localStorage` browser pada perangkat ini.
+- Data proyek, tugas, agenda, percakapan template, dan laporan disimpan di `localStorage` browser pada perangkat ini.
 - Tidak ada akun online atau sinkronisasi antarperangkat.
 - Aplikasi personal ini tidak memiliki layar login/PIN. Siapa pun yang dapat membuka profil browser yang sama mungkin dapat melihat data.
 - Data aktif localStorage belum dienkripsi.
-- Backup JSON biasa tidak dienkripsi. Backup terenkripsi hanya melindungi file ekspor, bukan data aktif browser.
+- Backup JSON biasa tidak terenkripsi. Backup terenkripsi hanya melindungi file ekspor, bukan data aktif browser.
 - Simpan backup dan kata sandinya di tempat privat. Kata sandi backup yang terlupa tidak dapat dipulihkan.
 
 ## Pemeriksaan kode
 
-GitHub Actions menjalankan instalasi dari lockfile, pemeriksaan sintaks/frontend, dan tes otomatis. Tes backend memakai mock lokal dan tidak melakukan panggilan Gemini sungguhan.
+GitHub Actions menjalankan instalasi dari lockfile, pemeriksaan sintaks/frontend, dan tes otomatis. Tes backend memakai mock lokal. Tes frontend memastikan mode offline tidak mengirim permintaan API saat aplikasi dibuka melalui HTTP localhost.
