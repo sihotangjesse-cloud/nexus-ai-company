@@ -10,8 +10,9 @@ assert.ok(start >= 0 && end > start, 'filterTasks helper must exist');
 const source = script.slice(start, end);
 const priorities = ['Rendah', 'Sedang', 'Tinggi'];
 const employees = { nara: 'Nara', kata: 'Kata', juno: 'Juno' };
-const filter = new Function('employeeName', 'PR', source + '\nreturn filterTasks;')(
+const filter = new Function('employeeName', 'projectTitle', 'PR', source + '\nreturn filterTasks;')(
   id => employees[id] || 'Tidak dikenal',
+  () => '',
   priorities
 );
 const tasks = [
