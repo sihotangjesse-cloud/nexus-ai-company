@@ -70,7 +70,7 @@ test('an empty due date is allowed and an unchanged edit is a no-op',()=>{
 });
 
 test('task cards render an edit form per task and submit it through the local handler',()=>{
- assert.match(html,/form data-f="edit-task" data-key="\$\{k\.id\}"/);
+ assert.match(script,/function taskCardView\(k\)/);\n assert.match(script,/form data-f="edit-task" data-key="\'\+esc\(k\.id\)\+\'"/);
  assert.match(html,/Mengubah judul atau penanggung jawab tidak membuat ulang hasil AI/);
  assert.match(script,/if\(k==='edit-task'\)\{/);
  assert.match(script,/applyTaskDetails\(task,\{t:d\.get\('t'\),e:d\.get\('e'\),p:d\.get\('p'\),d:d\.get\('d'\)\}\)/);
