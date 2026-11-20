@@ -63,3 +63,13 @@ These edits are stored only in the current browser profile.
 5. Select **Reset filter** to clear every filter.
 
 These operations run locally in the current browser. They do not send task information to a server or AI service.
+
+
+## Productivity dashboard and operational reports (v0.7.0)
+
+- **Dashboard:** total tasks, completed count and rate, overdue tasks, upcoming seven-day deadlines, status distribution, progress, and task assignments by employee.
+- **Laporan:** choose the daily (24-hour activity window) or weekly (seven-day activity window) view. The report combines a current task snapshot with recent activity.
+- **Tenggat:** overdue and upcoming tasks are highlighted to help prioritize work.
+- **Simpan laporan** stores the report in the current browser. **Salin teks (ekspor)** copies it for use elsewhere.
+
+All calculations use the browser's local task and activity data. Completion rates measure the share of assigned tasks marked complete; they do not measure output quality or actual business revenue/profit.
