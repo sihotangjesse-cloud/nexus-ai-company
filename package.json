@@ -1,8 +1,8 @@
 {
   "name": "nexus-ai-company",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "NEXUS AI COMPANY — virtual company workspace with role-based AI employees.",
+  "description": "NEXUS PERSONAL — personal offline workspace with a virtual company team.",
   "type": "module",
   "scripts": {
     "start": "node server.js",
