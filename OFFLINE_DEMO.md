@@ -4,7 +4,7 @@ This is a local browser preview only. It does not deploy a server and does not u
 
 ## Open the demo
 
-1. Download the repository ZIP from the branch `offline-demo/v0.3.6`.
+1. Download the repository ZIP from the `main` branch to get the latest offline demo.
 2. Extract the ZIP on your computer.
 3. Open the `public` folder.
 4. Double-click `index.html` to open it in a modern browser (Chrome or Edge).
@@ -52,3 +52,14 @@ This demo is not NEXUS production hosting. Real AI features require a backend se
 4. Existing AI output is kept. When the task title or owner changes, the result returns to **Dalam pemeriksaan** so it is reviewed again.
 
 These edits are stored only in the current browser profile.
+
+
+## Search and filter tasks (v0.6.0)
+
+1. Open **Tugas**.
+2. Enter one or more words in **Cari tugas**. The search checks the task title, employee name, status, priority, and due date.
+3. Combine the **Status**, **Penanggung jawab**, and **Prioritas** filters to narrow the list.
+4. Use **Urutkan** to show newest tasks, nearest due dates, or highest priorities first.
+5. Select **Reset filter** to clear every filter.
+
+These operations run locally in the current browser. They do not send task information to a server or AI service.

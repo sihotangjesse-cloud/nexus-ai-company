@@ -38,7 +38,7 @@ test('dashboard metrics include inline SVG icon slots', () => {
 test('specialist result is escaped and persisted task output is visible for CEO review', () => {
   assert.match(html, /task\.result=a\.response\.slice\(0,12000\)/);
   assert.match(html, /class="task-result"/);
-  assert.match(html, /<pre>\$\{esc\(k\.result\)\}<\/pre>/);
+  assert.match(html, /<pre>'\+esc\(k\.result\)\+'<\/pre>/);
 });
 
 test('legacy tasks with unknown employees have a safe display fallback', () => {

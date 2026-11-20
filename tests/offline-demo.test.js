@@ -32,7 +32,7 @@ test('offline demo chat controls are disabled and carry an explicit notice', () 
 test('offline demo clearly labels AI chat and hides the AI revision form', () => {
   assert.match(html, /Direktori karyawan contoh\. Percakapan AI tidak tersedia pada demo offline/);
   assert.match(html, /Chat AI dan delegasi Sena tidak aktif pada mode demo offline/);
-  assert.match(html, /\$\{!STATIC_DEMO_MODE&&em\(k\.emp\)\?/);
+  assert.match(html, /if\(!STATIC_DEMO_MODE&&em\(k\.emp\)\)/);
   assert.match(html, /Mode demo offline: revisi AI tidak tersedia/);
 });
 
