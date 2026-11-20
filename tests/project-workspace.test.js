@@ -24,21 +24,26 @@ function extractFunction(name, nextMarker) {
   return script.slice(start, end);
 }
 
+const normalizeSite = new Function(
+  'isRecord', 'WEBSITE_TYPES',
+  extractFunction('defaultWebsiteContent', 'function normalizeProject(raw){') + ';return normalizeWebsiteContent;'
+)((value) => !!value && typeof value === 'object' && !Array.isArray(value), websiteTypes);
+
 const buildPlan = new Function(
   'WEBSITE_TYPES',
   extractFunction('buildWebsitePlan', 'function buildWebsiteStarter(project){') + ';return buildWebsitePlan;'
 )(websiteTypes);
 
 const buildStarter = new Function(
-  'esc', 'WEBSITE_TYPES',
-  extractFunction('buildWebsiteStarter', 'function downloadWebsiteStarter(project){') + ';return buildWebsiteStarter;'
-)(escapeHtml, websiteTypes);
+  'esc', 'WEBSITE_TYPES', 'normalizeWebsiteContent',
+  extractFunction('buildWebsiteStarter', 'function websiteContentFromForm(form,project){') + ';return buildWebsiteStarter;'
+)(escapeHtml, websiteTypes, normalizeSite);
 
 const normalizeProject = new Function(
-  'isRecord', 'WEBSITE_TYPES', 'PROJECT_STATUSES',
+  'isRecord', 'WEBSITE_TYPES', 'PROJECT_STATUSES', 'normalizeWebsiteContent',
   extractFunction('normalizeProject', 'function normalizeTask(raw){') + ';return normalizeProject;'
 )((value) => !!value && typeof value === 'object' && !Array.isArray(value), websiteTypes,
- ['Perencanaan', 'Berjalan', 'Ditunda', 'Selesai']);
+ ['Perencanaan', 'Berjalan', 'Ditunda', 'Selesai'], normalizeSite);
 
 test('project normalization keeps valid data and falls back safely for invalid fields', () => {
   const project = normalizeProject({

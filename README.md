@@ -1,6 +1,6 @@
 # NEXUS PERSONAL
 
-**Versi 1.3.0 — ruang kerja pribadi, selalu offline**
+**Versi 1.4.0 — ruang kerja pribadi, selalu offline**
 
 NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu bertindak sebagai CEO dan menggunakan ruang kerja proyek untuk merencanakan website, mengelola checklist, membuat starter HTML, dan memantau pekerjaan.
 
@@ -45,7 +45,11 @@ Setiap proyek mempunyai detail, status, target tanggal, daftar tugas terkait, da
 - Raka — web development.
 - Tara — QA/testing.
 
-Di detail proyek pilih **Unduh starter website HTML** untuk membuat file awal website mandiri. File tersebut bisa dibuka di browser dan diedit memakai editor teks/kode. Starter ini merupakan kerangka awal, bukan website lengkap yang sudah siap dipublikasikan.
+Di detail proyek pilih **Unduh starter website HTML** untuk membuat file awal website mandiri. File tersebut bisa dibuka di browser dan diedit memakai editor teks/kode. Website Studio membuat HTML statis dari konten yang kamu isi. Ini fondasi frontend, bukan aplikasi lengkap dengan database, login, API, pembayaran, atau hosting.
+
+## Website Studio offline
+
+Dari detail proyek, edit nama brand, label, judul, deskripsi, teks tombol, warna utama, tiga kartu fitur, bagian tentang, dan kontak. Pratinjau berubah langsung saat konten diedit. Simpan perubahan ke data proyek, lalu unduh satu file HTML mandiri. Pratinjau menggunakan iframe sandbox tanpa JavaScript atau aset eksternal. Hasilnya adalah halaman statis yang dapat diedit lagi.
 
 ## Fitur yang tersedia
 

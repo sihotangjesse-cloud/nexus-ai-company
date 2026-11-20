@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0 — Offline Website Studio
+
+- Add project-specific website content editing for brand, hero, CTA, accent color, feature cards, about, and contact sections.
+- Add live preview in a sandboxed iframe without JavaScript or external assets.
+- Persist editor content with each local project and export a standalone static HTML file.
+- Keep all editing and preview operations in the browser; no AI/API, payment, hosting, or cloud services are introduced.
+
 ## 1.3.0 — Forced-offline personal workspace
 
 - Force the frontend into offline-only mode for every protocol, not just `file://`.

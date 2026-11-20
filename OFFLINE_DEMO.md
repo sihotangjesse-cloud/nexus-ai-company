@@ -17,6 +17,9 @@ NEXUS PERSONAL adalah ruang kerja satu pemilik yang **selalu offline**. Mode ini
 - Template kerja offline untuk riset, koordinasi, desain, copywriting, analisis, developer, dan QA.
 - Kalender, agenda, laporan, ekspor CSV, backup, dan pemulihan.
 
+- Website Studio lokal: edit judul, deskripsi, tombol, warna, tiga fitur, bagian tentang, dan kontak dengan pratinjau langsung.
+- Simpan konten per proyek dan unduh HTML statis mandiri. Pratinjau memakai iframe sandbox tanpa skrip atau aset eksternal.
+
 ## Batas AI dan jaringan
 Chat tim hanya menghasilkan template/checklist lokal, bukan balasan model AI. Tidak ada pemanggilan Gemini atau API dari antarmuka, bahkan ketika halaman dibuka melalui localhost. Fungsi backend lama tetap tersimpan untuk keperluan pengujian pengembangan, tetapi tidak digunakan aplikasi personal. Jangan menambahkan API key atau menjalankan backend lama.
 
