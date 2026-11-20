@@ -108,6 +108,8 @@ const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
 const ENCRYPTED_BACKUP_FORMAT='nexus-ai-company-encrypted-backup',ENCRYPTED_BACKUP_VERSION=1,BACKUP_KDF_ITERATIONS=310000,MAX_ENCRYPTED_BACKUP_BYTES=3*1024*1024;
 const ST=['Belum dikerjakan','Sedang dikerjakan','Dalam pemeriksaan','Selesai'],PR=['Rendah','Sedang','Tinggi'];
+const WEBSITE_TYPES=[{id:'company',label:'Company profile'},{id:'landing',label:'Landing page'},{id:'portfolio',label:'Portfolio'},{id:'ecommerce',label:'Toko online'},{id:'blog',label:'Blog / artikel'},{id:'webapp',label:'Web app / dashboard'}];
+const PROJECT_STATUSES=['Perencanaan','Berjalan','Ditunda','Selesai'];
 const E=[
 {id:'sena',n:'Sena',r:'Team Leader',c:'#4cc3ff',d:'Mengatur pekerjaan tim, memilih spesialis yang relevan, mengumpulkan hasil, dan menyerahkannya kepada CEO untuk ditinjau.',k:['Koordinasi','Delegasi','Quality control','Pelaporan'],sys:'Kamu Sena, Team Leader. Pecah instruksi CEO menjadi tugas dan tunjuk spesialis yang relevan. Hasil spesialis harus ditinjau oleh CEO; jangan mengklaim pemeriksaan otomatis.'},
 {id:'nara',n:'Nara',r:'Market Researcher',c:'#4be3a0',d:'Meneliti pasar, menganalisis kompetitor, menemukan peluang, dan memahami kebutuhan pelanggan.',k:['Riset pasar','Analisis kompetitor','Kebutuhan pelanggan'],sys:'Kamu Nara, Market Researcher. Jangan mengarang data. Sebutkan sumber atau nyatakan data belum tersedia.'},
@@ -116,11 +118,22 @@ const E=[
 {id:'arka',n:'Arka',r:'Marketing Manager',c:'#ffc857',d:'Menyusun strategi pemasaran, target pelanggan, kampanye, dan evaluasi pertumbuhan.',k:['Strategi pemasaran','Target pelanggan','Kampanye','Evaluasi'],sys:'Kamu Arka, Marketing Manager. Susun strategi bertahap dengan metrik evaluasi.'},
 {id:'jejak',n:'Jejak',r:'Business Analyst',c:'#ff8a5c',d:'Menganalisis keuangan, biaya, potensi keuntungan, dan risiko berdasarkan data.',k:['Analisis keuangan','Biaya & keuntungan','Risiko'],sys:'Kamu Jejak, Business Analyst. Jangan mengarang angka keuangan. Minta data atau nyatakan belum tersedia.'},
 {id:'garis',n:'Garis',r:'Storyboard Artist',c:'#7fd4ff',d:'Membuat storyboard video, alur cerita, adegan, dan rancangan produksi.',k:['Storyboard','Alur cerita','Konsep visual'],sys:'Kamu Garis, Storyboard Artist. Susun adegan berurutan dengan deskripsi visual.'},
-{id:'rupa',n:'Rupa',r:'Art Director',c:'#c9f26b',d:'Menentukan konsep desain, identitas visual, warna, tipografi, dan konsistensi merek.',k:['Identitas visual','Warna & tipografi','Arahan desain'],sys:'Kamu Rupa, Art Director. Tentukan arah visual dan jaga konsistensi merek.'}];
+{id:'rupa',n:'Rupa',r:'Art Director',c:'#c9f26b',d:'Menentukan konsep desain, identitas visual, warna, tipografi, dan konsistensi merek.',k:['Identitas visual','Warna & tipografi','Arahan desain'],sys:'Kamu Rupa, Art Director. Tentukan arah visual dan jaga konsistensi merek.'},
+{id:'raka',n:'Raka',r:'Web Developer',c:'#68a7ff',d:'Menerjemahkan kebutuhan proyek menjadi struktur website, komponen, interaksi, dan layout responsif.',k:['HTML','CSS','JavaScript','Frontend','Integrasi'],sys:'Kamu Raka, Web Developer. Buat implementasi yang sederhana, aman, responsif, dan mudah dirawat. Jelaskan file serta cara menjalankannya.'},
+{id:'tara',n:'Tara',r:'QA Tester',c:'#ff9e78',d:'Memeriksa alur penggunaan, tampilan mobile, validasi formulir, aksesibilitas, dan bug sebelum proyek diselesaikan.',k:['Testing','Quality assurance','Responsive','Aksesibilitas'],sys:'Kamu Tara, QA Tester. Susun kasus uji yang dapat dijalankan dan laporkan bug secara terstruktur.'}
+];
 const em=id=>E.find(e=>e.id===id);
 let S;
 const isRecord=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
-const defaultState=()=>({ceo:'Founder',tasks:[],chats:{},events:[],reports:[],log:[]});
+const defaultState=()=>({ceo:'Founder',projects:[],tasks:[],chats:{},events:[],reports:[],log:[]});
+function normalizeProject(raw){
+ if(!isRecord(raw))return null;
+ const id=Number(raw.id),createdAt=Number(raw.createdAt);
+ const type=WEBSITE_TYPES.some(item=>item.id===raw.type)?raw.type:'company';
+ const status=PROJECT_STATUSES.includes(raw.status)?raw.status:'Perencanaan';
+ const targetDate=typeof raw.targetDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(raw.targetDate)?raw.targetDate:'';
+ return {id:Number.isFinite(id)&&id>0?id:Date.now()+Math.random(),name:String(raw.name||'Proyek tanpa nama').trim().slice(0,100),type,objective:String(raw.objective||'').trim().slice(0,1200),stack:String(raw.stack||'HTML, CSS, JavaScript').trim().slice(0,160),targetDate,status,createdAt:Number.isFinite(createdAt)&&createdAt>0?createdAt:Date.now()};
+}
 function normalizeTask(raw){
  if(!isRecord(raw))return null;
  const st=ST.includes(raw.st)?raw.st:ST[0];
@@ -129,7 +142,7 @@ function normalizeTask(raw){
  const progress=st===ST[0]?0:st===ST[1]?Math.max(1,Math.min(89,rawProgress||40)):st===ST[2]?90:100;
  const candidateId=Number(raw.id);
  const safeId=Number.isFinite(candidateId)&&candidateId>0?candidateId:Date.now()+Math.random();
- return {id:safeId,t:String(raw.t||'Tugas tanpa judul').slice(0,160),emp:typeof raw.emp==='string'?raw.emp:'unassigned',pri:PR.includes(raw.pri)?raw.pri:'Sedang',due:typeof raw.due==='string'?raw.due:'',st,pg:progress,h:history,result:typeof raw.result==='string'?raw.result.slice(0,12000):'',brief:typeof raw.brief==='string'?raw.brief.slice(0,2000):'',reviewed:raw.reviewed===true&&st===ST[3]};
+ return {id:safeId,t:String(raw.t||'Tugas tanpa judul').slice(0,160),emp:typeof raw.emp==='string'?raw.emp:'unassigned',pri:PR.includes(raw.pri)?raw.pri:'Sedang',due:typeof raw.due==='string'?raw.due:'',st,pg:progress,h:history,result:typeof raw.result==='string'?raw.result.slice(0,12000):'',brief:typeof raw.brief==='string'?raw.brief.slice(0,2000):'',reviewed:raw.reviewed===true&&st===ST[3],projectId:raw.projectId===undefined||raw.projectId===null?'':String(raw.projectId).slice(0,80)};
 }
 function normalizeState(raw){
  const base=defaultState();
@@ -141,6 +154,7 @@ function normalizeState(raw){
  }
  return {
   ceo:typeof raw.ceo==='string'&&raw.ceo.trim()?raw.ceo.trim().slice(0,40):base.ceo,
+  projects:Array.isArray(raw.projects)?raw.projects.map(normalizeProject).filter(Boolean).slice(0,50):[],
   tasks:Array.isArray(raw.tasks)?raw.tasks.map(normalizeTask).filter(Boolean).slice(0,500):[],
   chats,
   events:Array.isArray(raw.events)?raw.events.filter(isRecord).map(item=>({id:(Number.isFinite(Number(item.id))&&Number(item.id)>0?Number(item.id):Date.now()+Math.random()),title:String(item.title||'Agenda').slice(0,120),date:typeof item.date==='string'?item.date:'',type:String(item.type||'Agenda').slice(0,40)})).slice(-500):[],
@@ -255,6 +269,73 @@ function downloadEncryptedBackup(envelope){
  document.body.appendChild(link);link.click();link.remove();
  setTimeout(()=>URL.revokeObjectURL(url),1500);
  toast('Backup terenkripsi berhasil diunduh. Simpan kata sandinya secara terpisah.');
+}
+
+
+function projectById(id){return S.projects.find(project=>String(project.id)===String(id))||null}
+function projectTitle(id){return projectById(id)?.name||''}
+function projectOptions(selected=''){return '<option value="">Tanpa proyek</option>'+S.projects.map(project=>'<option value="'+esc(project.id)+'" '+(String(project.id)===String(selected)?'selected':'')+'>'+esc(project.name)+'</option>').join('')}
+function projectStats(id){
+ const tasks=S.tasks.filter(task=>String(task.projectId||'')===String(id));
+ const completed=tasks.filter(task=>task.st===ST[3]).length;
+ const progress=tasks.length?Math.round(tasks.reduce((sum,task)=>sum+(Number(task.pg)||0),0)/tasks.length):0;
+ return {total:tasks.length,completed,progress,open:tasks.length-completed,tasks};
+}
+function buildWebsitePlan(project){
+ const name=String(project.name||'Proyek website').slice(0,100);
+ const objective=String(project.objective||'tujuan proyek').slice(0,400);
+ const stack=String(project.stack||'HTML, CSS, JavaScript').slice(0,120);
+ const type=WEBSITE_TYPES.find(item=>item.id===project.type)?.label||'Website';
+ const steps=[
+  {emp:'sena',title:'Tetapkan brief dan kriteria keberhasilan',priority:'Tinggi',brief:'Rangkum tujuan '+name+', pengguna utama, masalah yang diselesaikan, ruang lingkup, batasan, dan definisi selesai. Tujuan pemilik: '+objective},
+  {emp:'nara',title:'Riset pengguna dan referensi kompetitor',priority:'Tinggi',brief:'Susun pertanyaan riset, persona awal, kebutuhan pengguna, referensi relevan, serta asumsi yang masih perlu divalidasi untuk '+type+' '+name+'. Jangan mengarang data.'},
+  {emp:'jejak',title:'Susun sitemap dan daftar kebutuhan fitur',priority:'Tinggi',brief:'Buat struktur halaman, navigasi, kebutuhan konten, fitur wajib, fitur tambahan, dan prioritas MVP untuk '+name+'.'},
+  {emp:'juno',title:'Buat user flow dan wireframe halaman utama',priority:'Tinggi',brief:'Rancang alur pengguna dari halaman masuk sampai tindakan utama. Jelaskan wireframe desktop dan mobile untuk '+name+'.'},
+  {emp:'rupa',title:'Tentukan design system dan identitas visual',priority:'Sedang',brief:'Tentukan palet warna, tipografi, grid, spacing, tombol, kartu, formulir, ikon, serta aturan responsive design untuk '+name+'.'},
+  {emp:'kata',title:'Tulis copy halaman dan microcopy',priority:'Sedang',brief:'Siapkan headline, subheadline, manfaat, deskripsi fitur, CTA, pesan validasi formulir, dan FAQ. Semua klaim harus dapat dibuktikan.'},
+  {emp:'arka',title:'Susun strategi SEO dan distribusi awal',priority:'Sedang',brief:'Tentukan kata kunci awal, title/meta description, struktur konten, kanal distribusi, dan metrik yang dapat diamati. Jangan membuat klaim hasil.'},
+  {emp:'raka',title:'Bangun kerangka proyek dan struktur halaman',priority:'Tinggi',brief:'Siapkan struktur file dan komponen yang mudah dirawat menggunakan stack pilihan: '+stack+'. Pastikan proyek bisa dijalankan lokal.'},
+  {emp:'raka',title:'Implementasikan layout responsif dan komponen UI',priority:'Tinggi',brief:'Implementasikan navigasi, hero, bagian konten, footer, layout desktop/mobile, state kosong, dan tampilan loading/error sesuai wireframe.'},
+  {emp:'raka',title:'Bangun fitur dan interaksi utama',priority:'Tinggi',brief:'Implementasikan fitur inti sesuai brief. Validasi input, tampilkan pesan keberhasilan/kegagalan, dan hindari menyimpan secret di frontend.'},
+  {emp:'tara',title:'Uji fungsi, formulir, dan tampilan mobile',priority:'Tinggi',brief:'Buat dan jalankan checklist uji navigasi, tautan, formulir, ukuran layar, keyboard, aksesibilitas dasar, console error, dan kasus input tidak valid.'},
+  {emp:'tara',title:'Audit akhir, dokumentasi, dan checklist rilis lokal',priority:'Sedang',brief:'Catat bug tersisa, verifikasi instruksi instalasi lokal, siapkan README, daftar konfigurasi, dan checklist sebelum pemilik memutuskan publikasi.'}
+ ];
+ if(project.type==='ecommerce')steps.splice(9,0,{emp:'raka',title:'Buat katalog produk dan alur keranjang',priority:'Tinggi',brief:'Rancang daftar produk, detail produk, keranjang, total harga contoh, dan state kosong. Jangan mengaktifkan transaksi atau pembayaran.'});
+ if(project.type==='blog')steps.splice(9,0,{emp:'kata',title:'Siapkan template artikel dan kategori konten',priority:'Sedang',brief:'Rancang template artikel, kategori, daftar artikel, metadata, dan tautan artikel terkait.'});
+ if(project.type==='portfolio')steps.splice(9,0,{emp:'kata',title:'Susun studi kasus dan galeri proyek',priority:'Sedang',brief:'Susun template studi kasus: masalah, peran, proses, solusi, dan hasil yang dapat diverifikasi. Gunakan placeholder untuk data yang belum ada.'});
+ if(project.type==='webapp')steps.splice(9,0,{emp:'raka',title:'Rancang state aplikasi dan alur data',priority:'Tinggi',brief:'Tentukan model data, state, validasi, empty/loading/error states, serta batasan penyimpanan lokal sebelum implementasi.'});
+ return steps;
+}
+function buildWebsiteStarter(project){
+ const name=esc(project.name||'Website Baru'),objective=esc(project.objective||'Jelaskan manfaat utama website ini kepada pengunjung.'),type=esc(WEBSITE_TYPES.find(item=>item.id===project.type)?.label||'Website');
+ return [
+ '<!doctype html>','<html lang="id">','<head>','<meta charset="utf-8">','<meta name="viewport" content="width=device-width, initial-scale=1">',
+ '<meta name="description" content="'+objective+'">','<title>'+name+'</title>','<style>',
+ ':root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#142033;background:#f6f8fc;line-height:1.6}',
+ '*{box-sizing:border-box}body{margin:0}a{color:inherit;text-decoration:none}.wrap{width:min(1100px,calc(100% - 40px));margin:auto}',
+ 'header{position:sticky;top:0;background:#ffffffeb;border-bottom:1px solid #e5eaf2;backdrop-filter:blur(12px);z-index:2}',
+ 'nav{height:70px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-weight:800;font-size:20px;color:#15294a}nav .links{display:flex;gap:22px;color:#60708a;font-size:14px}',
+ '.hero{padding:90px 0 80px;background:radial-gradient(circle at 90% 10%,#dceaff,transparent 40%),linear-gradient(130deg,#fff,#f3f7ff)}.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}',
+ '.eyebrow{color:#2563eb;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}h1{font-size:clamp(38px,6vw,66px);line-height:1.04;letter-spacing:-.05em;margin:12px 0 20px}.lead{font-size:18px;color:#64748b;max-width:650px}',
+ '.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;padding:12px 20px;border-radius:12px;background:#2563eb;color:white;font-weight:700}.btn.alt{background:white;color:#1e3a8a;border:1px solid #dbe5f4}',
+ '.preview{background:#132746;border-radius:24px;padding:28px;color:white;box-shadow:0 24px 60px #1b3c682b}.preview small{color:#9dc2ff}.preview h2{font-size:28px;margin:20px 0 8px}',
+ 'section{padding:70px 0}.section-title{text-align:center;max-width:650px;margin:0 auto 32px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid #e6ebf3;border-radius:18px;padding:24px}.card h3{margin:0 0 8px}.muted{color:#64748b}.about{background:white}.contact{background:#132746;color:white;border-radius:24px;padding:40px;text-align:center}footer{padding:30px 0;color:#64748b;font-size:13px}',
+ '@media(max-width:760px){.hero{padding:58px 0}.hero-grid,.cards{grid-template-columns:1fr}nav .links{gap:10px;font-size:12px}.preview{display:none}section{padding:48px 0}}',
+ '</style>','</head>','<body>','<header><nav class="wrap"><a class="brand" href="#">'+name+'</a><div class="links"><a href="#fitur">Fitur</a><a href="#tentang">Tentang</a><a href="#kontak">Kontak</a></div></nav></header>',
+ '<main><section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">'+type+'</div><h1>'+name+'</h1><p class="lead">'+objective+'</p><div class="actions"><a class="btn" href="#kontak">Hubungi kami</a><a class="btn alt" href="#fitur">Pelajari lebih lanjut</a></div></div><aside class="preview"><small>WEBSITE STARTER · NEXUS PERSONAL</small><h2>Mulai dari ide, lanjutkan dengan aksi.</h2><p>Ubah teks, warna, gambar, dan bagian halaman sesuai kebutuhan proyekmu.</p></aside></div></section>',
+ '<section id="fitur"><div class="wrap"><div class="section-title"><div class="eyebrow">Yang ditawarkan</div><h2>Fitur utama</h2><p class="muted">Ganti tiga kartu ini dengan fitur atau layanan utama website.</p></div><div class="cards"><article class="card"><h3>Jelas</h3><p class="muted">Jelaskan manfaat utama yang diterima pengunjung.</p></article><article class="card"><h3>Mudah digunakan</h3><p class="muted">Buat pengunjung menemukan informasi dengan cepat.</p></article><article class="card"><h3>Responsif</h3><p class="muted">Tampilan menyesuaikan desktop, tablet, dan ponsel.</p></article></div></div></section>',
+ '<section class="about" id="tentang"><div class="wrap"><div class="section-title"><div class="eyebrow">Tentang proyek</div><h2>Kenapa website ini dibuat?</h2><p class="muted">'+objective+'</p></div></div></section>',
+ '<section id="kontak"><div class="wrap"><div class="contact"><div class="eyebrow">Langkah berikutnya</div><h2>Siap berdiskusi?</h2><p>Tambahkan alamat email, formulir, atau kanal kontak milikmu di bagian ini.</p><a class="btn" href="mailto:email-anda@example.com">Ganti alamat kontak</a></div></div></section></main>',
+ '<footer><div class="wrap">© '+new Date().getFullYear()+' '+name+'. Ganti teks dan aset sebelum dipublikasikan.</div></footer>','</body>','</html>'
+ ].join('\n');
+}
+function downloadWebsiteStarter(project){
+ const source=buildWebsiteStarter(project),blob=new Blob([source],{type:'text/html;charset=utf-8'});
+ const url=URL.createObjectURL(blob),link=document.createElement('a');
+ const slug=String(project.name||'website').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'website';
+ link.href=url;link.download=slug+'-starter.html';document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ toast('Starter website berhasil diunduh. Buka file HTML atau lanjutkan edit kodenya.');
 }
 
 function employeeName(id){return em(id)?.n||'Karyawan tidak dikenal'}
