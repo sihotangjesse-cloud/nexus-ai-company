@@ -26,7 +26,7 @@ main{padding:24px clamp(18px,3vw,38px) 40px;max-width:1580px;width:100%;min-widt
 .status-pill.is-neutral{color:var(--mu)}.status-pill.is-loading{color:var(--ac)}.status-pill.is-loading .status-indicator{background:var(--ac);animation:pulse 1.4s infinite}
 .status-pill small{font-weight:500;letter-spacing:0;color:var(--mu);border-left:1px solid var(--ln-strong);padding-left:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @keyframes pulse{50%{opacity:.35;box-shadow:0 0 0 7px rgba(101,199,255,0)}}
-.demo{background:var(--wn-soft);border:1px solid rgba(245,198,108,.24);color:var(--wn);padding:8px 12px;border-radius:10px;font-size:13px;margin-bottom:16px}
+.demo{background:var(--wn-soft);border:1px solid rgba(245,198,108,.24);color:var(--wn);padding:8px 12px;border-radius:10px;font-size:13px;margin-bottom:16px}\n.project-card{display:block;color:var(--tx);text-decoration:none;margin-bottom:12px}.project-card h2{margin:14px 0 6px}.project-card .project-progress{margin:16px 0}.project-card:hover{transform:translateY(-2px);border-color:var(--ac)}
 h1{font-size:clamp(23px,2.2vw,29px);line-height:1.2;letter-spacing:-.035em;margin:0 0 5px}h2{font-size:17px;letter-spacing:-.015em;margin:0 0 10px}
 .sub{color:var(--mu);margin:0 0 20px}
 .g{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
@@ -102,7 +102,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 <script>
 const $=s=>document.querySelector(s);
 const STATIC_DEMO_MODE=location.protocol==='file:';
-const STATIC_DEMO_NOTICE='NEXUS PERSONAL · mode lokal untuk satu pemilik: data hanya tersimpan di browser ini. Chat AI, delegasi, dan revisi AI dinonaktifkan; tidak ada server, API key, atau kredit yang digunakan.';
+const STATIC_DEMO_NOTICE='NEXUS PERSONAL · ruang kerja pribadi satu pemilik. Proyek, tugas, checklist, dan template kerja berjalan lokal di browser; tidak ada AI eksternal, API key, server, atau kredit yang digunakan.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
@@ -170,7 +170,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.1.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.2.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -547,7 +547,7 @@ finally{if(timer)clearTimeout(timer)}
 let data={};try{data=await r.json()}catch(e){}if(!r.ok){if(r.status===401&&AUTH.required&&path!=='/api/login'){AUTH.authenticated=false;render()}throw new Error(data.error||'Permintaan gagal. Coba lagi.')}return data}
 async function refreshAIStatus(){if(STATIC_DEMO_MODE){AUTH={required:false,authenticated:true,checked:true,error:''};AI_STATUS={checked:true,keyConfigured:false,verified:false,model:null,message:STATIC_DEMO_NOTICE};render();return;}try{const s=await api('/api/health');AUTH={required:!!s.authRequired,authenticated:!s.authRequired||!!s.authenticated,checked:true,error:''};AI_STATUS={checked:true,keyConfigured:!!s.aiConfigured,verified:false,model:null,message:s.statusMessage||''};}catch(e){AI_STATUS={checked:true,keyConfigured:false,verified:false,model:null,message:e.message};AUTH.checked=true;if(AUTH.required&&!AUTH.authenticated)AUTH.error='Server belum dapat memverifikasi akses: '+e.message;}render()}
 async function logout(){try{await api('/api/logout',{})}catch(e){}AUTH.authenticated=false;AUTH.error='';render();toast('Anda sudah keluar dari NEXUS.')}
-function loginView(){return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS AI COMPANY</strong><small>AKSES TERBATAS</small></div></div></header><section class="c" style="max-width:440px;margin:8vh auto"><h1>Masuk ke NEXUS</h1><p class="sub">Masukkan kata sandi akses untuk menggunakan ruang kerja perusahaan.</p><form data-f="login"><label for="nexus-password">Kata sandi akses</label><input id="nexus-password" name="password" type="password" autocomplete="current-password" minlength="12" required><div class="err" role="alert">${esc(AUTH.error)}</div><button type="submit">Masuk</button></form><p class="mu" style="margin-top:12px">Akses dikelola melalui konfigurasi server. Jangan bagikan kata sandi.</p></section>`}
+function loginView(){return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>AKSES BACKEND OPSIONAL</small></div></div></header><section class="c" style="max-width:440px;margin:8vh auto"><h1>Masuk ke NEXUS</h1><p class="sub">Masukkan kata sandi akses untuk menggunakan ruang kerja perusahaan.</p><form data-f="login"><label for="nexus-password">Kata sandi akses</label><input id="nexus-password" name="password" type="password" autocomplete="current-password" minlength="12" required><div class="err" role="alert">${esc(AUTH.error)}</div><button type="submit">Masuk</button></form><p class="mu" style="margin-top:12px">Akses dikelola melalui konfigurasi server. Jangan bagikan kata sandi.</p></section>`}
 function markAIVerified(model){AI_STATUS={...AI_STATUS,checked:true,keyConfigured:true,verified:true,model:model||AI_STATUS.model,message:'Permintaan AI berhasil dijalankan.'};}
 function markAIFailed(error){AI_STATUS={...AI_STATUS,checked:true,verified:false,message:error?.message||'Permintaan AI gagal.'};}
 function topHeader(){
@@ -557,7 +557,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.1.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.2.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -666,7 +666,7 @@ const V={
 karyawan(){return `<h1>Tim Virtual</h1><p class="sub">${STATIC_DEMO_MODE?'Pilih peran untuk memakai template kerja offline. Hasilnya adalah kerangka/checklist, bukan jawaban AI generatif.':'Pilih karyawan untuk berbicara langsung.'}</p><div class="g g3">${E.map(e=>{const s=status(e.id);return `<a class="c card" href="#k-${e.id}"><div class="row">${av(e)}<div><b>${e.n}</b><br><span class="mu">${e.r}</span></div></div><p class="mu">${e.d}</p><div class="row">${e.k.map(k=>`<span class="chip">${k}</span>`).join('')}</div><p class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</p></a>`}).join('')}</div>`},
 emp(id){const e=em(id),s=status(id),t=S.tasks.filter(x=>x.emp===id);return `<p><a href="#karyawan" class="mu">← Semua karyawan</a></p><div class="row">${av(e)}<div><h1>${e.n} · ${e.r}</h1><span class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</span></div></div><p>${e.d}</p>
 <div class="g g2"><div>${chatBox(id,'Tulis pesan untuk '+e.n)}</div><div class="c"><h2>Ringkasan peran</h2><p class="mu">${esc(e.d)}</p><h2>Riwayat pekerjaan</h2>${t.length?t.slice(0,8).map(x=>`<div class="t">${esc(x.t)}<br><span class="mu">${x.st} · ${x.pg}%</span></div>`).join(''):'<p class="mu">Belum ada tugas untuk '+e.n+'.</p>'}</div></div>`},
-chat(){return `<h1>Chat Perusahaan</h1><p class="sub">${STATIC_DEMO_MODE?'Chat AI dan delegasi Sena tidak aktif pada mode demo offline.':'Contoh: “Buatkan strategi bisnis produk digital.” Sena akan membagi pekerjaan ke karyawan yang tepat.'}</p>${chatBox('company','Tulis instruksi untuk perusahaan')}`},
+chat(){return `<h1>Koordinasi Tim Offline</h1><p class="sub">Sena menyusun kerangka koordinasi secara lokal. Untuk membuat daftar tugas yang tersimpan dan dipantau, gunakan menu Proyek.</p>${chatBox('company','Tulis brief proyek atau pekerjaan')}`},
 kantor(){const working=E.filter(e=>BUSY.has(e.id)||(e.id==='sena'&&BUSY.has('company'))||S.tasks.some(t=>t.emp===e.id&&t.st===ST[1])).length;return `<h1>Kantor Virtual</h1><p class="sub">Status di bawah berasal dari chat yang sedang diproses dan tugas yang benar-benar berstatus dikerjakan. ${working} dari ${E.length} karyawan sedang bekerja.</p><div class="g g4">${E.map(e=>{const s=status(e.id),t=S.tasks.find(x=>x.emp===e.id&&x.st===ST[1]),review=S.tasks.find(x=>x.emp===e.id&&x.st===ST[2]),queued=S.tasks.find(x=>x.emp===e.id&&x.st===ST[0]);const task=t||review||queued;return `<a class="c card desk" href="#k-${e.id}">${av(e)}<b>${e.n}</b><div class="mu">${e.r}</div><div class="mu"><span class="dot" style="background:${s[1]}"></span>${s[0]}</div><div class="mu">${t?'Dikerjakan: ':review?'Menunggu review: ':queued?'Belum dimulai: ':'Tidak ada tugas aktif'}${task?esc(task.t.slice(0,40)):''}</div></a>`}).join('')}</div>`},
 tugas(){return '<h1>Manajemen Tugas</h1><div class="g g2"><form data-f="task" class="c"><h2>Tugas baru</h2><label>Judul</label><input name="t" maxlength="120"><label>Penanggung jawab</label><select name="e">'+E.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.n)+' · '+esc(e.r)+'</option>').join('')+'</select><label>Proyek</label><select name="projectId">'+projectOptions('')+'</select><label>Prioritas</label><select name="p">'+PR.map((p,i)=>'<option '+(i===1?'selected':'')+'>'+esc(p)+'</option>').join('')+'</select><label>Tenggat</label><input type="date" name="d"><div class="err" id="err"></div><button>Buat tugas</button></form><section class="c"><h2>Daftar tugas</h2>'+taskFilterControls()+'<div id="task-results" aria-live="polite">'+taskResultsView()+'</div></section></div>'},
 kalender(){const d=cal.d,its=x=>[...S.tasks.filter(t=>t.due===x).map(t=>({n:'Deadline: '+t.t,e:0})),...S.events.filter(v=>v.date===x).map(v=>({n:v.type+': '+v.title,e:v.id}))];
@@ -708,7 +708,7 @@ function makeRep(period){
  const workLines=outstanding.map(task=>'- '+task.t+' ('+employeeName(task.emp)+', '+task.pri+', tenggat '+(task.due||'belum ditetapkan')+')');
  const periodLabel=period==='harian'?'24 jam terakhir':'7 hari terakhir';
  const body=[
-  'NEXUS AI COMPANY — LAPORAN OPERASIONAL',
+  'NEXUS PERSONAL — LAPORAN PROYEK & TUGAS',
   'Dibuat: '+now.toLocaleString('id-ID',{dateStyle:'long',timeStyle:'short'}),
   'Periode aktivitas: '+periodLabel,
   '',
@@ -951,7 +951,7 @@ else if(a==='csv-tasks'){const date=dk(new Date());downloadCsv(makeTaskCsv(S.tas
 else if(a==='crep'){copy(makeRep(rep).body);return}
 else if(a==='vrep'){const r=S.reports[+b.dataset.i];copy(r.title+'\n\n'+r.body);return}
 else if(a==='backup-export'){downloadBackup();return}
-else if(a==='reset'){if(!confirm('Hapus semua data NEXUS AI COMPANY di peramban ini?'))return;try{localStorage.removeItem(KEY)}catch(e){}load()}
+else if(a==='reset'){if(!confirm('Hapus semua data NEXUS PERSONAL di peramban ini?'))return;try{localStorage.removeItem(KEY)}catch(e){}load()}
 save();render()});
 document.addEventListener('input',ev=>{
  const field=ev.target;
