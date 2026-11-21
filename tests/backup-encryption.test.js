@@ -66,7 +66,7 @@ test('backup UI keeps the plain JSON option and exposes encrypted export and res
  assert.match(html,/data-a="backup-export"/);
  assert.match(html,/data-f="encrypted-backup-export"/);
  assert.match(html,/data-f="encrypted-backup-import"/);
- assert.match(html,/appVersion:'1.8.0'/);
+ assert.match(html,/appVersion:'1.9.0'/);
  assert.match(script,/if\(k==='encrypted-backup-export'\)/);
  assert.match(script,/if\(k==='encrypted-backup-import'\)/);
  assert.match(html,/data aktif di penyimpanan browser \(localStorage\) masih belum dienkripsi/);
