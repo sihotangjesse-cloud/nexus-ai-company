@@ -1,4 +1,4 @@
-# Panduan NEXUS PERSONAL 1.7.0
+# Panduan NEXUS PERSONAL 1.8.0
 
 NEXUS PERSONAL adalah ruang kerja satu pemilik dengan asisten GGUF lokal opsional dan File Workspace lokal. Inferensi AI berjalan di browser; File Workspace hanya mengelola file teks dalam folder khusus melalui jembatan Python loopback. Tidak ada AI API cloud, API key, transaksi, kredit, langganan, hosting, atau server AI.
 
@@ -99,3 +99,16 @@ Buka menu **Catatan & Ide** untuk menyimpan ide bisnis, website, konten, hal yan
 NEXUS tidak mengirim prompt ke layanan AI cloud dan tidak membutuhkan API key, akun AI, pembayaran, kredit, atau langganan. Namun, pengunduhan model GGUF dan pengambilan kode engine/WASM pertama kali memerlukan internet dan dapat memakai kuota data. Gunakan koneksi yang memang tersedia dan perhatikan ukuran file model.
 
 Backend lama tetap berada di repo tetapi tidak digunakan oleh UI pribadi. Jangan mengisi `GEMINI_API_KEY` atau menjalankan layanan backend lama bila ingin mempertahankan mode ini.
+
+  
+## 11. GitHub Explorer publik
+
+1. Buka menu **GitHub**.
+2. Masukkan repository publik dalam format `owner/repo`, misalnya repository NEXUS sendiri, lalu isi branch (biasanya `main`).
+3. Kosongkan path untuk membuka folder utama atau isi path folder yang ingin dilihat.
+4. Pilih folder untuk masuk, atau pilih file untuk membaca isinya.
+5. Tekan **Salin isi file** untuk menyalin teks. Pindah ke File Workspace jika ingin mengajukan perubahan lokal; tinjau dan setujui file secara terpisah.
+
+Fitur ini hanya membaca repository publik. Ia tidak meminta token GitHub dan tidak dapat mengedit repository, membuat branch, commit, atau push. Setiap permintaan mengirim nama repository, branch, dan path yang kamu minta langsung ke `api.github.com`; percakapan AI dan file lokal tidak dikirim. File maksimal 512 KB dan hanya teks UTF-8.
+
+GitHub membatasi akses REST tanpa autentikasi hingga 60 permintaan per jam per alamat IP. Bila batas tercapai, tunggu sampai reset. Belum ada pencarian web umum, akses repository privat, atau pemanggilan alat oleh model AI.
