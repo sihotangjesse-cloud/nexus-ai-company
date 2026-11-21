@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check auth.js && node --check usage-budget.js && node --check csp.js && node --check history.js && node --check workflow.js && node scripts/check-frontend.mjs",
+    "check": "node --check server.js && node --check auth.js && node --check usage-budget.js && node --check csp.js && node --check history.js && node --check workflow.js && node --check public/local-workspace.js && node --check public/github-reader.js && node scripts/check-frontend.mjs",
     "test": "node --test"
   },
   "engines": {
