@@ -1,8 +1,8 @@
 {
   "name": "nexus-ai-company",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
-  "description": "NEXUS PERSONAL — strictly offline personal website project workspace.",
+  "description": "NEXUS PERSONAL — strictly offline personal website project and notes workspace.",
   "type": "module",
   "scripts": {
     "start": "node server.js",
