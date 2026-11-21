@@ -1,6 +1,6 @@
 # NEXUS PERSONAL
 
-**Versi 1.4.0 — ruang kerja pribadi, selalu offline**
+**Versi 1.5.0 — ruang kerja pribadi, selalu offline**
 
 NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu bertindak sebagai CEO dan menggunakan ruang kerja proyek untuk merencanakan website, mengelola checklist, membuat starter HTML, dan memantau pekerjaan.
 
@@ -53,6 +53,7 @@ Dari detail proyek, edit nama brand, label, judul, deskripsi, teks tombol, warna
 
 ## Fitur yang tersedia
 
+- Catatan dan ide pribadi dengan kategori, pin, dan hapus; tersimpan lokal serta ikut backup.
 - Dashboard proyek, tugas, progres, dan tenggat.
 - Buat proyek website dengan checklist otomatis.
 - Detail, status, target, dan progres per proyek.
