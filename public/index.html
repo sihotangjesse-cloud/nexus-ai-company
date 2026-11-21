@@ -107,6 +107,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 .site-preview-frame{display:block;width:100%;height:690px;border:1px solid var(--ln-strong);border-radius:13px;background:#fff}
 .website-studio-note{font-size:12px;color:var(--mu);margin:8px 0 0}
 .notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px}.note-card{display:flex;flex-direction:column;gap:10px;min-height:190px}.note-card h3{margin:0;font-size:16px}.note-body{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--tx);font-size:14px;flex:1}.note-meta{color:var(--mu);font-size:11px}.note-actions{display:flex;gap:8px;flex-wrap:wrap}
+.local-ai-messages{display:grid;gap:10px;max-height:55vh;overflow:auto;margin:12px 0}.local-ai-message{border:1px solid var(--ln);border-radius:13px;padding:12px;background:rgba(255,255,255,.035)}.local-ai-message.user{border-color:rgba(101,199,255,.28);background:rgba(101,199,255,.07)}.local-ai-message.assistant{border-color:rgba(93,224,165,.22);background:rgba(93,224,165,.055)}.local-ai-message.system{border-color:rgba(245,198,108,.22);background:rgba(245,198,108,.06)}.local-ai-message b{display:block;font-size:12px;margin-bottom:5px}.local-ai-message p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-size:14px}.local-ai-status{font-size:13px;color:var(--mu);min-height:22px}.local-ai-progress{height:7px;border-radius:99px;background:var(--ln);overflow:hidden;margin:8px 0}.local-ai-progress i{height:100%;display:block;width:0;background:var(--ac);transition:width .2s ease}
 @media(max-width:900px){.website-studio-grid{grid-template-columns:1fr}.site-preview-frame{height:620px}}
 @media(max-width:560px){.website-studio-fields{grid-template-columns:1fr}.studio-field.wide{grid-column:auto}.site-preview-frame{height:580px}}
 
@@ -116,7 +117,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 const $=s=>document.querySelector(s);
 // NEXUS PERSONAL is deliberately offline-only, even when served from localhost.
 const PERSONAL_OFFLINE_MODE=true;
-const PERSONAL_OFFLINE_NOTICE='NEXUS PERSONAL · ruang kerja pribadi satu pemilik. Proyek, tugas, checklist, dan template kerja berjalan lokal di browser; tidak ada AI eksternal, API key, server, atau kredit yang digunakan.';
+const PERSONAL_OFFLINE_NOTICE='NEXUS PERSONAL · ruang kerja satu pemilik. Proyek dan data tetap lokal. Asisten generatif opsional menjalankan model GGUF di browser; tidak memakai AI API cloud, API key, transaksi, atau kredit.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
@@ -138,6 +139,9 @@ const E=[
 ];
 const em=id=>E.find(e=>e.id===id);
 let S;
+const LOCAL_AI={engine:null,loading:false,busy:false,modelName:'',status:'Pilih model GGUF lokal untuk memulai.',progress:0};
+const WLLAMA_MODULE_URL='https://cdn.jsdelivr.net/npm/@wllama/wllama@3.13.0/esm/index.js';
+const WLLAMA_WASM_URL='https://cdn.jsdelivr.net/npm/@wllama/wllama@3.13.0/esm/wasm-from-cdn.js';
 const isRecord=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const defaultState=()=>({ceo:'Founder',projects:[],tasks:[],chats:{},notes:[],events:[],reports:[],log:[]});
 const SITE_CONTENT_FIELDS=['brandName','eyebrow','headline','subheadline','ctaLabel','accentColor','feature1Title','feature1Text','feature2Title','feature2Text','feature3Title','feature3Text','aboutTitle','aboutText','contactTitle','contactText'];
@@ -212,7 +216,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.5.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.6.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -402,6 +406,7 @@ const fd=t=>new Date(t).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'sh
 const dk=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
 const av=e=>`<div class="av" style="background:${e.c}">${e.n[0]}</div>`;
 const ICONS={
+ ai:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/>',
  notes:'<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
  dashboard:'<rect x="3" y="3" width="8" height="8" rx="1.7"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/>',
  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -618,7 +623,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.5.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.6.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -670,7 +675,7 @@ save();render()}
 async function talkToEmployee(key,b,history=[]){push(key,'ceo',b);save();render();try{const result=await api('/api/chat',{employeeId:key,message:b,history});markAIVerified(result.model);push(key,key,result.reply||'AI tidak mengembalikan jawaban.');log(S.ceo+' berbicara dengan '+em(key).n+'.');}catch(e){markAIFailed(e);push(key,'system','Belum dapat menerima jawaban AI: '+e.message+' Pastikan backend dan konfigurasi API sudah aktif.');}save();render()}
 let taskFilters={query:'',status:'',employee:'',priority:'',project:'',sort:'newest'};
 let cal={m:'bulan',d:new Date()},rep='harian';
-const nav=[['dashboard','Dashboard','dashboard'],['notes','Catatan & Ide','notes'],['proyek','Proyek','tasks'],['karyawan','Tim Virtual','users'],['chat','Koordinasi','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
+const nav=[['dashboard','Dashboard','dashboard'],['asisten','Asisten AI','ai'],['notes','Catatan & Ide','notes'],['proyek','Proyek','tasks'],['karyawan','Tim Virtual','users'],['chat','Koordinasi','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
 
 function offlineAssistantReply(key,message){
  const prompt=String(message||'').trim().slice(0,500);
@@ -692,6 +697,73 @@ function offlineAssistantReply(key,message){
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
 <form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${PERSONAL_OFFLINE_MODE?'Tulis brief atau permintaan kerja...':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)?'disabled':''}><button ${BUSY.has(key)?'disabled':''}>${PERSONAL_OFFLINE_MODE?'Buat kerangka offline':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${PERSONAL_OFFLINE_MODE?`<p class="demo" role="note">Template kerja dibuat secara lokal. Tidak ada AI eksternal, API, atau kredit yang digunakan.</p>`:''}<div class="err" id="err"></div></div>`}
 const V={
+function localAIChatMessagesView(){
+ const entries=(S.chats.localai||[]).slice(-40);
+ if(!entries.length)return '<div class="mu">Belum ada percakapan. Muat model lokal, lalu tulis pertanyaan pertamamu.</div>';
+ return entries.map(item=>{
+  const role=['user','assistant','system'].includes(item.f)?item.f:'system';
+  const label=role==='user'?'Kamu':role==='assistant'?'NEXUS':'Info';
+  return '<article class="local-ai-message '+role+'"><b>'+label+' · '+esc(fd(item.at))+'</b><p>'+esc(item.t)+'</p></article>';
+ }).join('');
+}
+async function loadLocalAIModel(){
+ if(LOCAL_AI.loading||LOCAL_AI.engine)return;
+ const file=$('#local-ai-file')?.files?.[0];
+ if(!file){toast('Pilih file model GGUF terlebih dahulu.');return}
+ if(!String(file.name||'').toLowerCase().endsWith('.gguf')){toast('File model harus berformat .gguf.');return}
+ if(file.size>900*1024*1024){toast('Untuk perangkat ini, pilih model GGUF maksimal 900 MB. Mulai dari model kecil 0.5B Q4.');return}
+ LOCAL_AI.loading=true;LOCAL_AI.progress=0;LOCAL_AI.status='Memuat mesin WebAssembly. Browser mengambil file engine dari CDN jika belum tersedia di cache.';
+ const status=$('#local-ai-status'),progress=$('#local-ai-progress');
+ if(status)status.textContent=LOCAL_AI.status;
+ if(progress)progress.style.width='0%';
+ try{
+  const [module,wasmModule]=await Promise.all([import(WLLAMA_MODULE_URL),import(WLLAMA_WASM_URL)]);
+  const engine=new module.Wllama(wasmModule.default);
+  LOCAL_AI.status='Memuat model lokal: '+file.name;
+  if(status)status.textContent=LOCAL_AI.status;
+  await engine.loadModel([file],{n_ctx:2048,n_threads:1,n_gpu_layers:0,progressCallback:({loaded,total})=>{
+   LOCAL_AI.progress=total>0?Math.max(0,Math.min(100,Math.round(loaded/total*100))):0;
+   const bar=$('#local-ai-progress');if(bar)bar.style.width=LOCAL_AI.progress+'%';
+   const label=$('#local-ai-status');if(label)label.textContent='Memuat model lokal: '+LOCAL_AI.progress+'%';
+  }});
+  LOCAL_AI.engine=engine;LOCAL_AI.modelName=file.name;LOCAL_AI.progress=100;LOCAL_AI.status='Model siap. Inferensi berjalan di browser perangkat ini.';
+  toast('Model lokal berhasil dimuat. Asisten siap digunakan.');
+ }catch(error){LOCAL_AI.status='Gagal memuat model: '+String(error?.message||error).slice(0,260);toast(LOCAL_AI.status)}
+ finally{LOCAL_AI.loading=false;render()}
+}
+async function submitLocalAI(form){
+ const field=form.elements?.namedItem?.('message');
+ const message=String(field?.value||'').trim();
+ if(message.length<2||message.length>3000){toast('Pesan harus berisi 2–3.000 karakter.');return}
+ if(!LOCAL_AI.engine){toast('Muat model GGUF lokal terlebih dahulu.');return}
+ if(LOCAL_AI.busy)return;
+ if(field)field.value='';
+ LOCAL_AI.busy=true;push('localai','user',message);save();render();
+ try{
+  const history=(S.chats.localai||[]).filter(item=>item.f==='user'||item.f==='assistant').slice(-8).map(item=>({role:item.f,content:String(item.t||'').slice(0,1800)}));
+  const systemPrompt='Kamu adalah NEXUS, asisten pribadi berbahasa Indonesia. Bantu belajar, menyusun rencana bisnis, menulis, dan membangun website. Jawab jelas dan jujur. Jangan mengarang fakta atau mengaku telah melakukan tindakan nyata. Pengguna masih remaja: jaga jawaban tetap sesuai usia, jangan memberi panduan aktivitas berbahaya, dan arahkan ke pilihan yang aman. Kamu hanya menghasilkan teks; kamu tidak memiliki akses internet, file, GitHub, pembayaran, atau alat eksternal.';
+  const messages=[{role:'system',content:systemPrompt},...history];
+  const result=await LOCAL_AI.engine.createChatCompletion({messages,max_tokens:256,temperature:0.55,top_p:0.9,top_k:40});
+  const reply=String(result?.choices?.[0]?.message?.content||'').trim();
+  if(!reply)throw new Error('Model tidak menghasilkan jawaban. Coba pertanyaan lebih singkat.');
+  push('localai','assistant',reply.slice(0,10000));log('Asisten AI lokal menjawab pesan.');
+ }catch(error){push('localai','system','Gagal membuat jawaban lokal: '+String(error?.message||error).slice(0,400))}
+ finally{LOCAL_AI.busy=false;save();render()}
+}
+
+  asisten(){
+   const ready=!!LOCAL_AI.engine;
+   return '<h1>Asisten AI Generatif</h1><p class="sub">Model bahasa berjalan langsung di browser menggunakan WebAssembly. Tidak ada prompt yang dikirim ke AI cloud.</p>'+
+   '<section class="c"><div class="row" style="justify-content:space-between"><h2>Model lokal</h2><span class="chip">'+(ready?'MODEL SIAP':'BELUM DIMUAT')+'</span></div>'+
+   '<p class="mu">Pilih file model instruksi berformat GGUF dari perangkat. Untuk mulai, gunakan model kecil 0.5B Q4 (maksimal 900 MB). Pada perangkat 4 GB, tutup aplikasi lain dan gunakan jawaban singkat.</p>'+
+   '<label for="local-ai-file">File model GGUF</label><input id="local-ai-file" type="file" accept=".gguf,application/octet-stream" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+
+   '<div id="local-ai-status" class="local-ai-status" role="status">'+esc(LOCAL_AI.status)+'</div><div class="local-ai-progress"><i id="local-ai-progress" style="width:'+LOCAL_AI.progress+'%"></i></div>'+
+   '<div class="row"><button type="button" data-a="load-local-ai" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+(LOCAL_AI.loading?'Memuat model...':ready?'Model sudah dimuat':'Muat model lokal')+'</button><button type="button" class="sec" data-a="clear-local-ai-chat">Hapus percakapan</button></div>'+
+   '<p class="mu">Kode engine WebAssembly dan file WASM diambil dari jsDelivr saat memuat model jika belum ada di cache. File model dipilih dari perangkat. Inferensi dan isi percakapan tetap lokal; tidak ada AI API, akun, key, kredit, atau transaksi.</p></section>'+
+   '<section class="c" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h2>Percakapan</h2><span class="chip">'+(ready?esc(LOCAL_AI.modelName):'Model belum aktif')+'</span></div>'+
+   '<div id="local-ai-messages" class="local-ai-messages" aria-live="polite">'+localAIChatMessagesView()+'</div>'+
+   '<form data-f="local-ai-chat"><label for="local-ai-message">Pesan untuk NEXUS</label><textarea id="local-ai-message" name="message" rows="3" maxlength="3000" placeholder="Contoh: Bantu saya menyusun struktur website bisnis..." '+(!ready||LOCAL_AI.busy?'disabled':'')+'></textarea><div class="row" style="margin-top:10px"><button type="submit" '+(!ready||LOCAL_AI.busy?'disabled':'')+'>'+(LOCAL_AI.busy?'Sedang berpikir...':'Kirim pesan')+'</button><span class="mu">Jawaban dibatasi 256 token per pesan agar lebih ringan.</span></div></form></section>';
+  },
   notes(){
    const sorted=S.notes.slice().sort((a,b)=>(Number(b.pinned)-Number(a.pinned))||Number(b.updatedAt)-Number(a.updatedAt));
    const cards=sorted.map(note=>'<article class="c note-card"><div class="row" style="justify-content:space-between"><span class="chip">'+esc(note.category)+'</span><span class="chip">'+(note.pinned?'📌 Dipin':'Catatan')+'</span></div><h3>'+esc(note.title)+'</h3><div class="note-body">'+esc(note.body||'Catatan kosong.')+'</div><div class="note-meta">Diperbarui '+esc(fd(note.updatedAt))+'</div><div class="note-actions"><button type="button" class="sec" data-a="pin-note" data-id="'+esc(note.id)+'">'+(note.pinned?'Lepas pin':'Pin')+'</button><button type="button" class="sec" data-a="delete-note" data-id="'+esc(note.id)+'">Hapus</button></div></article>').join('');
@@ -780,7 +852,7 @@ laporan(){
 pengaturan(){return `<h1>Pengaturan</h1><div class="g g2">
 <div class="c"><h2>Backup & Pemulihan Data</h2><p class="mu">Unduh salinan tugas, kalender, laporan, dan data browser sebagai file JSON. File dibuat di perangkat ini dan tidak dikirim ke server.</p><div class="row"><button type="button" data-a="backup-export">Unduh Backup JSON biasa</button></div><label for="backup-file">Pulihkan dari file backup (JSON biasa)</label><input id="backup-file" type="file" accept=".json,application/json"><p class="mu">File backup tidak dienkripsi pada format JSON biasa. Pemulihan mengganti data NEXUS saat ini setelah konfirmasi. Maksimal ukuran file 2 MB.</p><hr><h3>Backup terenkripsi</h3><p class="mu">Enkripsi backup memakai AES-256-GCM dan PBKDF2-SHA-256. Gunakan kata sandi kuat minimal 12 karakter. Kata sandi tidak disimpan oleh aplikasi.</p><form data-f="encrypted-backup-export"><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="new-password" required><label>Ulangi kata sandi</label><input name="confirmPassword" type="password" minlength="12" autocomplete="new-password" required><button type="submit">Unduh backup terenkripsi</button></form><hr><form data-f="encrypted-backup-import"><h3>Pulihkan backup terenkripsi</h3><label>File backup terenkripsi</label><input name="file" type="file" accept=".json,application/json" required><label>Kata sandi backup</label><input name="password" type="password" minlength="12" autocomplete="current-password" required><button type="submit">Dekripsi & pulihkan backup</button></form><p class="mu">Penting: simpan kata sandi secara terpisah. Jika lupa, backup terenkripsi tidak dapat dipulihkan. Enkripsi ini hanya melindungi file backup; data aktif di penyimpanan browser (localStorage) masih belum dienkripsi.</p></div>
 <form data-f="ceo" class="c"><h2>Profil Pemilik</h2><label>Nama pemilik</label><input name="n" maxlength="40" value="${esc(S.ceo)}"><div class="err" id="err"></div><button>Simpan</button></form>
-<div class="c"><h2>Mode AI</h2><p><span class="badge">${AI_STATUS.verified?'KONEKSI TERUJI':AI_STATUS.keyConfigured?'API KEY TERPASANG · BELUM DIUJI':'BELUM AKTIF'}</span> ${PERSONAL_OFFLINE_MODE?'Mode pribadi offline. Dashboard, tugas, kalender, dan laporan tersimpan lokal; fitur chat AI memerlukan backend yang belum dihubungkan.':AI_STATUS.verified?'Permintaan AI terakhir berhasil menggunakan model '+esc(AI_STATUS.model||'AI')+'.':AI_STATUS.keyConfigured?'Kunci API tersedia, tetapi koneksi ke Gemini belum dibuktikan. Kirim chat untuk mengujinya.':'AI belum aktif. Jalankan server dan atur GEMINI_API_KEY sebagai environment variable di server. Jangan masukkan kunci API ke halaman ini.'}</p><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
+<div class="c"><h2>Asisten AI generatif</h2><p><span class="badge">MODEL LOKAL · TANPA API</span> Muat model GGUF di menu Asisten AI. Proses generatif berjalan di browser menggunakan WebAssembly; isi chat tidak dikirim ke server AI. File engine dimuat dari jsDelivr saat diminta, sedangkan model dipilih dari perangkat.</p><a href="#asisten"><button type="button">Buka Asisten AI</button></a><h2>Data</h2><p class="mu">Data tersimpan di peramban ini (localStorage).</p><button class="sec" data-a="reset">Hapus semua data</button></div></div>`}};
 function makeRep(period){
  const now=new Date(),metrics=getOperationalMetrics(S.tasks,E,now),windowMs=period==='harian'?864e5:7*864e5;
  const logs=S.log.filter(item=>Number.isFinite(Number(item.at))&&now.getTime()-Number(item.at)>=0&&now.getTime()-Number(item.at)<windowMs).slice(0,12);
@@ -947,6 +1019,7 @@ async function reviseTask(id,note){
 }
 function err(t){const e=$('#err');if(e)e.textContent=t}
 document.addEventListener('submit',async ev=>{const f=ev.target;const k=f.dataset.f;if(!k)return;ev.preventDefault();const d=new FormData(f);
+if(k==='local-ai-chat'){await submitLocalAI(f);return}
 if(k==='note'){
  const title=String(d.get('title')||'').trim(),body=String(d.get('body')||'').trim(),category=String(d.get('category')||'Catatan');
  if(title.length<2||title.length>120){toast('Judul catatan harus berisi 2–120 karakter.');return}
@@ -1036,6 +1109,8 @@ else if(k==='ev'){const t=(d.get('t')||'').trim();if(t.length<2)return err('Judu
 else if(k==='ceo'){const n=(d.get('n')||'').trim();if(!n)return err('Nama tidak boleh kosong.');S.ceo=n;f.reset();save();render();toast('Profil disimpan')}});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
 if(a==='logout'){void logout();return}
+if(a==='load-local-ai'){void loadLocalAIModel();return}
+if(a==='clear-local-ai-chat'){if(!confirm('Hapus seluruh riwayat percakapan NEXUS AI lokal?'))return;S.chats.localai=[];log('Riwayat asisten AI lokal dihapus.');save();render();return}
 if(a==='pin-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note)return;note.pinned=!note.pinned;note.updatedAt=Date.now();log((note.pinned?'Catatan dipin: ':'Pin catatan dilepas: ')+note.title.slice(0,80));save();render();return}
 if(a==='delete-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note||!confirm('Hapus catatan “'+note.title+'”?'))return;S.notes=S.notes.filter(item=>String(item.id)!==String(id));log('Catatan dihapus: '+note.title.slice(0,80));save();render();return}
 if(a==='download-starter'){const project=projectById(id);if(project){const form=document.querySelector('form[data-f="site-editor"]');const site=form&&String(form.dataset.key)===String(id)?websiteContentFromForm(form,project):project.site;downloadWebsiteStarter(project,site);}return}
