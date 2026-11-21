@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0 — Browser-local Generative Assistant
+
+- Add an optional generative assistant powered by a user-selected local GGUF model in the browser through WebAssembly.
+- Run model inference on-device with CPU-only, single-thread settings and a short context/output budget for modest hardware.
+- Keep prompts and chat history in the browser; no hosted AI inference, AI API key, payment, credit, subscription, or cloud resource is introduced.
+- Load the pinned WebAssembly engine assets from jsDelivr only after the user selects and loads a model; first-time setup requires internet access and a manually downloaded model file.
+- Add Android localhost static-file launcher instructions, model/runtime limitations, memory release control, and automated checks.
+
 ## 1.5.0 — Personal Notes & Idea Inbox
 
 - Add a personal notes and ideas workspace with six categories.
