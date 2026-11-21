@@ -1,8 +1,8 @@
 # NEXUS PERSONAL
 
-**Versi 1.8.0 — ruang kerja lokal dengan GitHub Explorer publik hanya-baca**
+**Versi 1.9.0 — Local AI Agent dengan pemanggilan alat terbatas**
 
-NEXUS PERSONAL adalah aplikasi pribadi untuk satu pemilik. Kamu dapat mengelola proyek website, checklist, tugas, ide, catatan, laporan, menggunakan asisten generatif kecil di browser melalui WebAssembly, dan membaca repository GitHub publik secara opsional.
+NEXUS PERSONAL adalah aplikasi pribadi untuk satu pemilik. Kamu dapat mengelola proyek website, checklist, tugas, ide, catatan, laporan, menggunakan asisten generatif kecil di browser melalui WebAssembly, membaca repository GitHub publik, serta menjalankan alur Agent AI lokal dengan alat terbatas.
 
 ## Aturan operasi pribadi
 
@@ -66,6 +66,19 @@ Menu **GitHub** dapat membuka folder dan membaca file teks dari repository publi
 Fitur ini hanya membuat permintaan HTTPS GET ke `api.github.com` setelah kamu menekan tombol. Tidak meminta token, tidak mengakses repository privat, dan tidak bisa mengubah file, branch, commit, atau push ke GitHub. Isi chat AI dan file workspace lokal tidak dikirim. File teks dibatasi 512 KB.
 
 GitHub mendokumentasikan batas permintaan REST tanpa autentikasi sebesar 60 permintaan per jam per alamat IP. Jika kuota habis, tunggu hingga jendela batas berakhir. Baca dokumentasi resmi [GitHub REST API rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api) dan [CORS](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests).
+
+## Local AI Agent v1.9.0
+
+Pada halaman **Asisten AI**, bagian **Agent AI · Pemanggilan alat lokal** memungkinkan model GGUF lokal memilih alat untuk:
+
+- Membaca daftar file dan isi file teks dari folder `NEXUS-Workspace` lokal.
+- Membaca daftar folder dan file teks dari repository GitHub publik melalui HTTPS GET tanpa token.
+- Memeriksa sintaks Python, JavaScript, dan JSON tanpa menjalankan kode proyek.
+- Menyiapkan usulan file baru/perubahan di workspace lokal, menampilkan isi sebelum/sesudah, lalu menunggu persetujuan eksplisit sebelum menyimpan.
+
+Agent menjalankan paling banyak tiga langkah alat per instruksi. Model lokal menghasilkan permintaan alat dalam format JSON; bila format tidak valid, alat tidak dijalankan. Isi file/repository diperlakukan sebagai data tidak tepercaya. Tidak ada penghapusan file, akses repository privat, token GitHub, commit/push, pencarian web umum, atau eksekusi program. Pemeriksaan sintaks bukan eksekusi kode.
+
+Untuk mencoba Agent, jalankan launcher Android, buka menu **Asisten AI**, muat file GGUF terlebih dahulu, lalu gunakan bagian Agent di bawah percakapan. Pembacaan file workspace memerlukan jembatan lokal yang berjalan melalui Termux. Pembacaan GitHub memerlukan koneksi internet dan hanya repository publik.
 
 ## Ruang proyek website
 
