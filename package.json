@@ -1,13 +1,13 @@
 {
   "name": "nexus-ai-company",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
-  "description": "NEXUS PERSONAL — offline personal workspace, approval-first local project files, and browser-local generative assistant.",
+  "description": "NEXUS PERSONAL — offline workspace, approval-first local files, local generative AI, and read-only public GitHub browsing.",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check auth.js && node --check usage-budget.js && node --check csp.js && node --check history.js && node --check workflow.js && node scripts/check-frontend.mjs",
+    "check": "node --check server.js && node --check auth.js && node --check usage-budget.js && node --check csp.js && node --check history.js && node --check workflow.js && node --check public/local-workspace.js && node --check public/github-reader.js && node scripts/check-frontend.mjs",
     "test": "node --test"
   },
   "engines": {

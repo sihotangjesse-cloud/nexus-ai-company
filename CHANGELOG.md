@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0 — Read-only Public GitHub Explorer
+
+- Add a browser-based explorer for public GitHub repositories and text files.
+- Use unauthenticated HTTPS GET requests only; no personal access token, login, repository write, commit, or push.
+- Validate owner/repository, branch, and relative paths; display text files up to 512 KB and provide clipboard copy.
+- Show the remaining public REST request allowance and explain the 60-request-per-hour unauthenticated limit.
+- Keep local workspace data and AI chat out of GitHub requests; add tests for read-only boundaries.
+- Keep internet-wide search, private repository access, AI tool-calling, arbitrary code execution, deployment, payments, and credits out of this release.
+
 ## 1.7.0 — Approval-first Local Project Workspace
 
 - Add a loopback-only local workspace bridge for Android/Termux and Windows/Python.
