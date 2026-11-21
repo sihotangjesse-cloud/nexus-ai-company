@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0 — Personal Notes & Idea Inbox
+
+- Add a personal notes and ideas workspace with six categories.
+- Add local note creation, pinned sorting, deletion confirmation, input limits, and note normalization.
+- Include notes in local JSON and encrypted backups through the shared state model.
+- Keep note operations offline with no API, payment, hosting, cloud resources, or AI calls.
+
+
 ## 1.4.0 — Offline Website Studio
 
 - Add project-specific website content editing for brand, hero, CTA, accent color, feature cards, about, and contact sections.

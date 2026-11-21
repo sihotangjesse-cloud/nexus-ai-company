@@ -64,7 +64,7 @@ a.card{color:inherit;text-decoration:none;display:block}a.card:hover{border-colo
 pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monospace,Menlo,monospace}
 .stat-card{position:relative;overflow:hidden;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-height:112px}.stat-card .stat-icon{width:39px;height:39px;display:grid;place-items:center;border-radius:13px;background:var(--ac-soft);color:var(--ac);border:1px solid rgba(101,199,255,.16);flex:none}.stat-card .stat-icon svg{width:20px;height:20px}.stat-card .mu{margin-top:7px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(26px + env(safe-area-inset-bottom,0px));background:#16264b;border:1px solid var(--ac);padding:9px 14px;border-radius:12px;display:none;z-index:9;box-shadow:var(--shadow)}
-@media(max-width:800px){.app{display:block}nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;z-index:8;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(37px,auto));gap:3px;overflow:visible;padding:6px 7px calc(7px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--ln-strong);background:rgba(6,13,29,.96);box-shadow:0 -10px 30px rgba(0,0,0,.24);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}nav .nav-brand{display:none}nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;white-space:normal;text-align:center;min-height:37px;padding:3px 2px;margin:0;border-radius:9px;font-size:10px;line-height:1.2;font-weight:600}nav a .nav-icon,nav a .nav-icon svg{width:17px;height:17px}main{padding:14px 14px calc(116px + env(safe-area-inset-bottom,0px))}.topbar{gap:8px;padding-bottom:14px;margin-bottom:18px}.topbar-brand{gap:8px}.topbar-brand .brand-mark{width:33px;height:33px}.topbar-brand strong{font-size:11px}.topbar-brand small{font-size:9px}.status-pill{max-width:55%;padding:7px 9px;font-size:9px;gap:7px}.status-pill small{display:none}.status-indicator{width:7px;height:7px}.cd{min-height:54px;padding:4px;font-size:10px}}
+@media(max-width:800px){.app{display:block}nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;z-index:8;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,minmax(37px,auto));gap:3px;overflow:visible;padding:6px 7px calc(7px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--ln-strong);background:rgba(6,13,29,.96);box-shadow:0 -10px 30px rgba(0,0,0,.24);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}nav .nav-brand{display:none}nav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1px;white-space:normal;text-align:center;min-height:37px;padding:3px 2px;margin:0;border-radius:9px;font-size:10px;line-height:1.2;font-weight:600}nav a .nav-icon,nav a .nav-icon svg{width:17px;height:17px}main{padding:14px 14px calc(116px + env(safe-area-inset-bottom,0px))}.topbar{gap:8px;padding-bottom:14px;margin-bottom:18px}.topbar-brand{gap:8px}.topbar-brand .brand-mark{width:33px;height:33px}.topbar-brand strong{font-size:11px}.topbar-brand small{font-size:9px}.status-pill{max-width:55%;padding:7px 9px;font-size:9px;gap:7px}.status-pill small{display:none}.status-indicator{width:7px;height:7px}.cd{min-height:54px;padding:4px;font-size:10px}}
 @media(max-width:380px){nav a{font-size:9px}.topbar-brand strong{font-size:10px}.status-pill{font-size:8px;padding:6px 7px}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{min-height:100px;padding:12px}.stat-card .stat-icon{width:34px;height:34px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
@@ -106,6 +106,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 .studio-field input,.studio-field textarea{width:100%;min-width:0}.studio-field input[type=color]{height:44px;padding:5px}
 .site-preview-frame{display:block;width:100%;height:690px;border:1px solid var(--ln-strong);border-radius:13px;background:#fff}
 .website-studio-note{font-size:12px;color:var(--mu);margin:8px 0 0}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:12px}.note-card{display:flex;flex-direction:column;gap:10px;min-height:190px}.note-card h3{margin:0;font-size:16px}.note-body{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--tx);font-size:14px;flex:1}.note-meta{color:var(--mu);font-size:11px}.note-actions{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:900px){.website-studio-grid{grid-template-columns:1fr}.site-preview-frame{height:620px}}
 @media(max-width:560px){.website-studio-fields{grid-template-columns:1fr}.studio-field.wide{grid-column:auto}.site-preview-frame{height:580px}}
 
@@ -138,7 +139,7 @@ const E=[
 const em=id=>E.find(e=>e.id===id);
 let S;
 const isRecord=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
-const defaultState=()=>({ceo:'Founder',projects:[],tasks:[],chats:{},events:[],reports:[],log:[]});
+const defaultState=()=>({ceo:'Founder',projects:[],tasks:[],chats:{},notes:[],events:[],reports:[],log:[]});
 const SITE_CONTENT_FIELDS=['brandName','eyebrow','headline','subheadline','ctaLabel','accentColor','feature1Title','feature1Text','feature2Title','feature2Text','feature3Title','feature3Text','aboutTitle','aboutText','contactTitle','contactText'];
 function defaultWebsiteContent(project={}){
  const brandName=String(project.name||'Website Baru').trim().slice(0,80)||'Website Baru';
@@ -176,6 +177,14 @@ function normalizeTask(raw){
  const safeId=Number.isFinite(candidateId)&&candidateId>0?candidateId:Date.now()+Math.random();
  return {id:safeId,t:String(raw.t||'Tugas tanpa judul').slice(0,160),emp:typeof raw.emp==='string'?raw.emp:'unassigned',pri:PR.includes(raw.pri)?raw.pri:'Sedang',due:typeof raw.due==='string'?raw.due:'',st,pg:progress,h:history,result:typeof raw.result==='string'?raw.result.slice(0,12000):'',brief:typeof raw.brief==='string'?raw.brief.slice(0,2000):'',reviewed:raw.reviewed===true&&st===ST[3],projectId:raw.projectId===undefined||raw.projectId===null?'':String(raw.projectId).slice(0,80)};
 }
+const NOTE_CATEGORIES=['Ide bisnis','Website','Konten','Belajar','Strategi','Catatan'];
+function normalizeNote(raw){
+ if(!isRecord(raw))return null; const id=Number(raw.id),createdAt=Number(raw.createdAt),updatedAt=Number(raw.updatedAt);
+ const category=NOTE_CATEGORIES.includes(raw.category)?raw.category:'Catatan';
+ const title=String(raw.title||'Catatan tanpa judul').trim().slice(0,120)||'Catatan tanpa judul';
+ const body=String(raw.body||'').slice(0,5000);
+ return {id:Number.isFinite(id)&&id>0?id:Date.now()+Math.random(),title,body,category,createdAt:Number.isFinite(createdAt)&&createdAt>0?createdAt:Date.now(),updatedAt:Number.isFinite(updatedAt)&&updatedAt>0?updatedAt:createdAt||Date.now(),pinned:raw.pinned===true};
+}
 function normalizeState(raw){
  const base=defaultState();
  if(!isRecord(raw))return base;
@@ -189,6 +198,7 @@ function normalizeState(raw){
   projects:Array.isArray(raw.projects)?raw.projects.map(normalizeProject).filter(Boolean).slice(0,50):[],
   tasks:Array.isArray(raw.tasks)?raw.tasks.map(normalizeTask).filter(Boolean).slice(0,500):[],
   chats,
+  notes:Array.isArray(raw.notes)?raw.notes.map(normalizeNote).filter(Boolean).slice(-100):[],
   events:Array.isArray(raw.events)?raw.events.filter(isRecord).map(item=>({id:(Number.isFinite(Number(item.id))&&Number(item.id)>0?Number(item.id):Date.now()+Math.random()),title:String(item.title||'Agenda').slice(0,120),date:typeof item.date==='string'?item.date:'',type:String(item.type||'Agenda').slice(0,40)})).slice(-500):[],
   reports:Array.isArray(raw.reports)?raw.reports.filter(isRecord).map(item=>({title:String(item.title||'Laporan').slice(0,160),body:String(item.body||'').slice(0,20000)})).slice(0,100):[],
   log:Array.isArray(raw.log)?raw.log.filter(isRecord).map(item=>({at:Number.isFinite(Number(item.at))?Number(item.at):Date.now(),t:String(item.t||'').slice(0,500)})).slice(0,40):[]
@@ -202,7 +212,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.4.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.5.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -392,6 +402,7 @@ const fd=t=>new Date(t).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'sh
 const dk=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
 const av=e=>`<div class="av" style="background:${e.c}">${e.n[0]}</div>`;
 const ICONS={
+ notes:'<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
  dashboard:'<rect x="3" y="3" width="8" height="8" rx="1.7"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/>',
  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
  chat:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/>',
@@ -607,7 +618,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.4.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.5.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -659,7 +670,7 @@ save();render()}
 async function talkToEmployee(key,b,history=[]){push(key,'ceo',b);save();render();try{const result=await api('/api/chat',{employeeId:key,message:b,history});markAIVerified(result.model);push(key,key,result.reply||'AI tidak mengembalikan jawaban.');log(S.ceo+' berbicara dengan '+em(key).n+'.');}catch(e){markAIFailed(e);push(key,'system','Belum dapat menerima jawaban AI: '+e.message+' Pastikan backend dan konfigurasi API sudah aktif.');}save();render()}
 let taskFilters={query:'',status:'',employee:'',priority:'',project:'',sort:'newest'};
 let cal={m:'bulan',d:new Date()},rep='harian';
-const nav=[['dashboard','Dashboard','dashboard'],['proyek','Proyek','tasks'],['karyawan','Tim Virtual','users'],['chat','Koordinasi','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
+const nav=[['dashboard','Dashboard','dashboard'],['notes','Catatan & Ide','notes'],['proyek','Proyek','tasks'],['karyawan','Tim Virtual','users'],['chat','Koordinasi','chat'],['kantor','Kantor Virtual','office'],['tugas','Tugas','tasks'],['kalender','Kalender','calendar'],['laporan','Laporan','reports'],['pengaturan','Pengaturan','settings']];
 
 function offlineAssistantReply(key,message){
  const prompt=String(message||'').trim().slice(0,500);
@@ -681,6 +692,11 @@ function offlineAssistantReply(key,message){
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
 <form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${PERSONAL_OFFLINE_MODE?'Tulis brief atau permintaan kerja...':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)?'disabled':''}><button ${BUSY.has(key)?'disabled':''}>${PERSONAL_OFFLINE_MODE?'Buat kerangka offline':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${PERSONAL_OFFLINE_MODE?`<p class="demo" role="note">Template kerja dibuat secara lokal. Tidak ada AI eksternal, API, atau kredit yang digunakan.</p>`:''}<div class="err" id="err"></div></div>`}
 const V={
+  notes(){
+   const sorted=S.notes.slice().sort((a,b)=>(Number(b.pinned)-Number(a.pinned))||Number(b.updatedAt)-Number(a.updatedAt));
+   const cards=sorted.map(note=>'<article class="c note-card"><div class="row" style="justify-content:space-between"><span class="chip">'+esc(note.category)+'</span><span class="chip">'+(note.pinned?'📌 Dipin':'Catatan')+'</span></div><h3>'+esc(note.title)+'</h3><div class="note-body">'+esc(note.body||'Catatan kosong.')+'</div><div class="note-meta">Diperbarui '+esc(fd(note.updatedAt))+'</div><div class="note-actions"><button type="button" class="sec" data-a="pin-note" data-id="'+esc(note.id)+'">'+(note.pinned?'Lepas pin':'Pin')+'</button><button type="button" class="sec" data-a="delete-note" data-id="'+esc(note.id)+'">Hapus</button></div></article>').join('');
+   return '<h1>Catatan & Ide</h1><p class="sub">Tangkap ide, strategi, hal yang dipelajari, dan catatan proyek. Semuanya tersimpan lokal di browser ini.</p><div class="g g2"><form data-f="note" class="c"><h2>Tambah catatan</h2><label>Judul</label><input name="title" maxlength="120" placeholder="Contoh: Ide website baru" required><label>Kategori</label><select name="category">'+NOTE_CATEGORIES.map(category=>'<option>'+esc(category)+'</option>').join('')+'</select><label>Isi catatan / ide</label><textarea name="body" rows="8" maxlength="5000" placeholder="Tulis ide atau informasi yang ingin disimpan..." required></textarea><p class="mu">Maksimal 100 catatan. Catatan masuk ke backup lokal NEXUS.</p><button type="submit">Simpan catatan</button></form><section class="c"><h2>Catatan tersimpan ('+S.notes.length+')</h2><div class="notes-grid">'+(cards||'<p class="mu">Belum ada catatan. Tambahkan ide pertamamu di formulir.</p>')+'</div></section></div>';
+  },
   proyek(){const cards=S.projects.map(project=>{const stats=projectStats(project.id);return '<a class="c card project-card" href="#p-'+esc(project.id)+'"><div class="row" style="justify-content:space-between"><span class="chip">'+esc(WEBSITE_TYPES.find(x=>x.id===project.type)?.label||'Website')+'</span><span class="chip">'+esc(project.status)+'</span></div><h2>'+esc(project.name)+'</h2><p class="mu">'+esc(project.objective)+'</p><div class="project-progress"><div class="ops-track"><i style="width:'+stats.progress+'%"></i></div><div class="row" style="justify-content:space-between"><span class="mu">'+stats.completed+'/'+stats.total+' tugas selesai</span><b>'+stats.progress+'%</b></div></div><div class="mu">Stack: '+esc(project.stack)+' · Target: '+esc(project.targetDate||'Belum ditentukan')+'</div><span class="mu">Buka ruang proyek →</span></a>'}).join('');return '<h1>Ruang Proyek</h1><p class="sub">Buat dan kelola proyek website. NEXUS membuat checklist awal secara lokal, membaginya ke tim virtual, dan bisa mengunduh starter HTML tanpa API.</p><div class="g g2"><form class="c" data-f="project"><h2>Proyek website baru</h2><label>Nama proyek</label><input name="name" maxlength="100" placeholder="Contoh: Website portofolio saya" required><label>Jenis website</label><select name="type">'+WEBSITE_TYPES.map(x=>'<option value="'+x.id+'">'+x.label+'</option>').join('')+'</select><label>Tujuan website</label><textarea name="objective" rows="3" maxlength="1200" placeholder="Untuk siapa website ini dibuat dan masalah apa yang diselesaikan?" required></textarea><label>Teknologi yang ingin digunakan</label><input name="stack" maxlength="160" value="HTML, CSS, JavaScript" placeholder="HTML, CSS, JavaScript / React / Next.js"><label>Target tanggal (opsional)</label><input type="date" name="targetDate"><p class="mu">Saat proyek dibuat, NEXUS menyiapkan checklist tugas untuk riset, desain, konten, developer, dan QA. Semua data disimpan di browser ini.</p><div class="err" id="err"></div><button type="submit">Buat proyek + checklist kerja</button></form><section class="c"><h2>Daftar proyek ('+S.projects.length+')</h2>'+(cards||'<p class="mu">Belum ada proyek. Buat proyek pertamamu di formulir sebelah kiri.</p>')+'</section></div>'},
   projectDetail(id){
   const project=projectById(id);
@@ -931,6 +947,14 @@ async function reviseTask(id,note){
 }
 function err(t){const e=$('#err');if(e)e.textContent=t}
 document.addEventListener('submit',async ev=>{const f=ev.target;const k=f.dataset.f;if(!k)return;ev.preventDefault();const d=new FormData(f);
+if(k==='note'){
+ const title=String(d.get('title')||'').trim(),body=String(d.get('body')||'').trim(),category=String(d.get('category')||'Catatan');
+ if(title.length<2||title.length>120){toast('Judul catatan harus berisi 2–120 karakter.');return}
+ if(body.length<2||body.length>5000){toast('Isi catatan harus berisi 2–5.000 karakter.');return}
+ if(!NOTE_CATEGORIES.includes(category)){toast('Kategori catatan tidak valid.');return}
+ if(S.notes.length>=100){toast('Batas 100 catatan tercapai. Hapus catatan lama sebelum menambah.');return}
+ const now=Date.now();S.notes.unshift({id:now+Math.random(),title,body,category,createdAt:now,updatedAt:now,pinned:false});log('Catatan baru: '+title.slice(0,80));f.reset();save();render();toast('Catatan berhasil disimpan.');return;
+}
 if(k==='project'){
  const name=String(d.get('name')||'').trim(),objective=String(d.get('objective')||'').trim(),type=String(d.get('type')||'company'),stack=String(d.get('stack')||'HTML, CSS, JavaScript').trim(),targetDate=String(d.get('targetDate')||'');
  if(name.length<3||name.length>100){toast('Nama proyek harus berisi 3–100 karakter.');return}
@@ -1012,6 +1036,8 @@ else if(k==='ev'){const t=(d.get('t')||'').trim();if(t.length<2)return err('Judu
 else if(k==='ceo'){const n=(d.get('n')||'').trim();if(!n)return err('Nama tidak boleh kosong.');S.ceo=n;f.reset();save();render();toast('Profil disimpan')}});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
 if(a==='logout'){void logout();return}
+if(a==='pin-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note)return;note.pinned=!note.pinned;note.updatedAt=Date.now();log((note.pinned?'Catatan dipin: ':'Pin catatan dilepas: ')+note.title.slice(0,80));save();render();return}
+if(a==='delete-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note||!confirm('Hapus catatan “'+note.title+'”?'))return;S.notes=S.notes.filter(item=>String(item.id)!==String(id));log('Catatan dihapus: '+note.title.slice(0,80));save();render();return}
 if(a==='download-starter'){const project=projectById(id);if(project){const form=document.querySelector('form[data-f="site-editor"]');const site=form&&String(form.dataset.key)===String(id)?websiteContentFromForm(form,project):project.site;downloadWebsiteStarter(project,site);}return}
 if(a==='delete-project'){const project=projectById(id);if(!project)return;if(!confirm('Hapus proyek ini? Tugasnya tetap disimpan tanpa tautan proyek.'))return;S.projects=S.projects.filter(item=>String(item.id)!==String(id));S.tasks.forEach(task=>{if(String(task.projectId||'')===String(id))task.projectId=''});log('Proyek dihapus, tugas terkait tetap dipertahankan: '+project.name);location.hash='#proyek';save();render();return}
 if(a==='approve'){const task=S.tasks.find(x=>String(x.id)===id);if(!task||!task.result)return;updateTaskStatus(task,ST[3]);task.reviewed=true;task.h.push({at:Date.now(),t:'CEO menyetujui hasil kerja.'});log('CEO menyetujui hasil: '+task.t.slice(0,60));toast('Hasil disetujui.')}

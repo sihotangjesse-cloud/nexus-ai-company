@@ -7,7 +7,7 @@ const html = await readFile(new URL('../public/index.html', import.meta.url), 'u
 test('UI foundation keeps one inline script and accessible primary navigation', () => {
   assert.equal((html.match(/<script>/g) || []).length, 1, 'frontend must keep exactly one inline script');
   assert.match(html, /<nav id="nav" aria-label="Navigasi utama">/);
-  for (const route of ['dashboard', 'karyawan', 'chat', 'kantor', 'tugas', 'kalender', 'laporan', 'pengaturan']) {
+  for (const route of ['dashboard', 'notes', 'karyawan', 'chat', 'kantor', 'tugas', 'kalender', 'laporan', 'pengaturan']) {
     assert.ok(html.includes(`['${route}'`), `navigation route ${route} must remain available`);
   }
   assert.match(html, /function svgIcon\(name\)/);
@@ -24,8 +24,8 @@ test('AI connection header exposes verified, configured, setup, and loading stat
   assert.match(html, /MEMERIKSA SERVER/);
 });
 
-test('mobile navigation provides all eight items in a visible two-row grid', () => {
-  assert.match(html, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+test('mobile navigation fits ten items in a visible two-row grid', () => {
+  assert.match(html, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(html, /grid-template-rows:repeat\(2,minmax\(37px,auto\)\)/);
   assert.match(html, /safe-area-inset-bottom/);
 });

@@ -43,7 +43,7 @@ test('normalizes invalid task state and keeps optional saved work product', () =
 
 test('malformed storage root returns a complete safe default state', () => {
   const result = normalizeState(['not', 'an', 'object']);
-  assert.deepEqual(result, { ceo: 'Founder', projects: [], tasks: [], chats: {}, events: [], reports: [], log: [] });
+  assert.deepEqual(result, { ceo: 'Founder', projects: [], tasks: [], chats: {}, notes: [], events: [], reports: [], log: [] });
 });
 
 test('normalizes progress consistently with each task status', () => {
