@@ -25,7 +25,7 @@ test('AI connection header exposes verified, configured, setup, and loading stat
 });
 
 test('mobile navigation fits twelve items in a visible two-row grid', () => {
-  assert.match(html, /grid-template-columns:repeat\\(6,minmax\\(0,1fr\\)\\)/);
+  assert.match(html, /grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(html, /grid-template-rows:repeat\(2,minmax\(37px,auto\)\)/);
   assert.match(html, /safe-area-inset-bottom/);
 });
