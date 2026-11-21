@@ -188,6 +188,13 @@
       '<div class="row" style="margin-top:10px"><button type="button" data-a="local-agent-apply">Setujui & simpan</button><button type="button" class="sec" data-a="local-agent-cancel">Batalkan</button></div>' +
       '<p class="mu">NEXUS tidak menyimpan file sebelum kamu menekan tombol persetujuan.</p></section>';
   }
+  function stepView() {
+    if (!state.steps.length) return '';
+    return '<section class="c" style="margin-top:10px"><h2>Langkah yang dijalankan</h2>' + state.steps.map(function (step, index) {
+      return '<div class="t"><b>' + (index + 1) + '. ' + esc(step.name) + '</b><p class="mu">' + esc(step.reason || 'Dipilih oleh model lokal') + '</p>' +
+        (step.error ? '<p class="err">' + esc(step.error) + '</p>' : '<pre style="white-space:pre-wrap;overflow-wrap:anywhere">' + esc(JSON.stringify(step.result || {}, null, 2).slice(0, 1800)) + '</pre>') + '</div>';
+    }).join('') + '</section>';
+  }
   function view() {
     var ready = !!(window.NexusLocalAI && window.NexusLocalAI.getEngine && window.NexusLocalAI.getEngine());
     return '<section class="c" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h2>Agent AI · Pemanggilan alat lokal</h2><span class="chip">' +
@@ -197,7 +204,7 @@
       '<form data-f="local-agent-task"><label for="local-agent-task">Perintah untuk NEXUS Agent</label><textarea id="local-agent-task" name="task" rows="3" maxlength="1800" placeholder="Contoh: Baca README.md dari workspace, lalu periksa package.json." ' + (!ready || state.busy ? 'disabled' : '') + ' required></textarea>' +
       '<div class="row" style="margin-top:10px"><button type="submit" ' + (!ready || state.busy ? 'disabled' : '') + '>' + (state.busy ? 'Agent sedang bekerja…' : 'Jalankan Agent') + '</button><button type="button" class="sec" data-a="local-agent-clear" ' + (state.busy ? 'disabled' : '') + '>Bersihkan riwayat</button></div>' +
       '<p class="mu">Maksimal 3 langkah alat per instruksi. File hanya diubah melalui usulan dan persetujuanmu.</p></form>' +
-      '<div class="local-ai-messages" aria-live="polite">' + messageView() + '</div>' + proposalView() +
+      '<div class="local-ai-messages" aria-live="polite">' + messageView() + '</div>' + stepView() + proposalView() +
       '<p class="' + (state.statusError ? 'err' : 'mu') + '" role="status">' + esc(state.status || 'Izin alat: baca file workspace, baca repo publik, periksa sintaks, dan buat usulan file lokal.') + '</p>' +
       '<p class="mu">Belum tersedia: pencarian web umum, repository privat, commit/push GitHub, dan eksekusi kode aplikasi. Pemeriksaan sintaks tidak menjalankan kode.</p></section>';
   }
