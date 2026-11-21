@@ -618,7 +618,7 @@ function markAIVerified(model){AI_STATUS={...AI_STATUS,checked:true,keyConfigure
 function markAIFailed(error){AI_STATUS={...AI_STATUS,checked:true,verified:false,message:error?.message||'Permintaan AI gagal.'};}
 function topHeader(){
 let state,title,detail;
-if(PERSONAL_OFFLINE_MODE){state='is-neutral';title='MODE PRIBADI OFFLINE';detail='Ruang pribadi · data lokal';}
+if(PERSONAL_OFFLINE_MODE){state='is-neutral';title='MODE PRIBADI · TANPA API';detail='Data lokal · AI generatif lokal';}
 else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Model '+(AI_STATUS.model||'AI');}
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
@@ -750,6 +750,12 @@ async function submitLocalAI(form){
  finally{LOCAL_AI.busy=false;save();render()}
 }
 
+async function unloadLocalAIModel(){
+ if(!LOCAL_AI.engine||LOCAL_AI.busy)return;
+ try{await LOCAL_AI.engine.exit()}catch(error){toast('Model dilepas dengan peringatan: '+String(error?.message||error).slice(0,180))}
+ LOCAL_AI.engine=null;LOCAL_AI.modelName='';LOCAL_AI.progress=0;LOCAL_AI.status='Model sudah dilepas dari memori.';render();
+}
+
 const V={
   asisten(){
    const ready=!!LOCAL_AI.engine;
@@ -758,7 +764,7 @@ const V={
    '<p class="mu">Pilih file model instruksi berformat GGUF dari perangkat. Untuk mulai, gunakan model kecil 0.5B Q4 (maksimal 900 MB). Pada perangkat 4 GB, tutup aplikasi lain dan gunakan jawaban singkat.</p>'+
    '<label for="local-ai-file">File model GGUF</label><input id="local-ai-file" type="file" accept=".gguf,application/octet-stream" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+
    '<div id="local-ai-status" class="local-ai-status" role="status">'+esc(LOCAL_AI.status)+'</div><div class="local-ai-progress"><i id="local-ai-progress" style="width:'+LOCAL_AI.progress+'%"></i></div>'+
-   '<div class="row"><button type="button" data-a="load-local-ai" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+(LOCAL_AI.loading?'Memuat model...':ready?'Model sudah dimuat':'Muat model lokal')+'</button><button type="button" class="sec" data-a="clear-local-ai-chat">Hapus percakapan</button></div>'+
+   '<div class="row"><button type="button" data-a="load-local-ai" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+(LOCAL_AI.loading?'Memuat model...':ready?'Model sudah dimuat':'Muat model lokal')+'</button>'+(ready?'<button type="button" class="sec" data-a="unload-local-ai">Lepas model</button>':'')+'<button type="button" class="sec" data-a="clear-local-ai-chat">Hapus percakapan</button></div>'+
    '<p class="mu">Kode engine WebAssembly dan file WASM diambil dari jsDelivr saat memuat model jika belum ada di cache. File model dipilih dari perangkat. Inferensi dan isi percakapan tetap lokal; tidak ada AI API, akun, key, kredit, atau transaksi.</p></section>'+
    '<section class="c" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h2>Percakapan</h2><span class="chip">'+(ready?esc(LOCAL_AI.modelName):'Model belum aktif')+'</span></div>'+
    '<div id="local-ai-messages" class="local-ai-messages" aria-live="polite">'+localAIChatMessagesView()+'</div>'+
@@ -1110,6 +1116,7 @@ else if(k==='ceo'){const n=(d.get('n')||'').trim();if(!n)return err('Nama tidak 
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
 if(a==='logout'){void logout();return}
 if(a==='load-local-ai'){void loadLocalAIModel();return}
+if(a==='unload-local-ai'){void unloadLocalAIModel();return}
 if(a==='clear-local-ai-chat'){if(!confirm('Hapus seluruh riwayat percakapan NEXUS AI lokal?'))return;S.chats.localai=[];log('Riwayat asisten AI lokal dihapus.');save();render();return}
 if(a==='pin-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note)return;note.pinned=!note.pinned;note.updatedAt=Date.now();log((note.pinned?'Catatan dipin: ':'Pin catatan dilepas: ')+note.title.slice(0,80));save();render();return}
 if(a==='delete-note'){const note=S.notes.find(item=>String(item.id)===String(id));if(!note||!confirm('Hapus catatan “'+note.title+'”?'))return;S.notes=S.notes.filter(item=>String(item.id)!==String(id));log('Catatan dihapus: '+note.title.slice(0,80));save();render();return}
