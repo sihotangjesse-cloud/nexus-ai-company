@@ -710,7 +710,7 @@ async function loadLocalAIModel(){
  const file=$('#local-ai-file')?.files?.[0];
  if(!file){toast('Pilih file model GGUF terlebih dahulu.');return}
  if(!String(file.name||'').toLowerCase().endsWith('.gguf')){toast('File model harus berformat .gguf.');return}
- if(file.size>900*1024*1024){toast('Untuk perangkat ini, pilih model GGUF maksimal 900 MB. Mulai dari model kecil 0.5B Q4.');return}
+ if(file.size>600*1024*1024){toast('Untuk perangkat ini, pilih model GGUF maksimal 600 MB. Mulai dari model kecil 0.5B Q4.');return}
  LOCAL_AI.loading=true;LOCAL_AI.progress=0;LOCAL_AI.status='Memuat mesin WebAssembly. Browser mengambil file engine dari CDN jika belum tersedia di cache.';
  const status=$('#local-ai-status'),progress=$('#local-ai-progress');
  if(status)status.textContent=LOCAL_AI.status;
