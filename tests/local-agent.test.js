@@ -18,7 +18,7 @@ test('Local Agent is connected to the assistant page and local GGUF engine', () 
 
 test('Agent exposes only bounded read/check/propose tools and caps tool calls at three', () => {
   assert.match(agent, /var MAX_STEPS = 3/);
-  for (const name of ['workspace_list','workspace_read','workspace_check','github_list','github_read','workspace_propose_write']) {
+  for (const name of ['workspace_list','workspace_read','workspace_check','github_list','github_read','workspace_propose_write','web_search']) {
     assert.ok(agent.includes("'" + name + "'") || agent.includes('=== "' + name + '"'), 'missing allowlisted tool ' + name);
   }
   assert.match(agent, /for \(var step = 0; step < MAX_STEPS; step \+= 1\)/);
@@ -57,6 +57,14 @@ test('Agent does not delete files, write GitHub, run arbitrary code, or invoke a
 test('Agent displays a tool execution trace and explicit feature boundaries', () => {
   assert.match(agent, /function stepView\(\)/);
   assert.match(agent, /repository GitHub publik/);
-  assert.match(agent, /pencarian web umum/);
+  assert.match(agent, /web_search/);
   assert.match(agent, /eksekusi kode aplikasi/);
+});
+
+
+test('Agent web search sends only a bounded query to the loopback search endpoint', () => {
+  assert.match(agent, /name === 'web_search'/);
+  assert.match(agent, /\/__nexus\/search\?q=/);
+  assert.match(agent, /Hanya kata kunci pencarian yang dikirim ke DuckDuckGo/);
+  assert.match(agent, /Pencarian web mengirim kata kunci ke DuckDuckGo/);
 });

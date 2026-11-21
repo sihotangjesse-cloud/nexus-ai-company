@@ -3,6 +3,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import quote
@@ -10,7 +11,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.local_workspace_server import make_server
+from scripts.local_workspace_server import make_server, search_web, WorkspaceError
 
 
 class LocalWorkspaceServerTests(unittest.TestCase):
@@ -66,6 +67,20 @@ class LocalWorkspaceServerTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, expected_status)
         return json.loads(caught.exception.read().decode("utf-8"))
 
+    def test_search_query_is_bounded_and_results_are_https_only(self):
+        with self.assertRaises(WorkspaceError):
+            search_web("x")
+        fixture = b'<a class="result__a" href="https://example.org/page">Example title</a><div class="result__snippet">Short summary</div>'
+        class FakeResponse:
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self, limit): return fixture
+        with patch("scripts.local_workspace_server.urlopen", return_value=FakeResponse()):
+            results = search_web("NEXUS local AI")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["title"], "Example title")
+        self.assertEqual(results[0]["url"], "https://example.org/page")
+        self.assertEqual(results[0]["snippet"], "Short summary")
     def test_health_and_file_listing_only_expose_workspace(self):
         (self.workspace / "readme.md").write_text("hello", encoding="utf-8")
         (self.workspace / ".env").write_text("SECRET=hidden", encoding="utf-8")
