@@ -18,6 +18,9 @@ import threading
 import time
 import uuid
 from html.parser import HTMLParser
+from urllib.parse import urlencode, parse_qs, urlparse
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
 from urllib.parse import parse_qs, urlsplit
@@ -36,6 +39,68 @@ BLOCKED_NAMES = {
     ".ssh", ".gnupg", ".aws", ".config", ".npm", ".cache",
 }
 JSON_CONTENT_TYPE = "application/json; charset=utf-8"
+
+class SearchResultParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.results = []
+        self.current = None
+        self.capture = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = set((attrs.get("class") or "").split())
+        if tag == "a" and "result__a" in classes:
+            self.current = {"title": "", "url": attrs.get("href", ""), "snippet": ""}
+            self.capture = "title"
+        elif self.current and "result__snippet" in classes:
+            self.capture = "snippet"
+
+    def handle_data(self, data):
+        if self.current and self.capture:
+            key = self.capture
+            self.current[key] = (self.current.get(key, "") + data).strip()[:700]
+
+    def handle_endtag(self, tag):
+        if self.current and self.capture == "title" and tag == "a":
+            self.capture = None
+        elif self.current and self.capture == "snippet" and tag in ("div", "td"):
+            self.capture = None
+        if self.current and self.current.get("title") and self.current.get("url"):
+            self.results.append(self.current)
+            self.current = None
+            self.capture = None
+
+
+def search_web(query: str) -> list[dict]:
+    query = " ".join(query.split()) if isinstance(query, str) else ""
+    if len(query) < 2 or len(query) > 200:
+        raise WorkspaceError("Kata kunci harus berisi 2–200 karakter.")
+    url = "https://html.duckduckgo.com/html/?" + urlencode({"q": query})
+    request = Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; NEXUS-Personal/1.10)", "Accept": "text/html"})
+    try:
+        with urlopen(request, timeout=10) as response:
+            raw = response.read(1024 * 1024 + 1)
+    except (URLError, HTTPError, TimeoutError, OSError) as exc:
+        raise WorkspaceError("Pencarian web gagal. Periksa koneksi internet atau coba lagi.", 502) from exc
+    if len(raw) > 1024 * 1024:
+        raise WorkspaceError("Respons mesin pencari terlalu besar.", 502)
+    parser = SearchResultParser()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    results = []
+    for item in parser.results:
+        target = item["url"]
+        parsed = urlparse(target)
+        if parsed.netloc.endswith("duckduckgo.com") and parsed.path.startswith("/l/"):
+            target = parse_qs(parsed.query).get("uddg", [""])[0]
+            parsed = urlparse(target)
+        if parsed.scheme != "https" or not parsed.netloc or parsed.netloc.endswith("duckduckgo.com"):
+            continue
+        results.append({"title": item["title"][:180], "url": target[:1000], "snippet": item["snippet"][:500]})
+        if len(results) == 5:
+            break
+    return results
+
 
 
 class WorkspaceError(Exception):
@@ -206,6 +271,13 @@ class LocalWorkspaceHandler(SimpleHTTPRequestHandler):
                 except UnicodeDecodeError as exc:
                     raise WorkspaceError("Hanya file teks UTF-8 yang dapat dibaca.", 415) from exc
                 self._send_json(200, {"ok": True, "path": raw, "content": content})
+            elif parsed.path == "/__nexus/search":
+                raw = query.get("q", [""])[0]
+                now = time.monotonic()
+                if now - getattr(self.server, "last_search_at", 0) < 2:
+                    raise WorkspaceError("Tunggu sebentar sebelum pencarian berikutnya.", 429)
+                self.server.last_search_at = now
+                self._send_json(200, {"ok": True, "provider": "DuckDuckGo", "query": " ".join(raw.split()), "results": search_web(raw)})
             else:
                 self._send_json(404, {"ok": False, "error": "Endpoint tidak ditemukan."})
         except WorkspaceError as exc:
