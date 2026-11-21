@@ -64,8 +64,13 @@ test('assistant output is limited, escaped before rendering, and never claimed t
 
 test('Android launcher exposes the workspace bridge on loopback only, not an AI endpoint', async () => {
   const launcher = await read('../scripts/start-nexus-android.sh');
-  assert.match(launcher, /python -m http\.server/);
-  assert.match(launcher, /--bind 127\.0\.0\.1/);
-  assert.match(launcher, /--directory "\$ROOT_DIR\/public"/);
-  assert.doesNotMatch(launcher, /--bind\s+0\.0\.0\.0|\/api\/|GEMINI_API_KEY/);
+  assert.match(launcher, /local_workspace_server\\.py/);
+  assert.match(launcher, /127\\.0\\.0\\.1/);
+  assert.doesNotMatch(launcher, /--bind\\s+0\\.0\\.0\\.0|GEMINI_API_KEY/);
+  const bridge = await read('../scripts/local_workspace_server.py');
+  assert.match(bridge, /make_server\\("127\\.0\\.0\\.1"/);
+  assert.match(bridge, /def _apply\\(/);
+  assert.match(bridge, /Origin tidak diizinkan/);
+  assert.match(bridge, /ast\\.parse/);
+  assert.doesNotMatch(bridge, /subprocess\\.run\\([\\s\\S]*shell=True/);
 });
