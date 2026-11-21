@@ -56,7 +56,7 @@ Saat tombol pemuatan ditekan, browser mengambil kode mesin Wllama versi 3.13.0 d
 
 - NEXUS memuat model dengan satu thread CPU, tanpa offload GPU, dan context 2.048 token.
 - Jawaban dibatasi maksimal 256 token per pesan untuk mengurangi beban.
-- File model dibatasi maksimal 900 MB di pemilih aplikasi.
+- File model dibatasi maksimal 600 MB di pemilih aplikasi.
 - Model 0.5B Q4 adalah ukuran percobaan awal yang relatif kecil, bukan model sekelas ChatGPT.
 - Ponsel dengan RAM 4 GB dapat kekurangan memori ketika browser, Android, dan model berjalan bersamaan. Tutup aplikasi lain, jangan membuka banyak tab, dan hentikan percobaan bila perangkat terasa panas atau browser tidak stabil.
 - Laptop dengan RAM 2 GB tidak direkomendasikan untuk menjalankan model AI ini.
