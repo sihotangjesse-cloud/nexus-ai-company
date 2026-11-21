@@ -207,5 +207,5 @@ test('personal offline mode ignores backend auth status and never renders a logi
   const b = createBrowser({ health: { ok: true, authRequired: true, authenticated: false, aiConfigured: true } });
   await settle();
   assert.equal(b.form('login'), undefined, 'login screen is disabled in personal offline mode');
-  assert.match(b.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
+  assert.match(b.elements['#main'].innerHTML, /MODE PRIBADI · TANPA API/);
 });
