@@ -1,8 +1,8 @@
 # NEXUS PERSONAL
 
-**Versi 1.7.0 — ruang kerja pribadi dengan file workspace lokal yang memerlukan persetujuan**
+**Versi 1.8.0 — ruang kerja lokal dengan GitHub Explorer publik hanya-baca**
 
-NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu dapat mengelola proyek website, checklist, tugas, ide, catatan, laporan, serta menggunakan asisten generatif kecil yang berjalan di browser perangkat melalui WebAssembly.
+NEXUS PERSONAL adalah aplikasi pribadi untuk satu pemilik. Kamu dapat mengelola proyek website, checklist, tugas, ide, catatan, laporan, menggunakan asisten generatif kecil di browser melalui WebAssembly, dan membaca repository GitHub publik secara opsional.
 
 ## Aturan operasi pribadi
 
