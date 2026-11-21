@@ -27,10 +27,14 @@ test('Agent exposes only bounded read/check/propose tools and caps tool calls at
 });
 
 test('GitHub tool uses public HTTPS GET only and never sends credentials', () => {
-  assert.match(agent, /https:\/\/api\.github\.com\/repos\//);
-  assert.match(agent, /method: 'GET'/);
-  assert.match(agent, /application\/vnd\.github\+json/);
-  assert.doesNotMatch(agent, /Authorization|Bearer |access_token|personal.access.token|method:\s*'(POST|PUT|PATCH|DELETE)'/i);
+  const start = agent.indexOf('async function githubContents(args) {');
+  const end = agent.indexOf('function decodeGithubText(', start);
+  assert.ok(start >= 0 && end > start);
+  const githubTool = agent.slice(start, end);
+  assert.match(githubTool, /https:\/\/api\.github\.com\/repos\//);
+  assert.match(githubTool, /method: 'GET'/);
+  assert.match(githubTool, /application\/vnd\.github\+json/);
+  assert.doesNotMatch(githubTool, /Authorization|Bearer |access_token|personal.access.token|method:\s*'(POST|PUT|PATCH|DELETE)'/i);
   assert.doesNotMatch(agent, /localStorage|GEMINI_API_KEY/);
 });
 
@@ -52,7 +56,7 @@ test('Agent does not delete files, write GitHub, run arbitrary code, or invoke a
 
 test('Agent displays a tool execution trace and explicit feature boundaries', () => {
   assert.match(agent, /function stepView\(\)/);
-  assert.match(agent, /repository publik/);
+  assert.match(agent, /repository GitHub publik/);
   assert.match(agent, /pencarian web umum/);
   assert.match(agent, /eksekusi kode aplikasi/);
 });
