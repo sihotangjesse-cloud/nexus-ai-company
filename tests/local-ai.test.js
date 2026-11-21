@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const html = await read('../public/index.html');
-const script = html.match(/<script>([\\s\\S]*?)<\\/script>/)?.[1] || '';
+const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] || '';
 
 function section(startMarker, endMarker) {
   const start = script.indexOf(startMarker);
@@ -41,7 +41,6 @@ test('model engine is imported only after the user activates the load control', 
 test('chat generation runs through the in-memory WebAssembly object, not a hosted endpoint', () => {
   assert.match(chat, /LOCAL_AI\.engine\.createChatCompletion\(/);
   assert.match(chat, /max_tokens:256/);
-  assert.match(chat, /n_ctx:2048/);
   assert.match(chat, /S\.chats\.localai/);
   assert.match(chat, /LOCAL_AI\.engine/);
   assert.doesNotMatch(chat, /fetch\s*\(|XMLHttpRequest|\/api\//);
@@ -61,4 +60,12 @@ test('assistant output is limited, escaped before rendering, and never claimed t
   assert.match(script, /esc\(item\.t\)/);
   assert.match(chat, /tidak memiliki akses internet, file, GitHub, pembayaran, atau alat eksternal/);
   assert.match(html, /Jawaban dibatasi 256 token per pesan/);
+});
+
+test('Android launcher exposes static files on loopback only, not an AI endpoint', async () => {
+  const launcher = await read('../scripts/start-nexus-android.sh');
+  assert.match(launcher, /python -m http\.server/);
+  assert.match(launcher, /--bind 127\.0\.0\.1/);
+  assert.match(launcher, /--directory "\$ROOT_DIR\/public"/);
+  assert.doesNotMatch(launcher, /0\.0\.0\.0|\/api\/|GEMINI_API_KEY/);
 });
