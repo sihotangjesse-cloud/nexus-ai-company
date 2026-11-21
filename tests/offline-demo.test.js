@@ -8,7 +8,8 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] || '';
 test('personal offline mode is forced on every protocol', () => {
   assert.match(html, /const PERSONAL_OFFLINE_MODE=true;/);
   assert.doesNotMatch(html, /PERSONAL_OFFLINE_MODE=location\.protocol/);
-  assert.match(html, /title='MODE PRIBADI OFFLINE'/);
+  assert.match(html, /title='MODE PRIBADI · TANPA API'/);
+  assert.match(html, /Asisten generatif opsional menjalankan model GGUF di browser/);
 });
 
 test('offline mode disables backend authentication and health requests', () => {
@@ -29,7 +30,8 @@ test('offline coordination and employee chat use local templates instead of AI c
   assert.match(script, /Buat kerangka offline/);
   assert.match(script, /Template kerja offline digunakan/);
   assert.match(script, /Template kerja dibuat secara lokal/);
-  assert.match(script, /Tidak ada AI eksternal, API, atau kredit yang digunakan/);
+  assert.match(script, /Template kerja dibuat secara lokal/);
+  assert.match(script, /Asisten AI generatif lokal/);
 });
 
 test('offline AI revision remains blocked', () => {
@@ -42,7 +44,8 @@ test('offline AI revision remains blocked', () => {
 
 test('single-owner personal branding and project workspace are available', () => {
   assert.ok(html.includes('<title>NEXUS PERSONAL</title>'));
-  assert.ok(html.includes('PERSONAL WORKSPACE · v1.5.0'));
+  assert.ok(html.includes('PERSONAL WORKSPACE · v1.6.0'));
+  assert.ok(html.includes('Asisten AI Generatif'));
   assert.ok(html.includes('RUANG KERJA PRIBADI'));
   assert.ok(html.includes('Ruang Proyek'));
   assert.ok(html.includes('Buat proyek + checklist kerja'));
