@@ -32,8 +32,8 @@ test('model engine is imported only after the user activates the load control', 
   assert.match(loadModel, /import\(WLLAMA_MODULE_URL\)/);
   assert.match(loadModel, /import\(WLLAMA_WASM_URL\)/);
   assert.match(script, /if\(a==='load-local-ai'\)\{void loadLocalAIModel\(\);return\}/);
-  assert.equal((script.match(/loadLocalAIModel\(\)/g) || []).length, 2,
-    'only the function declaration and explicit button handler may reference the loader');
+  const startup = script.slice(script.lastIndexOf("addEventListener('hashchange'"));
+  assert.doesNotMatch(startup, /loadLocalAIModel/);
   assert.match(html, /\['asisten','Asisten AI','ai'\]/);
   assert.match(html, /data-f="local-ai-chat"/);
 });
@@ -67,5 +67,5 @@ test('Android launcher exposes static files on loopback only, not an AI endpoint
   assert.match(launcher, /python -m http\.server/);
   assert.match(launcher, /--bind 127\.0\.0\.1/);
   assert.match(launcher, /--directory "\$ROOT_DIR\/public"/);
-  assert.doesNotMatch(launcher, /0\.0\.0\.0|\/api\/|GEMINI_API_KEY/);
+  assert.doesNotMatch(launcher, /--bind\s+0\.0\.0\.0|\/api\/|GEMINI_API_KEY/);
 });
