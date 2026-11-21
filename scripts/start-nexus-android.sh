@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PORT="${1:-4173}"
+PORT="$1"
+if [ -z "$PORT" ]; then PORT=4173; fi
 
 if ! command -v python >/dev/null 2>&1; then
   echo "Python belum terpasang. Di Termux jalankan: pkg install python"
@@ -21,7 +22,15 @@ if [ "$PORT" -lt 1024 ] || [ "$PORT" -gt 65535 ]; then
   exit 2
 fi
 
-echo "NEXUS PERSONAL tersedia di http://127.0.0.1:$PORT/"
-echo "Server ini hanya menyajikan file statis dari folder public dan hanya bind ke 127.0.0.1."
-echo "Jangan ubah alamat bind menjadi 0.0.0.0. Tekan Ctrl+C untuk berhenti."
-exec python -m http.server "$PORT" --bind 127.0.0.1 --directory "$ROOT_DIR/public"
+if [ ! -d "$HOME/storage/shared" ]; then
+  echo "Penyimpanan bersama Android belum terhubung."
+  echo "Jalankan termux-setup-storage, izinkan akses file, lalu jalankan launcher lagi."
+  echo "Tanpa izin tersebut, workspace disimpan di folder privat Termux."
+fi
+
+echo "NEXUS PERSONAL + Local Workspace akan dibuka pada http://127.0.0.1:$PORT/"
+echo "Server hanya bind ke 127.0.0.1. Tidak dapat diakses dari perangkat lain."
+echo "File hanya ditulis setelah kamu meninjau dan menyetujui usulan."
+echo "Pemeriksaan kode hanya memeriksa sintaks; kode proyek tidak dijalankan."
+echo "Tekan Ctrl+C untuk berhenti."
+exec python "$ROOT_DIR/scripts/local_workspace_server.py" --port "$PORT"
