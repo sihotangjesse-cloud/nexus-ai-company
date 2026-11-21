@@ -119,7 +119,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 const $=s=>document.querySelector(s);
 // NEXUS PERSONAL is deliberately offline-only, even when served from localhost.
 const PERSONAL_OFFLINE_MODE=true;
-const PERSONAL_OFFLINE_NOTICE='NEXUS PERSONAL · ruang kerja satu pemilik. Proyek dan data tetap lokal. Asisten generatif opsional menjalankan model GGUF di browser; tidak memakai AI API cloud, API key, transaksi, atau kredit.';
+const PERSONAL_OFFLINE_NOTICE='NEXUS PERSONAL · ruang kerja pribadi. Data proyek disimpan lokal. GitHub Explorer hanya membaca repository publik saat kamu meminta; yang dikirim hanya repo, branch, dan path. Asisten AI tetap lokal tanpa AI API, transaksi, atau kredit.';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='nexus_ai_company_v1';
 const BACKUP_FORMAT='nexus-ai-company-backup',BACKUP_VERSION=1,MAX_BACKUP_BYTES=2*1024*1024;
