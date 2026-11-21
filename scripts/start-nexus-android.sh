@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PORT="$1"
-if [ -z "$PORT" ]; then PORT=4173; fi
+PORT=4173
+if [ "$#" -ge 1 ]; then PORT="$1"; fi
 
 if ! command -v python >/dev/null 2>&1; then
   echo "Python belum terpasang. Di Termux jalankan: pkg install python"
