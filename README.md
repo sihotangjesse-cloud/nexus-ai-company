@@ -58,6 +58,15 @@ Jalankan `bash scripts/start-nexus-android.sh` di Termux, lalu buka `http://127.
 Fitur awal: daftar folder dan file teks, baca file, usulkan file baru/perubahan, lihat isi sebelum/sesudah, lalu setujui penyimpanan. Tidak ada tombol hapus. File dibatasi ke ekstensi teks yang diizinkan, maksimal 512 KB untuk dibaca dan 256 KB untuk perubahan; file tersembunyi/sensitif dan path di luar workspace diblokir.
 
 Tombol **Periksa sintaks** hanya memeriksa Python (AST), JavaScript (`node --check`), dan JSON. Kode proyek tidak dijalankan. Pemeriksaan JavaScript membutuhkan Node.js. Workspace tidak otomatis tersinkronisasi ke GitHub atau antarperangkat; pindahkan/backup folder sendiri.
+
+## GitHub Explorer publik hanya-baca v1.8.0
+
+Menu **GitHub** dapat membuka folder dan membaca file teks dari repository publik melalui GitHub REST API. Masukkan format `owner/repo`, branch, dan path folder. Pilih file untuk membaca isinya dan gunakan **Salin isi file** jika ingin memindahkannya ke File Workspace.
+
+Fitur ini hanya membuat permintaan HTTPS GET ke `api.github.com` setelah kamu menekan tombol. Tidak meminta token, tidak mengakses repository privat, dan tidak bisa mengubah file, branch, commit, atau push ke GitHub. Isi chat AI dan file workspace lokal tidak dikirim. File teks dibatasi 512 KB.
+
+GitHub mendokumentasikan batas permintaan REST tanpa autentikasi sebesar 60 permintaan per jam per alamat IP. Jika kuota habis, tunggu hingga jendela batas berakhir. Baca dokumentasi resmi [GitHub REST API rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api) dan [CORS](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests).
+
 ## Ruang proyek website
 
 Buka **Proyek → Proyek website baru**. Isi nama, jenis website, tujuan, teknologi, dan target tanggal. NEXUS membuat checklist lokal yang terhubung dengan ruang proyek.
