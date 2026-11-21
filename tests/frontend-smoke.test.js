@@ -71,14 +71,14 @@ test('frontend boots on localhost and does not contact backend health endpoints'
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.match(browser.elements['#nav'].innerHTML, /Dashboard/);
   assert.match(browser.elements['#main'].innerHTML, /Selamat datang/);
-  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
+  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI · TANPA API/);
   assert.deepEqual(browser.calls, []);
 });
 
 test('frontend also stays offline when served over another web origin', async () => {
   const browser = createBrowser({ protocol: 'https:' });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI OFFLINE/);
+  assert.match(browser.elements['#main'].innerHTML, /MODE PRIBADI · TANPA API/);
   assert.deepEqual(browser.calls, []);
 });
 

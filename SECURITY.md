@@ -1,24 +1,30 @@
 # Security Notes
 
-## Supported safe mode
+## Private browser mode
 
-The supported no-provider mode is the static offline demo opened from `public/index.html`. It disables AI chat, company delegation, AI revisions, login, and backend health checks. API calls are blocked before a network request is made.
+The frontend blocks the legacy backend API, login, health checks, cloud chat, company delegation, and AI revision flows before any request can be sent. It does not configure or use Gemini API keys.
+
+## Browser-local generative assistant
+
+The optional Asisten AI feature uses Wllama WebAssembly in a browser worker to load a user-selected GGUF file and execute inference locally. The app imports the pinned Wllama 3.13.0 JavaScript engine and WASM assets from jsDelivr only after the user explicitly selects **Muat model lokal**. This requires an initial connection to the CDN. The CDN receives requests for static engine assets, but the prompt, chat history, and selected local model file are not sent to an AI inference provider.
+
+The model is loaded from a user-selected browser File/Blob and inference calls the local Wllama JavaScript object. There is no AI HTTP endpoint, localhost inference server, provider API key, provider billing, or hosted model call. The optional Android Python launcher serves static application files on 127.0.0.1 only; it does not receive prompts or execute model inference.
+
+The initial model integration is CPU-only, single-threaded, limited to 2,048 context tokens and 256 output tokens. Device memory and browser support vary. A 0.5B model can be inaccurate and is not a substitute for a larger assistant. The app's system prompt is not a robust safety boundary; local-model output must be reviewed and must not be treated as guaranteed correct or safe.
 
 Do not add API credentials to the HTML file. Keep real secrets out of Git, issue reports, screenshots, and chat messages.
 
 ## Local browser data
 
-NEXUS stores active demo data in browser `localStorage`. That data is not encrypted by the app and may be readable by someone with access to the same browser profile or device.
+NEXUS stores active demo data and assistant conversation history in browser `localStorage`. That data is not encrypted by the app and may be readable by someone with access to the same browser profile or device.
 
 Encrypted backup export protects the exported file with AES-256-GCM and a password-derived key. It does not encrypt active browser storage. Plain JSON exports are unencrypted. The application cannot recover a forgotten backup password.
 
-## Optional backend
+## Optional legacy backend
 
-The backend is not required for the offline demo. It supports a single shared owner password, not individual user accounts. Production mode fails to start when the required access password and signing secret are missing. Configure HTTPS and the exact trusted proxy hop count before any private backend use.
+The legacy backend is not required or used by the private browser mode. It supports a single shared owner password, not individual user accounts. Production mode fails to start when the required access password and signing secret are missing. Do not expose it or configure AI credentials for the private local workflow.
 
-Rate limits and Gemini call budgets are held in process memory. They reset after a process restart and are not global billing controls. Do not rely on them to enforce a financial spending limit.
-
-The project is not approved as a public multi-user production service. Before exposing a backend publicly, add and independently review durable storage, per-user authorization, persistent/global rate limits, secure secret handling, robust backup/restore operations, monitoring, and provider-side spending controls.
+Rate limits and Gemini call budgets in that dormant backend are held in process memory. They reset after a process restart and are not global billing controls. Do not rely on them to enforce a financial spending limit.
 
 ## Reporting a vulnerability
 
