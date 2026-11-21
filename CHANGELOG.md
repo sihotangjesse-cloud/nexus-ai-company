@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.9.0 — Local AI Agent Tool Loop
+
+- Add a constrained tool-calling loop powered by the user-selected local GGUF model.
+- Allow workspace listing/reading, public GitHub listing/reading, and syntax-only checks.
+- Allow the model to draft local file changes as reviewable proposals; require explicit owner confirmation before saving.
+- Limit each instruction to three tool steps and reject malformed or unknown model actions.
+- Treat repository and workspace contents as untrusted data; do not expose secrets, delete files, write to GitHub, or execute project programs.
+- Keep general web search, private GitHub repositories, remote commits/push, shell execution, deployment, payments, and credits out of this release.
+
 ## 1.8.0 — Read-only Public GitHub Explorer
 
 - Add a browser-based explorer for public GitHub repositories and text files.
