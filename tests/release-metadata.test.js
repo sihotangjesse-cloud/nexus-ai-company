@@ -15,7 +15,7 @@ test('NEXUS PERSONAL release metadata is synchronized for v1.5.0', async () => {
   assert.equal(lock.packages[''].version, pkg.version);
   assert.ok(html.includes('PERSONAL WORKSPACE · v1.5.0'));
   assert.ok(html.includes("appVersion:'1.5.0'"));
-  assert.ok(changelog.startsWith('# Changelog\n\n## 1.5.0 — Offline Website Studio'));
+  assert.ok(changelog.startsWith('# Changelog\n\n## 1.5.0 — Personal Notes & Idea Inbox'));
   assert.ok(readme.includes('Versi 1.5.0'));
   assert.ok(readme.includes('Website Studio offline'));
   assert.ok(guide.includes('Panduan NEXUS PERSONAL 1.5.0'));
