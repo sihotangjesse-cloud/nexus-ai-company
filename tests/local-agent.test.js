@@ -57,7 +57,7 @@ test('Agent does not delete files, write GitHub, run arbitrary code, or invoke a
 test('Agent displays a tool execution trace and explicit feature boundaries', () => {
   assert.match(agent, /function stepView\(\)/);
   assert.match(agent, /repository GitHub publik/);
-  assert.match(agent, /pencarian web umum/);
+  assert.match(agent, /web_search/);
   assert.match(agent, /eksekusi kode aplikasi/);
 });
 
