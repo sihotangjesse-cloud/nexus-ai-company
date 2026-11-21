@@ -9,7 +9,8 @@ test('personal offline mode is forced on every protocol', () => {
   assert.match(html, /const PERSONAL_OFFLINE_MODE=true;/);
   assert.doesNotMatch(html, /PERSONAL_OFFLINE_MODE=location\.protocol/);
   assert.match(html, /title='MODE PRIBADI · TANPA API'/);
-  assert.match(html, /Asisten generatif opsional menjalankan model GGUF di browser/);
+  assert.match(html, /GitHub Explorer hanya membaca repository publik saat kamu meminta/);
+  assert.match(html, /Asisten AI tetap lokal tanpa AI API, transaksi, atau kredit/);
 });
 
 test('offline mode disables backend authentication and health requests', () => {
@@ -44,7 +45,7 @@ test('offline AI revision remains blocked', () => {
 
 test('single-owner personal branding and project workspace are available', () => {
   assert.ok(html.includes('<title>NEXUS PERSONAL</title>'));
-  assert.ok(html.includes('PERSONAL WORKSPACE · v1.7.0'));
+  assert.ok(html.includes('PERSONAL WORKSPACE · v1.8.0'));
   assert.ok(html.includes('Asisten AI Generatif'));
   assert.ok(html.includes('RUANG KERJA PRIBADI'));
   assert.ok(html.includes('Ruang Proyek'));
