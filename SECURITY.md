@@ -29,3 +29,9 @@ Rate limits and Gemini call budgets in that dormant backend are held in process 
 ## Reporting a vulnerability
 
 Do not publish passwords, API keys, session secrets, personal data, or exploit details in a public issue. Use GitHub's private vulnerability reporting feature for this repository when it is available. Otherwise, report only that a security issue exists and request a private channel without including the sensitive details.
+
+## Read-only public GitHub Explorer
+
+The optional GitHub Explorer sends a direct HTTPS GET request to `api.github.com` only after the user submits a repository, branch, or folder request. It accepts public repositories only and does not add an Authorization header, store a token, read browser chat history, or upload local workspace contents. It cannot write repository contents, create branches, commit, or push. File previews are limited to 512 KB and decoded as UTF-8 text.
+
+Unauthenticated GitHub REST requests are subject to GitHub's documented 60-request-per-hour primary limit per originating IP address. The app displays the remaining allowance when the response exposes it. Do not add personal access tokens to the frontend. See the official [rate limit guidance](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api) and [CORS guidance](https://docs.github.com/en/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests).
