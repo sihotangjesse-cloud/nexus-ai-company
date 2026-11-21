@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
-const script = html.slice(html.indexOf('<script>') + 8, html.indexOf('</script>'));
+const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] || ''; 
 const websiteTypes = [
   { id: 'company', label: 'Company profile' },
   { id: 'landing', label: 'Landing page' },

@@ -14,7 +14,7 @@ const helpers=new Function(
  source+'\nreturn {encryptBackupPayload,decryptBackupPayload,bytesToBase64,base64ToBytes};'
 )('nexus-ai-company-encrypted-backup',1,310000,2*1024*1024,value=>!!value&&typeof value==='object'&&!Array.isArray(value));
 const payload={
- format:'nexus-ai-company-backup',version:1,appVersion:'1.6.0',exportedAt:'2026-11-20T00:00:00.000Z',
+ format:'nexus-ai-company-backup',version:1,appVersion:'1.7.0',exportedAt:'2026-11-20T00:00:00.000Z',
  data:{ceo:'Founder',tasks:[{id:1,t:'Riset pelanggan',emp:'nara',pri:'Tinggi',due:'2026-11-25',st:'Sedang dikerjakan',pg:40}],chats:{},events:[],reports:[],log:[]}
 };
 const password='NEXUS-backup-test-2026';
@@ -66,7 +66,7 @@ test('backup UI keeps the plain JSON option and exposes encrypted export and res
  assert.match(html,/data-a="backup-export"/);
  assert.match(html,/data-f="encrypted-backup-export"/);
  assert.match(html,/data-f="encrypted-backup-import"/);
- assert.match(html,/appVersion:'1.6.0'/);
+ assert.match(html,/appVersion:'1.7.0'/);
  assert.match(script,/if\(k==='encrypted-backup-export'\)/);
  assert.match(script,/if\(k==='encrypted-backup-import'\)/);
  assert.match(html,/data aktif di penyimpanan browser \(localStorage\) masih belum dienkripsi/);

@@ -1,6 +1,6 @@
 # NEXUS PERSONAL
 
-**Versi 1.6.0 — ruang kerja pribadi dengan asisten AI generatif lokal**
+**Versi 1.7.0 — ruang kerja pribadi dengan file workspace lokal yang memerlukan persetujuan**
 
 NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu dapat mengelola proyek website, checklist, tugas, ide, catatan, laporan, serta menggunakan asisten generatif kecil yang berjalan di browser perangkat melalui WebAssembly.
 
@@ -11,7 +11,7 @@ NEXUS PERSONAL adalah aplikasi lokal untuk satu pemilik. Kamu dapat mengelola pr
 - Kode mesin WebAssembly dan file WASM diambil dari versi Wllama yang dipatok di jsDelivr hanya ketika kamu menekan tombol **Muat model lokal**. Pengambilan file mesin pertama kali memerlukan koneksi internet.
 - File model GGUF diunduh sendiri dari repositori model resmi, lalu dipilih dari perangkat. Isi percakapan dan file model pilihan tidak diunggah oleh NEXUS ke layanan AI.
 - NEXUS menggunakan browser Worker/WebAssembly untuk inferensi CPU satu thread. Tidak ada server AI localhost atau backend AI.
-- Server Python kecil di Android (bila dipakai) hanya menyajikan halaman statis pada alamat loopback perangkat, bukan server AI atau API.
+- Server Python lokal di Android/Windows menyajikan aplikasi dan menyediakan workspace file pada alamat loopback perangkat. Server ini bukan server AI dan tidak dapat diakses dari jaringan luar.
 
 Backend lama tetap ada di repositori untuk riwayat/pengujian, tetapi antarmuka pribadi memblokir endpoint backend. Jangan mengatur API key atau menjalankan backend lama untuk mode ini.
 
@@ -31,7 +31,7 @@ Backend lama tetap ada di repositori untuk riwayat/pengujian, tetapi antarmuka p
 5. Buka `http://127.0.0.1:4173/` di Chrome pada perangkat yang sama.
 6. Server hanya terikat ke `127.0.0.1`; jangan ubah alamat bind menjadi `0.0.0.0`.
 
-Launcher Android hanya menyajikan berkas statis dari folder `public`. Ia tidak menerima chat, tidak menjalankan model, dan tidak membuat endpoint AI. Untuk memuat modul ES dari CDN, buka NEXUS melalui localhost, bukan dengan URL `file://`.
+Launcher Android menjalankan aplikasi dan jembatan File Workspace pada alamat loopback yang sama. Untuk melihat serta menyimpan file di penyimpanan bersama Android, jalankan `termux-setup-storage` satu kali dan izinkan akses. Menu File Workspace tidak tersedia saat halaman dibuka langsung dengan `file://`. Untuk memuat modul AI WebAssembly, tetap gunakan alamat localhost.
 
 ## Asisten AI generatif lokal
 
@@ -49,8 +49,15 @@ Untuk Galaxy A05s/SM-A057F, varian memori perangkat dapat berbeda. Pada varian R
 
 **Keterbatasan kualitas:** model 0.5B jauh lebih kecil dan biasanya kurang cermat daripada ChatGPT atau model cloud besar. Jawaban dapat keliru, dangkal, atau tidak mengikuti instruksi. Gunakan untuk draf, ide sederhana, dan latihan; verifikasi fakta penting. Prompt keselamatan aplikasi bukan jaminan bahwa model kecil akan selalu patuh.
 
-Asisten hanya menghasilkan teks. Ia tidak mempunyai akses internet, pencarian web, file lokal lain, GitHub, pembayaran, atau kemampuan menjalankan tindakan eksternal. Jangan masukkan sandi atau informasi pribadi/sensitif ke percakapan.
+Asisten model GGUF masih hanya menghasilkan teks dan belum dapat memanggil alat secara otomatis, mencari internet, atau mengakses GitHub. Fitur File Workspace adalah alat terpisah yang hanya membaca/menyimpan file setelah persetujuan pemilik. Jangan masukkan sandi atau informasi pribadi/sensitif ke percakapan.
 
+## File Workspace lokal v1.7.0
+
+Jalankan `bash scripts/start-nexus-android.sh` di Termux, lalu buka `http://127.0.0.1:4173/` dan pilih **File Workspace**. Di Android, jalankan `termux-setup-storage` sekali lalu izinkan akses file agar folder `NEXUS-Workspace` berada di penyimpanan bersama. Tanpa izin tersebut, folder dibuat di ruang privat Termux. Windows dapat memakai `Start-NEXUS-Workspace.bat` dengan Python 3.
+
+Fitur awal: daftar folder dan file teks, baca file, usulkan file baru/perubahan, lihat isi sebelum/sesudah, lalu setujui penyimpanan. Tidak ada tombol hapus. File dibatasi ke ekstensi teks yang diizinkan, maksimal 512 KB untuk dibaca dan 256 KB untuk perubahan; file tersembunyi/sensitif dan path di luar workspace diblokir.
+
+Tombol **Periksa sintaks** hanya memeriksa Python (AST), JavaScript (`node --check`), dan JSON. Kode proyek tidak dijalankan. Pemeriksaan JavaScript membutuhkan Node.js. Workspace tidak otomatis tersinkronisasi ke GitHub atau antarperangkat; pindahkan/backup folder sendiri.
 ## Ruang proyek website
 
 Buka **Proyek → Proyek website baru**. Isi nama, jenis website, tujuan, teknologi, dan target tanggal. NEXUS membuat checklist lokal yang terhubung dengan ruang proyek.
@@ -83,4 +90,4 @@ Edit nama brand, label, judul, deskripsi, teks tombol, warna utama, tiga kartu f
 
 ## Pemeriksaan kode
 
-GitHub Actions menjalankan instalasi dari lockfile, pemeriksaan sintaks/frontend, dan tes otomatis. Tes memeriksa mode tanpa backend/API serta perilaku lokal asisten. Keberhasilan tes kode tidak menggantikan uji kinerja langsung di ponsel.
+GitHub Actions menjalankan instalasi dari lockfile, pemeriksaan sintaks frontend, tes otomatis Node.js, dan tes API jembatan workspace Python. Tes memeriksa batas loopback, path traversal, persetujuan penyimpanan, konflik file, dan pemeriksaan sintaks tanpa menjalankan kode. Keberhasilan CI tidak menggantikan uji langsung di ponsel.

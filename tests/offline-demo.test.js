@@ -44,7 +44,7 @@ test('offline AI revision remains blocked', () => {
 
 test('single-owner personal branding and project workspace are available', () => {
   assert.ok(html.includes('<title>NEXUS PERSONAL</title>'));
-  assert.ok(html.includes('PERSONAL WORKSPACE · v1.6.0'));
+  assert.ok(html.includes('PERSONAL WORKSPACE · v1.7.0'));
   assert.ok(html.includes('Asisten AI Generatif'));
   assert.ok(html.includes('RUANG KERJA PRIBADI'));
   assert.ok(html.includes('Ruang Proyek'));

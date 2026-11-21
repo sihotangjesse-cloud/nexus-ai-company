@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0 — Approval-first Local Project Workspace
+
+- Add a loopback-only local workspace bridge for Android/Termux and Windows/Python.
+- Add bounded text-file browsing and reading inside a dedicated workspace folder.
+- Require a proposed change, before/after preview, and explicit approval before creating or replacing a file.
+- Reject traversal, symlinks, hidden/sensitive paths, unsupported file types, and oversized content.
+- Add syntax-only Python, JavaScript, and JSON checks; project code is never executed.
+- Add Android and Windows launchers plus automated API security tests.
+- Keep GitHub access, internet research, autonomous tool-calling, arbitrary code execution, deployment, payments, credits, and subscriptions out of this release.
+
 ## 1.6.0 — Browser-local Generative Assistant
 
 - Add an optional generative assistant powered by a user-selected local GGUF model in the browser through WebAssembly.
