@@ -62,7 +62,7 @@ test('assistant output is limited, escaped before rendering, and never claimed t
   assert.match(html, /Jawaban dibatasi 256 token per pesan/);
 });
 
-test('Android launcher exposes static files on loopback only, not an AI endpoint', async () => {
+test('Android launcher exposes the workspace bridge on loopback only, not an AI endpoint', async () => {
   const launcher = await read('../scripts/start-nexus-android.sh');
   assert.match(launcher, /python -m http\.server/);
   assert.match(launcher, /--bind 127\.0\.0\.1/);
