@@ -757,7 +757,7 @@ const V={
    const ready=!!LOCAL_AI.engine;
    return '<h1>Asisten AI Generatif</h1><p class="sub">Model bahasa berjalan langsung di browser menggunakan WebAssembly. Tidak ada prompt yang dikirim ke AI cloud.</p>'+
    '<section class="c"><div class="row" style="justify-content:space-between"><h2>Model lokal</h2><span class="chip">'+(ready?'MODEL SIAP':'BELUM DIMUAT')+'</span></div>'+
-   '<p class="mu">Pilih file model instruksi berformat GGUF dari perangkat. Untuk mulai, gunakan model kecil 0.5B Q4 (maksimal 900 MB). Pada perangkat 4 GB, tutup aplikasi lain dan gunakan jawaban singkat.</p>'+
+   '<p class="mu">Pilih file model instruksi berformat GGUF dari perangkat. Untuk mulai, gunakan model kecil 0.5B Q4 (maksimal 600 MB). Pada perangkat 4 GB, tutup aplikasi lain dan gunakan jawaban singkat.</p>'+
    '<label for="local-ai-file">File model GGUF</label><input id="local-ai-file" type="file" accept=".gguf,application/octet-stream" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+
    '<div id="local-ai-status" class="local-ai-status" role="status">'+esc(LOCAL_AI.status)+'</div><div class="local-ai-progress"><i id="local-ai-progress" style="width:'+LOCAL_AI.progress+'%"></i></div>'+
    '<div class="row"><button type="button" data-a="load-local-ai" '+(ready||LOCAL_AI.loading?'disabled':'')+'>'+(LOCAL_AI.loading?'Memuat model...':ready?'Model sudah dimuat':'Muat model lokal')+'</button>'+(ready?'<button type="button" class="sec" data-a="unload-local-ai">Lepas model</button>':'')+'<button type="button" class="sec" data-a="clear-local-ai-chat">Hapus percakapan</button></div>'+
