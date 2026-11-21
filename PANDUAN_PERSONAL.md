@@ -67,7 +67,11 @@ Menu **Catatan & Ide** menyimpan ide dan strategi di browser. Catatan dapat dika
 
 Di menu **Pengaturan**, buat backup JSON biasa atau backup terenkripsi. Enkripsi hanya melindungi file backup. Data aktif di localStorage tetap belum dienkripsi; simpan perangkat dan profil browser dengan aman.
 
-## 8. Biaya dan privasi
+## 8. Catatan & Ide pribadi
+
+Buka menu **Catatan & Ide** untuk menyimpan ide bisnis, website, konten, hal yang dipelajari, strategi, dan catatan umum. Pilih kategori, isi judul dan isi catatan, lalu simpan. Catatan dapat dipin atau dihapus, tersimpan pada browser, dan ikut masuk ke backup JSON biasa maupun terenkripsi.
+
+## 9. Biaya dan privasi
 
 NEXUS tidak mengirim prompt ke layanan AI cloud dan tidak membutuhkan API key, akun AI, pembayaran, kredit, atau langganan. Namun, pengunduhan model GGUF dan pengambilan kode engine/WASM pertama kali memerlukan internet dan dapat memakai kuota data. Gunakan koneksi yang memang tersedia dan perhatikan ukuran file model.
 
