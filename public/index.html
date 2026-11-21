@@ -696,7 +696,6 @@ function offlineAssistantReply(key,message){
 }
 function chatBox(key,ph){const m=S.chats[key]||[];return `<div class="c"><div class="msgs" id="msgs">${m.length?m.map(x=>{const e=em(x.f);const who=x.f==='ceo'?esc(S.ceo):x.f==='system'?'NEXUS SYSTEM':e?e.n+' · '+e.r:'NEXUS';return `<div class="m ${x.f==='ceo'?'me':''}"><small>${who}${x.demo?'<span class="badge">DEMO</span>':''} · ${fd(x.at)}</small>${esc(x.t)}</div>`}).join(''):'<p class="mu">Belum ada percakapan. Tulis pesan pertama Anda.</p>'}${BUSY.has(key)?'<div class="m"><small>NEXUS SYSTEM</small>AI sedang menyusun jawaban. Proses dapat memerlukan waktu hingga beberapa saat.</div>':''}</div>
 <form data-f="chat" data-key="${key}" class="row" style="margin-top:10px;flex-wrap:nowrap"><input name="m" maxlength="3000" placeholder="${PERSONAL_OFFLINE_MODE?'Tulis brief atau permintaan kerja...':BUSY.has(key)?'AI sedang memproses...':ph}" aria-label="Pesan" autocomplete="off" ${BUSY.has(key)?'disabled':''}><button ${BUSY.has(key)?'disabled':''}>${PERSONAL_OFFLINE_MODE?'Buat kerangka offline':BUSY.has(key)?'Memproses...':'Kirim'}</button></form>${PERSONAL_OFFLINE_MODE?`<p class="demo" role="note">Template kerja dibuat secara lokal. Tidak ada AI eksternal, API, atau kredit yang digunakan.</p>`:''}<div class="err" id="err"></div></div>`}
-const V={
 function localAIChatMessagesView(){
  const entries=(S.chats.localai||[]).slice(-40);
  if(!entries.length)return '<div class="mu">Belum ada percakapan. Muat model lokal, lalu tulis pertanyaan pertamamu.</div>';
@@ -751,6 +750,7 @@ async function submitLocalAI(form){
  finally{LOCAL_AI.busy=false;save();render()}
 }
 
+const V={
   asisten(){
    const ready=!!LOCAL_AI.engine;
    return '<h1>Asisten AI Generatif</h1><p class="sub">Model bahasa berjalan langsung di browser menggunakan WebAssembly. Tidak ada prompt yang dikirim ke AI cloud.</p>'+
