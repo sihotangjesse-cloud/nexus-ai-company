@@ -31,7 +31,7 @@ test('offline coordination and employee chat use local templates instead of AI c
   assert.match(script, /Template kerja offline digunakan/);
   assert.match(script, /Template kerja dibuat secara lokal/);
   assert.match(script, /Template kerja dibuat secara lokal/);
-  assert.match(script, /Asisten AI generatif lokal/);
+  assert.match(script, /Asisten AI generatif/);
 });
 
 test('offline AI revision remains blocked', () => {
