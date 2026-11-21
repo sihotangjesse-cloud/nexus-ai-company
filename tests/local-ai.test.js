@@ -22,7 +22,7 @@ test('local assistant loads a user-selected GGUF file with CPU-only conservative
   assert.match(script, /WLLAMA_MODULE_URL='https:\/\/cdn\.jsdelivr\.net\/npm\/@wllama\/wllama@3\.13\.0\/esm\/index\.js'/);
   assert.match(script, /WLLAMA_WASM_URL='https:\/\/cdn\.jsdelivr\.net\/npm\/@wllama\/wllama@3\.13\.0\/esm\/wasm-from-cdn\.js'/);
   assert.match(loadModel, /\.gguf/);
-  assert.match(loadModel, /900\*1024\*1024/);
+  assert.match(loadModel, /600\*1024\*1024/);
   assert.match(loadModel, /new module\.Wllama\(wasmModule\.default\)/);
   assert.match(loadModel, /engine\.loadModel\(\[file\],\{n_ctx:2048,n_threads:1,n_gpu_layers:0\}\)/);
   assert.doesNotMatch(loadModel, /fetch\s*\(|\/api\//);
