@@ -31,7 +31,7 @@ Backend lama tetap ada di repositori untuk riwayat/pengujian, tetapi antarmuka p
 5. Buka `http://127.0.0.1:4173/` di Chrome pada perangkat yang sama.
 6. Server hanya terikat ke `127.0.0.1`; jangan ubah alamat bind menjadi `0.0.0.0`.
 
-Launcher Android hanya menyajikan berkas statis dari folder `public`. Ia tidak menerima chat, tidak menjalankan model, dan tidak membuat endpoint AI. Untuk memuat modul ES dari CDN, buka NEXUS melalui localhost, bukan dengan URL `file://`.
+Launcher Android menjalankan aplikasi dan jembatan File Workspace pada alamat loopback yang sama. Untuk melihat serta menyimpan file di penyimpanan bersama Android, jalankan `termux-setup-storage` satu kali dan izinkan akses. Menu File Workspace tidak tersedia saat halaman dibuka langsung dengan `file://`. Untuk memuat modul AI WebAssembly, tetap gunakan alamat localhost.
 
 ## Asisten AI generatif lokal
 
