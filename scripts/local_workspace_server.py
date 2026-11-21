@@ -62,13 +62,9 @@ class SearchResultParser(HTMLParser):
             self.current[key] = (self.current.get(key, "") + data).strip()[:700]
 
     def handle_endtag(self, tag):
-        if self.current and self.capture == "title" and tag == "a":
+        if self.capture == "title" and tag == "a":
             self.capture = None
-        elif self.current and self.capture == "snippet" and tag in ("div", "td"):
-            self.capture = None
-        if self.current and self.current.get("title") and self.current.get("url"):
-            self.results.append(self.current)
-            self.current = None
+        elif self.capture == "snippet" and tag in ("div", "td", "a"):
             self.capture = None
 
 
@@ -87,6 +83,8 @@ def search_web(query: str) -> list[dict]:
         raise WorkspaceError("Respons mesin pencari terlalu besar.", 502)
     parser = SearchResultParser()
     parser.feed(raw.decode("utf-8", errors="replace"))
+    if parser.current and parser.current.get("title") and parser.current.get("url"):
+        parser.results.append(parser.current)
     results = []
     for item in parser.results:
         target = item["url"]
