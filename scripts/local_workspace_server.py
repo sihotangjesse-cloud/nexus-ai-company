@@ -51,6 +51,8 @@ class SearchResultParser(HTMLParser):
         attrs = dict(attrs)
         classes = set((attrs.get("class") or "").split())
         if tag == "a" and "result__a" in classes:
+            if self.current and self.current.get("title") and self.current.get("url"):
+                self.results.append(self.current)
             self.current = {"title": "", "url": attrs.get("href", ""), "snippet": ""}
             self.capture = "title"
         elif self.current and "result__snippet" in classes:
