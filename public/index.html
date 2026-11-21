@@ -1152,5 +1152,6 @@ document.addEventListener('input',ev=>{
 document.addEventListener('change',async ev=>{const b=ev.target;if(b.dataset&&b.dataset.taskFilter){taskFilters[b.dataset.taskFilter]=b.value;refreshTaskResults();return;}if(b.id==='backup-file'){const file=b.files?.[0];if(!file)return;try{await importBackupFile(file)}catch(error){toast(error.message||'Gagal memulihkan backup.')}finally{b.value=''}return;}if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
 if(b.dataset.a==='st'){updateTaskStatus(k,b.value);k.h.push({at:Date.now(),t:'Status menjadi '+k.st});log('Status “'+k.t.slice(0,40)+'”: '+k.st)}
 else{updateTaskProgress(k,b.value);k.h.push({at:Date.now(),t:'Progres '+k.pg+'% · Status '+k.st});log('Progres tugas “'+k.t.slice(0,40)+'” menjadi '+k.pg+'%')}save();render()});
+window.NexusLocalAI={getEngine:()=>LOCAL_AI.engine};
 addEventListener('hashchange',render);addEventListener('nexus-workspace-updated',()=>{if((location.hash||'#dashboard')==='#workspace')render()});addEventListener('nexus-github-updated',()=>{if((location.hash||'#dashboard')==='#github')render()});addEventListener('nexus-agent-updated',()=>{if((location.hash||'#dashboard')==='#asisten')render()});load();render();refreshAIStatus();
 </script></body></html>
