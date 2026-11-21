@@ -16,7 +16,7 @@ test('NEXUS PERSONAL release metadata is synchronized for v1.8.0', async () => {
   assert.ok(html.includes('PERSONAL WORKSPACE · v1.8.0'));
   assert.ok(html.includes("appVersion:'1.8.0'"));
   assert.ok(html.includes("['asisten','Asisten AI','ai']"));
-  assert.ok(changelog.startsWith('# Changelog\n\n## 1.8.0 — Approval-first Local Project Workspace'));
+  assert.ok(changelog.startsWith('# Changelog\n\n## 1.8.0 — Read-only Public GitHub Explorer'));
   assert.ok(readme.includes('Versi 1.8.0'));
   assert.ok(readme.includes('Asisten AI generatif lokal'));
   assert.ok(guide.includes('Panduan NEXUS PERSONAL 1.8.0'));
@@ -26,6 +26,6 @@ test('NEXUS PERSONAL release metadata is synchronized for v1.8.0', async () => {
   assert.ok(html.includes("['github','GitHub','tasks']"));
   assert.ok(readme.includes('GitHub Explorer publik hanya-baca'));
   assert.ok(html.includes("['workspace','File Workspace','tasks']"));
-  assert.ok(readme.includes('File Workspace lokal v1.8.0'));
+  assert.ok(readme.includes('File Workspace lokal v1.7.0'));
   assert.ok(guide.includes('File Workspace lokal pada Android'));
 });
