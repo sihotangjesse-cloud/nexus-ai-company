@@ -115,6 +115,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:13px/1.5 ui-monosp
 <div class="app"><nav id="nav" aria-label="Navigasi utama"></nav><main id="main"></main></div><div id="toast"></div>
 <script src="local-workspace.js"></script>
 <script src="github-reader.js"></script>
+<script src="local-agent.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 // NEXUS PERSONAL is deliberately offline-only, even when served from localhost.
@@ -218,7 +219,7 @@ function parseBackupText(text){
 }
 function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){raw=null}S=normalizeState(raw)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan lokal penuh atau tidak tersedia. Data baru mungkin tidak tersimpan.')}}
-function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.8.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
+function createBackupPayload(){return {format:BACKUP_FORMAT,version:BACKUP_VERSION,appVersion:'1.9.0',exportedAt:new Date().toISOString(),data:normalizeState(S)}}
 function downloadBackup(){
  const payload=createBackupPayload();
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -625,7 +626,7 @@ else if(AI_STATUS.verified){state='is-ok';title='KONEKSI AI TERUJI';detail='Mode
 else if(AI_STATUS.keyConfigured){state='is-warn';title='API KEY TERPASANG · SIAP DIUJI';detail='Koneksi belum diverifikasi';}
 else if(AI_STATUS.checked){state='is-neutral';title='MODE SETUP';detail=AI_STATUS.message||'Backend atau konfigurasi AI belum tersedia';}
 else{state='is-loading';title='MEMERIKSA SERVER';detail='Menghubungkan ke backend';}
-return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.8.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
+return `<header class="topbar"><div class="topbar-brand"><span class="brand-mark">${svgIcon('sparkles')}</span><div><strong>NEXUS PERSONAL</strong><small>PERSONAL WORKSPACE · v1.9.0</small></div></div><div class="row"><div class="status-pill ${state}" role="status" aria-live="polite"><span class="status-indicator"></span><span>${title}</span><small>${esc(detail)}</small></div>${AUTH.required&&AUTH.authenticated?'<button type="button" class="sec sm" data-a="logout">Keluar</button>':''}</div></header>`;
 }
 function push(key,f,t,demo){(S.chats[key]=S.chats[key]||[]).push({f,t,at:Date.now(),demo:!!demo})}
 function buildHistory(key,message=''){
@@ -768,7 +769,7 @@ const V={
    '<p class="mu">Kode engine WebAssembly dan file WASM diambil dari jsDelivr saat memuat model jika belum ada di cache. File model dipilih dari perangkat. Inferensi dan isi percakapan tetap lokal; tidak ada AI API, akun, key, kredit, atau transaksi.</p></section>'+
    '<section class="c" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h2>Percakapan</h2><span class="chip">'+(ready?esc(LOCAL_AI.modelName):'Model belum aktif')+'</span></div>'+
    '<div id="local-ai-messages" class="local-ai-messages" aria-live="polite">'+localAIChatMessagesView()+'</div>'+
-   '<form data-f="local-ai-chat"><label for="local-ai-message">Pesan untuk NEXUS</label><textarea id="local-ai-message" name="message" rows="3" maxlength="3000" placeholder="Contoh: Bantu saya menyusun struktur website bisnis..." '+(!ready||LOCAL_AI.busy?'disabled':'')+'></textarea><div class="row" style="margin-top:10px"><button type="submit" '+(!ready||LOCAL_AI.busy?'disabled':'')+'>'+(LOCAL_AI.busy?'Sedang berpikir...':'Kirim pesan')+'</button><span class="mu">Jawaban dibatasi 256 token per pesan agar lebih ringan.</span></div></form></section>';
+   '<form data-f="local-ai-chat"><label for="local-ai-message">Pesan untuk NEXUS</label><textarea id="local-ai-message" name="message" rows="3" maxlength="3000" placeholder="Contoh: Bantu saya menyusun struktur website bisnis..." '+(!ready||LOCAL_AI.busy?'disabled':'')+'></textarea><div class="row" style="margin-top:10px"><button type="submit" '+(!ready||LOCAL_AI.busy?'disabled':'')+'>'+(LOCAL_AI.busy?'Sedang berpikir...':'Kirim pesan')+'</button><span class="mu">Jawaban dibatasi 256 token per pesan agar lebih ringan.</span></div></form></section>'+(window.NexusAgent&&typeof window.NexusAgent.view==='function'?window.NexusAgent.view():'<section class="c"><p class="mu">Modul Agent belum dimuat. Muat ulang NEXUS.</p></section>');
   },
   notes(){
    const sorted=S.notes.slice().sort((a,b)=>(Number(b.pinned)-Number(a.pinned))||Number(b.updatedAt)-Number(a.updatedAt));
@@ -1026,6 +1027,7 @@ async function reviseTask(id,note){
 function err(t){const e=$('#err');if(e)e.textContent=t}
 document.addEventListener('submit',async ev=>{const f=ev.target;const k=f.dataset.f;if(!k)return;ev.preventDefault();const d=new FormData(f);
 if(k==='local-ai-chat'){await submitLocalAI(f);return}
+if(k==='local-agent-task'){if(!window.NexusAgent||typeof window.NexusAgent.run!=='function'){toast('Modul Agent belum dimuat.');return}await window.NexusAgent.run(f,LOCAL_AI.engine);return}
 if(k==='note'){
  const title=String(d.get('title')||'').trim(),body=String(d.get('body')||'').trim(),category=String(d.get('category')||'Catatan');
  if(title.length<2||title.length>120){toast('Judul catatan harus berisi 2–120 karakter.');return}
@@ -1150,5 +1152,5 @@ document.addEventListener('input',ev=>{
 document.addEventListener('change',async ev=>{const b=ev.target;if(b.dataset&&b.dataset.taskFilter){taskFilters[b.dataset.taskFilter]=b.value;refreshTaskResults();return;}if(b.id==='backup-file'){const file=b.files?.[0];if(!file)return;try{await importBackupFile(file)}catch(error){toast(error.message||'Gagal memulihkan backup.')}finally{b.value=''}return;}if(!b.dataset.a||!['st','pg'].includes(b.dataset.a))return;const k=S.tasks.find(t=>String(t.id)===b.dataset.id);if(!k)return;
 if(b.dataset.a==='st'){updateTaskStatus(k,b.value);k.h.push({at:Date.now(),t:'Status menjadi '+k.st});log('Status “'+k.t.slice(0,40)+'”: '+k.st)}
 else{updateTaskProgress(k,b.value);k.h.push({at:Date.now(),t:'Progres '+k.pg+'% · Status '+k.st});log('Progres tugas “'+k.t.slice(0,40)+'” menjadi '+k.pg+'%')}save();render()});
-addEventListener('hashchange',render);addEventListener('nexus-workspace-updated',()=>{if((location.hash||'#dashboard')==='#workspace')render()});addEventListener('nexus-github-updated',()=>{if((location.hash||'#dashboard')==='#github')render()});load();render();refreshAIStatus();
+addEventListener('hashchange',render);addEventListener('nexus-workspace-updated',()=>{if((location.hash||'#dashboard')==='#workspace')render()});addEventListener('nexus-github-updated',()=>{if((location.hash||'#dashboard')==='#github')render()});addEventListener('nexus-agent-updated',()=>{if((location.hash||'#dashboard')==='#asisten')render()});load();render();refreshAIStatus();
 </script></body></html>
