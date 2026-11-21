@@ -1,4 +1,4 @@
-# Panduan NEXUS PERSONAL 1.8.0
+# Panduan NEXUS PERSONAL 1.9.0
 
 NEXUS PERSONAL adalah ruang kerja satu pemilik dengan asisten GGUF lokal opsional dan File Workspace lokal. Inferensi AI berjalan di browser; File Workspace hanya mengelola file teks dalam folder khusus melalui jembatan Python loopback. Tidak ada AI API cloud, API key, transaksi, kredit, langganan, hosting, atau server AI.
 
@@ -112,3 +112,26 @@ Backend lama tetap berada di repo tetapi tidak digunakan oleh UI pribadi. Jangan
 Fitur ini hanya membaca repository publik. Ia tidak meminta token GitHub dan tidak dapat mengedit repository, membuat branch, commit, atau push. Setiap permintaan mengirim nama repository, branch, dan path yang kamu minta langsung ke `api.github.com`; percakapan AI dan file lokal tidak dikirim. File maksimal 512 KB dan hanya teks UTF-8.
 
 GitHub membatasi akses REST tanpa autentikasi hingga 60 permintaan per jam per alamat IP. Bila batas tercapai, tunggu sampai reset. Belum ada pencarian web umum, akses repository privat, atau pemanggilan alat oleh model AI.
+
+
+## 12. Menggunakan Local AI Agent v1.9.0
+
+1. Jalankan server lokal menggunakan launcher Android di Termux seperti pada Bagian 1.
+2. Buka menu **Asisten AI**.
+3. Pilih file model GGUF dan tekan **Muat model lokal**. Tunggu hingga status Model Siap.
+4. Gulir ke bagian **Agent AI · Pemanggilan alat lokal**.
+5. Berikan satu instruksi yang jelas. Contoh: `Baca README.md pada workspace lokal, lihat daftar file, lalu periksa sintaks package.json.`
+6. Agent dapat memilih hingga tiga langkah alat: daftar/baca file workspace, daftar/baca file repository publik, periksa sintaks, atau siapkan usulan perubahan file.
+7. Periksa bagian **Langkah yang dijalankan** untuk melihat alat dan hasil yang dikembalikan.
+8. Untuk perubahan file, periksa isi sebelum/sesudah. File tidak berubah sampai kamu menekan **Setujui & simpan** dan mengonfirmasi dialog. Kamu juga dapat membatalkan usulan.
+
+### Batas Agent v1.9.0
+
+- Model GGUF kecil dapat salah memahami tugas atau menghasilkan format JSON alat yang tidak valid. Bila itu terjadi, tidak ada alat yang dijalankan; coba instruksi lebih pendek.
+- Workspace lokal tersedia ketika launcher Python berjalan di perangkat yang sama. File harus berada di folder `NEXUS-Workspace`.
+- GitHub hanya mendukung repository publik, GET/read-only, tanpa token. Permintaan mengirim nama repository, branch, dan path ke `api.github.com`; GitHub membatasi akses tanpa autentikasi.
+- Perubahan Agent hanya ke folder workspace lokal. Tidak ada edit remote GitHub, branch, commit, atau push.
+- Pemeriksaan sintaks Python/JavaScript/JSON tidak menjalankan program. Eksekusi kode aplikasi, shell command bebas, dan terminal belum tersedia.
+- Pencarian web umum belum tersedia di Agent. GitHub Explorer bukan mesin pencari web.
+- Agent memiliki batas maksimum tiga pemanggilan alat per instruksi dan tidak mengizinkan penghapusan file.
+- Jangan masukkan password, token, API key, atau data rahasia ke prompt maupun file workspace.
