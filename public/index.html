@@ -720,11 +720,7 @@ async function loadLocalAIModel(){
   const engine=new module.Wllama(wasmModule.default);
   LOCAL_AI.status='Memuat model lokal: '+file.name;
   if(status)status.textContent=LOCAL_AI.status;
-  await engine.loadModel([file],{n_ctx:2048,n_threads:1,n_gpu_layers:0,progressCallback:({loaded,total})=>{
-   LOCAL_AI.progress=total>0?Math.max(0,Math.min(100,Math.round(loaded/total*100))):0;
-   const bar=$('#local-ai-progress');if(bar)bar.style.width=LOCAL_AI.progress+'%';
-   const label=$('#local-ai-status');if(label)label.textContent='Memuat model lokal: '+LOCAL_AI.progress+'%';
-  }});
+  await engine.loadModel([file],{n_ctx:2048,n_threads:1,n_gpu_layers:0});
   LOCAL_AI.engine=engine;LOCAL_AI.modelName=file.name;LOCAL_AI.progress=100;LOCAL_AI.status='Model siap. Inferensi berjalan di browser perangkat ini.';
   toast('Model lokal berhasil dimuat. Asisten siap digunakan.');
  }catch(error){LOCAL_AI.status='Gagal memuat model: '+String(error?.message||error).slice(0,260);toast(LOCAL_AI.status)}
