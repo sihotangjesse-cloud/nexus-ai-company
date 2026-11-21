@@ -1,4 +1,4 @@
-# Panduan NEXUS PERSONAL 1.4.0
+# Panduan NEXUS PERSONAL 1.5.0
 
 NEXUS PERSONAL adalah ruang kerja lokal untuk satu pemilik. Aplikasi selalu offline, termasuk ketika file HTML dibuka melalui server lokal/localhost. Semua proyek dan data kerja disimpan di browser perangkat ini.
 
@@ -45,19 +45,28 @@ Starter HTML adalah fondasi awal. Untuk website dengan database, login, API, pem
 
 Pratinjau tidak menjalankan JavaScript atau memuat aset internet. Website yang diunduh adalah frontend statis, bukan sistem database, login, atau transaksi.
 
-## 6. Gunakan tim virtual offline
+## 6. Catatan & Ide pribadi
+
+1. Buka menu **Catatan & Ide**.
+2. Isi judul, pilih kategori, dan tulis ide atau catatan.
+3. Simpan. Catatan tersimpan di browser ini dan ikut backup JSON/backup terenkripsi.
+4. Gunakan **Pin** untuk menempatkan catatan penting di bagian atas atau **Hapus** untuk menghapusnya.
+5. Batas 100 catatan, masing-masing maksimal 5.000 karakter.
+
+
+## 7. Gunakan tim virtual offline
 
 Menu **Koordinasi** dan profil peran memberikan template kerja lokal. Kamu dapat menulis brief dan mendapatkan kerangka riset, desain, copywriting, analisis, coding, dan QA. Template ini bukan model AI generatif dan tidak mengakses internet.
 
 Antarmuka sengaja menolak semua permintaan backend/API. Mode offline tetap aktif walaupun halaman dibuka melalui localhost, sehingga aplikasi tidak mencoba memeriksa server atau layanan AI.
 
-## 7. Kalender, laporan, dan backup
+## 8. Kalender, laporan, dan backup
 
 Gunakan **Kalender** untuk agenda dan **Laporan** untuk ringkasan pekerjaan. Laporan dapat disalin atau diunduh sebagai CSV.
 
 Buka **Pengaturan → Backup & Pemulihan Data** untuk menyimpan backup. Backup terenkripsi membutuhkan kata sandi minimal 12 karakter. Enkripsi hanya melindungi file backup; data aktif localStorage belum terenkripsi.
 
-## 8. Data pribadi dan biaya
+## 9. Data pribadi dan biaya
 
 Data tersimpan di browser/perangkat ini. Tidak ada akun online, login aplikasi, atau sinkronisasi otomatis. Jaga profil browser dan perangkat tetap privat, serta buat backup berkala.
 
